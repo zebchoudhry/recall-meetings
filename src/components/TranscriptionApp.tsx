@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { TranscriptDisplay } from "./TranscriptDisplay";
 import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
+import { VoiceEnrollment } from "./VoiceEnrollment";
+import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 
 interface TranscriptEntry {
   id: string;
@@ -45,15 +47,29 @@ declare global {
   }
 }
 
+interface VoiceProfile {
+  id: string;
+  name: string;
+  voicePattern: {
+    avgPitch: number;
+    pitchRange: number;
+    avgFrequency: number;
+    spectralCentroid: number;
+  };
+}
+
 export const TranscriptionApp = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [summary, setSummary] = useState<string>("");
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [enrolledProfiles, setEnrolledProfiles] = useState<VoiceProfile[]>([]);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
-  const currentSpeakerRef = useRef<string>("Speaker 1");
+  const currentSpeakerRef = useRef<string>("Unknown Speaker");
+  const voiceIdentifierRef = useRef<VoiceIdentifier>(new VoiceIdentifier());
+  const audioStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     // Check if browser supports speech recognition
@@ -100,25 +116,31 @@ export const TranscriptionApp = () => {
         }
       }
 
-      if (finalTranscript) {
-        const newEntry: TranscriptEntry = {
-          id: Date.now().toString(),
-          speaker: currentSpeakerRef.current,
-          text: finalTranscript.trim(),
-          timestamp: new Date(),
-          confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
-        };
+        if (finalTranscript) {
+          const newEntry: TranscriptEntry = {
+            id: Date.now().toString(),
+            speaker: currentSpeakerRef.current,
+            text: finalTranscript.trim(),
+            timestamp: new Date(),
+            confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
+          };
 
-        setTranscript(prev => [...prev, newEntry]);
-        
-        // Simple speaker detection based on pause length (placeholder)
-        // In a real app, you'd use more sophisticated speaker diarization
-        setTimeout(() => {
-          const speakers = ["Speaker 1", "Speaker 2", "Speaker 3"];
-          const randomSpeaker = speakers[Math.floor(Math.random() * speakers.length)];
-          currentSpeakerRef.current = randomSpeaker;
-        }, 1000);
-      }
+          setTranscript(prev => [...prev, newEntry]);
+          
+          // Real-time voice identification
+          if (audioStreamRef.current && enrolledProfiles.length > 0) {
+            voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current)
+              .then(pattern => {
+                const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
+                if (identification.confidence > 0.6) {
+                  currentSpeakerRef.current = `${identification.name} (${Math.round(identification.confidence * 100)}%)`;
+                } else {
+                  currentSpeakerRef.current = "Unknown Speaker";
+                }
+              })
+              .catch(console.error);
+          }
+        }
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -157,8 +179,9 @@ export const TranscriptionApp = () => {
       }
 
       console.log('Requesting microphone permission...');
-      // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Request microphone permission and store stream for voice analysis
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
       console.log('Microphone permission granted');
       
       if (recognitionRef.current) {
@@ -188,10 +211,19 @@ export const TranscriptionApp = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current = null;
+    }
     toast({
       title: "Recording Stopped",
       description: "Transcription complete.",
     });
+  };
+
+  const handleProfilesUpdate = (profiles: VoiceProfile[]) => {
+    setEnrolledProfiles(profiles);
+    voiceIdentifierRef.current.updateProfiles(profiles);
   };
 
   const generateSummary = async () => {
@@ -271,9 +303,14 @@ export const TranscriptionApp = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Controls and Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Column - Controls and Voice Enrollment */}
           <div className="space-y-4">
+            <VoiceEnrollment
+              onProfilesUpdate={handleProfilesUpdate}
+              enrolledProfiles={enrolledProfiles}
+            />
+            
             <RecordingControls
               isRecording={isRecording}
               isListening={isListening}
@@ -315,7 +352,7 @@ export const TranscriptionApp = () => {
           </div>
 
           {/* Right Column - Transcript Display */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <TranscriptDisplay 
               transcript={transcript} 
               isRecording={isRecording}
