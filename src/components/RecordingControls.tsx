@@ -27,7 +27,10 @@ export const RecordingControls = ({
       <div className="text-center">
         {!isRecording ? (
           <Button
-            onClick={onStartRecording}
+            onClick={() => {
+              console.log('Record button clicked');
+              onStartRecording();
+            }}
             size="lg"
             className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground font-semibold"
           >

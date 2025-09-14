@@ -140,15 +140,41 @@ export const TranscriptionApp = () => {
   }, [isRecording, toast]);
 
   const startRecording = async () => {
+    console.log('startRecording function called');
+    
     try {
+      console.log('Checking browser support for Speech Recognition...');
+      
+      // Check if browser supports speech recognition
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.error('Speech Recognition not supported');
+        toast({
+          title: "Speech Recognition Not Supported",
+          description: "Your browser doesn't support speech recognition. Please use Chrome, Edge, or Safari.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Requesting microphone permission...');
       // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('Microphone permission granted');
       
       if (recognitionRef.current) {
+        console.log('Starting speech recognition...');
         setIsRecording(true);
         recognitionRef.current.start();
+      } else {
+        console.error('Speech recognition not initialized');
+        toast({
+          title: "Recognition Error", 
+          description: "Speech recognition not properly initialized",
+          variant: "destructive",
+        });
       }
     } catch (error) {
+      console.error('Error in startRecording:', error);
       toast({
         title: "Microphone Access Denied",
         description: "Please allow microphone access to start recording.",
