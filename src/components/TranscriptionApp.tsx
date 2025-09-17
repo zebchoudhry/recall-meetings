@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TranscriptDisplay } from "./TranscriptDisplay";
 import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
+import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
@@ -506,6 +507,9 @@ export const TranscriptionApp = () => {
             {summary && (
               <SummaryPanel summary={summary} isGenerating={isGeneratingSummary} />
             )}
+
+            {/* Email Summary */}
+            <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
           </div>
 
           {/* Right Column - Transcript Display */}
