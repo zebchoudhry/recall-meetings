@@ -122,11 +122,17 @@ export const TranscriptionApp = () => {
         console.log('🎤 Processing speech result:', finalTranscript);
         let speakerLabel = "Unknown Speaker";
         
-        // Analyze voice pattern for speaker identification BEFORE creating entry
+        // Quick voice analysis with timeout to prevent delays
         if (audioStreamRef.current && enrolledProfiles.length > 0) {
-          console.log('🔍 Analyzing voice for speaker identification...');
+          console.log('🔍 Starting voice analysis...');
           try {
-            const pattern = await voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
+            // Add timeout to prevent hanging
+            const analysisPromise = voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Voice analysis timeout')), 2000)
+            );
+            
+            const pattern = await Promise.race([analysisPromise, timeoutPromise]) as any;
             console.log('📊 Voice pattern:', pattern);
             
             const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
@@ -138,6 +144,12 @@ export const TranscriptionApp = () => {
             }
           } catch (error) {
             console.error('❌ Voice analysis error:', error);
+            // Fallback: use previous speaker if available
+            const lastEntry = transcript[transcript.length - 1];
+            if (lastEntry && lastEntry.speaker !== "Unknown Speaker") {
+              speakerLabel = lastEntry.speaker;
+              console.log('🔄 Using previous speaker as fallback:', speakerLabel);
+            }
           }
         } else {
           console.log('⚠️ No enrolled profiles or audio stream for identification');
