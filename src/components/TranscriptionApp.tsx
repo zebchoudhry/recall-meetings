@@ -392,7 +392,9 @@ export const TranscriptionApp = () => {
     console.log('📝 Transcript data:', transcript);
     
     try {
-      console.log('📡 Making request to /functions/v1/generate-summary');
+      console.log('📡 Making request to generate-summary function');
+      
+      // Try the edge function call
       const response = await fetch('/functions/v1/generate-summary', {
         method: 'POST',
         headers: {
@@ -404,6 +406,12 @@ export const TranscriptionApp = () => {
       console.log('📡 Response status:', response.status);
       console.log('📡 Response ok:', response.ok);
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Response error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
       const data = await response.json();
       console.log('📡 Response data:', data);
       
@@ -412,19 +420,23 @@ export const TranscriptionApp = () => {
         throw new Error(data.error);
       }
       
-      setSummary(data.summary);
+      setSummary(data.summary || 'No summary returned');
       toast({
         title: "Summary Generated",
         description: "AI summary is ready for review.",
       });
     } catch (error) {
       console.error('❌ Error generating summary:', error);
+      
+      // Show a more detailed error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
       toast({
         title: "Summary Error",
-        description: "Failed to generate AI summary. Please try again.",
+        description: `Failed to generate AI summary: ${errorMessage}`,
         variant: "destructive",
       });
-      setSummary('Unable to generate AI summary. Please try again.');
+      setSummary(`Unable to generate AI summary. Error: ${errorMessage}`);
     } finally {
       setIsGeneratingSummary(false);
     }
