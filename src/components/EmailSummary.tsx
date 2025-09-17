@@ -38,53 +38,41 @@ export const EmailSummary = ({ summary, isGenerating }: EmailSummaryProps) => {
     }
 
     setIsLoading(true);
-    console.log("📧 Sending summary to:", email);
+    console.log("📧 Preparing email for:", email);
 
     try {
-      console.log("📡 Making request to send-email function");
+      // Create email content
+      const subject = "Meeting Summary - " + new Date().toLocaleDateString();
+      const body = `Dear Recipient,
+
+Please find below the meeting summary you requested:
+
+${summary}
+
+Best regards,
+Meeting Transcription Assistant
+
+---
+This summary was generated automatically from the recorded conversation.`;
+
+      // Use mailto to open user's default email client
+      const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       
-      const response = await fetch('/functions/v1/send-email', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to_email: email,
-          summary: summary,
-        }),
-      });
-
-      console.log("📡 Email response status:", response.status);
-      console.log("📡 Email response ok:", response.ok);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ Email response error:", errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("📡 Email response data:", data);
-
-      if (data.error) {
-        console.error("❌ Email API returned error:", data.error);
-        throw new Error(data.error);
-      }
-
+      // Open email client
+      window.open(mailtoLink, '_blank');
+      
       toast({
-        title: "Email Sent! ✉️",
-        description: `Summary has been sent to ${email}`,
+        title: "Email Ready! ✉️",
+        description: `Email client opened. Send the pre-filled email to ${email}`,
       });
       
-      setEmail(""); // Clear the email field after successful send
+      setEmail(""); // Clear the email field
     } catch (error) {
-      console.error("❌ Error sending email:", error);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("❌ Error preparing email:", error);
       
       toast({
         title: "Email Error",
-        description: `Failed to send email: ${errorMessage}`,
+        description: "Failed to prepare email. Please try again.",
         variant: "destructive",
       });
     } finally {
