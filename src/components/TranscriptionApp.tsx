@@ -382,8 +382,11 @@ export const TranscriptionApp = () => {
     }
 
     setIsGeneratingSummary(true);
+    console.log('🤖 Starting AI summary generation...');
+    console.log('📝 Transcript data:', transcript);
     
     try {
+      console.log('📡 Making request to /functions/v1/generate-summary');
       const response = await fetch('/functions/v1/generate-summary', {
         method: 'POST',
         headers: {
@@ -392,9 +395,14 @@ export const TranscriptionApp = () => {
         body: JSON.stringify({ transcript }),
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
+
       const data = await response.json();
+      console.log('📡 Response data:', data);
       
       if (data.error) {
+        console.error('❌ API returned error:', data.error);
         throw new Error(data.error);
       }
       
@@ -404,7 +412,7 @@ export const TranscriptionApp = () => {
         description: "AI summary is ready for review.",
       });
     } catch (error) {
-      console.error('Error generating summary:', error);
+      console.error('❌ Error generating summary:', error);
       toast({
         title: "Summary Error",
         description: "Failed to generate AI summary. Please try again.",

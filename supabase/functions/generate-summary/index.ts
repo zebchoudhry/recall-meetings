@@ -18,14 +18,19 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🤖 Generate summary function called');
     const { transcript } = await req.json()
+    console.log('📝 Received transcript:', transcript);
     
     if (!transcript || !Array.isArray(transcript)) {
+      console.error('❌ Invalid transcript data:', transcript);
       throw new Error('Invalid transcript data')
     }
 
     const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY')
+    console.log('🔑 API key exists:', !!apiKey);
     if (!apiKey) {
+      console.error('❌ Google Gemini API key not configured');
       throw new Error('Google Gemini API key not configured')
     }
 
