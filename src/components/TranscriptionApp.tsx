@@ -102,10 +102,15 @@ export const TranscriptionApp = () => {
     };
 
     recognition.onend = () => {
+      console.log('🔴 Recognition ended, isRecording:', isRecording);
       setIsListening(false);
       if (isRecording) {
-        // Restart if we're still supposed to be recording
-        recognition.start();
+        // Only restart if we're still supposed to be recording AND recognition wasn't aborted
+        try {
+          recognition.start();
+        } catch (error) {
+          console.log('Recognition restart failed (likely aborted):', error);
+        }
       }
     };
 

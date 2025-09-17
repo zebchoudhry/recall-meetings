@@ -67,8 +67,8 @@ export class VoiceClustering {
       }
     }
 
-    // Define similarity threshold (lower distance = more similar)
-    const similarityThreshold = 0.3;
+    // More lenient similarity threshold for better speaker grouping
+    const similarityThreshold = 0.5;
     
     if (bestMatch.cluster && bestMatch.distance < similarityThreshold) {
       // Add to existing cluster and update centroid
