@@ -383,7 +383,7 @@ export const TranscriptionApp = () => {
     setIsGeneratingSummary(true);
     
     try {
-      const response = await fetch('/api/generate-summary', {
+      const response = await fetch('/functions/v1/generate-summary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
