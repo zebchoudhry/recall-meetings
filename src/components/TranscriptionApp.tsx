@@ -79,17 +79,22 @@ export const TranscriptionApp = () => {
     console.log('🚀 TranscriptionApp mounted');
     console.log('📋 Current detected speakers:', detectedSpeakers);
     // Check if browser supports speech recognition
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.log('❌ Speech Recognition not available');
+      console.log('   - window.SpeechRecognition:', !!window.SpeechRecognition);
+      console.log('   - window.webkitSpeechRecognition:', !!window.webkitSpeechRecognition);
       toast({
         title: "Speech Recognition Not Supported",
         description: "Your browser doesn't support speech recognition. Please use Chrome or Edge.",
         variant: "destructive",
       });
       return;
+    } else {
+      console.log('✅ Speech Recognition available');
     }
 
     // Initialize speech recognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     
     recognition.continuous = true;
@@ -245,7 +250,8 @@ export const TranscriptionApp = () => {
       console.log('Checking browser support for Speech Recognition...');
       
       // Check if browser supports speech recognition
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
         console.error('Speech Recognition not supported');
         toast({
           title: "Speech Recognition Not Supported",
