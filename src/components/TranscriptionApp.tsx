@@ -382,27 +382,37 @@ export const TranscriptionApp = () => {
 
     setIsGeneratingSummary(true);
     
-    // Simulate AI processing - in a real app, you'd call an LLM API
-    setTimeout(() => {
-      const transcriptText = transcript.map(entry => 
-        `${entry.speaker}: ${entry.text}`
-      ).join('\n');
-      
-      setSummary(`**Key Discussion Points:**
-• Main topics covered in this conversation
-• Important decisions made
-• Action items identified
-• Follow-up required
+    try {
+      const response = await fetch('/api/generate-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcript }),
+      });
 
-**Participants:** ${Array.from(new Set(transcript.map(t => t.speaker))).join(', ')}
-**Duration:** Approximately ${Math.ceil(transcript.length / 10)} minutes`);
+      const data = await response.json();
       
-      setIsGeneratingSummary(false);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      setSummary(data.summary);
       toast({
         title: "Summary Generated",
         description: "AI summary is ready for review.",
       });
-    }, 2000);
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      toast({
+        title: "Summary Error",
+        description: "Failed to generate AI summary. Please try again.",
+        variant: "destructive",
+      });
+      setSummary('Unable to generate AI summary. Please try again.');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   const exportTranscript = () => {
