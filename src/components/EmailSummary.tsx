@@ -38,37 +38,47 @@ export const EmailSummary = ({ summary, isGenerating }: EmailSummaryProps) => {
     }
 
     setIsLoading(true);
-    console.log("Sending summary to:", email);
+    console.log("Preparing to send summary to:", email);
 
     try {
-      const response = await fetch('/functions/v1/send-email', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to_email: email,
-          summary: summary,
-        }),
-      });
+      // For now, let's create a downloadable email content instead of sending
+      const emailContent = `Subject: Meeting Summary
 
-      const data = await response.json();
+Dear Recipient,
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+Please find below the meeting summary you requested:
+
+${summary}
+
+Best regards,
+Meeting Transcription Assistant
+
+---
+This summary was generated automatically from the recorded conversation.
+`;
+
+      // Create a downloadable text file
+      const blob = new Blob([emailContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `meeting-summary-for-${email.replace('@', '-at-')}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
       toast({
-        title: "Email Sent!",
-        description: `Summary has been sent to ${email}`,
+        title: "Summary Ready!",
+        description: `Summary has been downloaded. You can manually send it to ${email}`,
       });
       
-      setEmail(""); // Clear the email field after successful send
+      setEmail(""); // Clear the email field after successful download
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error preparing email:", error);
       toast({
         title: "Email Error",
-        description: "Failed to send email. Please try again or check your email address.",
+        description: "Failed to prepare email content. Please try again.",
         variant: "destructive",
       });
     } finally {
