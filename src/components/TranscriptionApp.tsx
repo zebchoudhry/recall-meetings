@@ -273,10 +273,17 @@ export const TranscriptionApp = () => {
     
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.stop();
-        console.log('✅ Recognition stopped successfully');
+        // Use abort() instead of stop() to forcefully end recognition
+        (recognitionRef.current as any).abort();
+        console.log('✅ Recognition aborted successfully');
       } catch (error) {
-        console.log('Error stopping recognition:', error);
+        console.log('Error aborting recognition:', error);
+        // Fallback to stop() if abort() fails
+        try {
+          recognitionRef.current.stop();
+        } catch (stopError) {
+          console.log('Error stopping recognition:', stopError);
+        }
       }
     }
     
