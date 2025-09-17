@@ -71,6 +71,7 @@ export const TranscriptionApp = () => {
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
   const audioStreamRef = useRef<MediaStream | null>(null);
+  const isRecordingRef = useRef<boolean>(false);
 
   useEffect(() => {
     console.log('🚀 TranscriptionApp mounted');
@@ -102,15 +103,18 @@ export const TranscriptionApp = () => {
     };
 
     recognition.onend = () => {
-      console.log('🔴 Recognition ended, isRecording:', isRecording);
+      console.log('🔴 Recognition ended, isRecordingRef.current:', isRecordingRef.current);
       setIsListening(false);
-      if (isRecording) {
-        // Only restart if we're still supposed to be recording AND recognition wasn't aborted
+      // Only restart if we're still supposed to be recording using ref (not state)
+      if (isRecordingRef.current) {
         try {
+          console.log('🔄 Restarting recognition...');
           recognition.start();
         } catch (error) {
-          console.log('Recognition restart failed (likely aborted):', error);
+          console.log('Recognition restart failed:', error);
         }
+      } else {
+        console.log('🛑 Not restarting - recording stopped');
       }
     };
 
@@ -240,6 +244,7 @@ export const TranscriptionApp = () => {
       if (recognitionRef.current) {
         console.log('Starting speech recognition...');
         setIsRecording(true);
+        isRecordingRef.current = true; // Set ref immediately
         recognitionRef.current.start();
       } else {
         console.error('Speech recognition not initialized');
@@ -261,7 +266,8 @@ export const TranscriptionApp = () => {
 
   const stopRecording = () => {
     console.log('🛑 Stopping recording...');
-    // Set recording to false FIRST to prevent restart
+    // Set ref first to prevent any restarts
+    isRecordingRef.current = false;
     setIsRecording(false);
     setIsListening(false);
     
