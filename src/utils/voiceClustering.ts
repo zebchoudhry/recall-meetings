@@ -27,6 +27,18 @@ export class VoiceClustering {
     console.log('🔄 VoiceClustering: Reset all clusters');
   }
 
+  updateSpeakerName(speakerId: string, newName: string) {
+    const cluster = this.clusters.find(c => c.id === speakerId);
+    if (cluster) {
+      cluster.name = newName;
+      console.log(`✏️ VoiceClustering: Renamed speaker ${speakerId} to ${newName}`);
+    }
+  }
+
+  getClusters(): SpeakerCluster[] {
+    return this.clusters;
+  }
+
   identifySpeaker(pattern: VoicePattern): { name: string; confidence: number } {
     console.log('🔍 VoiceClustering: Identifying speaker with pattern:', pattern);
     
@@ -128,9 +140,5 @@ export class VoiceClustering {
     };
     
     console.log(`🎯 Updated centroid for ${cluster.name}:`, cluster.centroid);
-  }
-
-  getClusters(): SpeakerCluster[] {
-    return this.clusters;
   }
 }

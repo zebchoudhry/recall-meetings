@@ -6,10 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { TranscriptDisplay } from "./TranscriptDisplay";
 import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
-import { VoiceEnrollment } from "./VoiceEnrollment";
 import { SpeakerSettings } from "./SpeakerSettings";
-import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 import { VoiceClustering } from "@/utils/voiceClustering";
+import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 
 interface TranscriptEntry {
   id: string;
@@ -66,19 +65,16 @@ export const TranscriptionApp = () => {
   const [isListening, setIsListening] = useState(false);
   const [summary, setSummary] = useState<string>("");
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-  const [enrolledProfiles, setEnrolledProfiles] = useState<VoiceProfile[]>([]);
   const [expectedSpeakers, setExpectedSpeakers] = useState(2);
-  const [useEnrollment, setUseEnrollment] = useState(false);
+  const [detectedSpeakers, setDetectedSpeakers] = useState<any[]>([]);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
-  const currentSpeakerRef = useRef<string>("Unknown Speaker");
-  const voiceIdentifierRef = useRef<VoiceIdentifier>(new VoiceIdentifier());
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
   const audioStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     console.log('🚀 TranscriptionApp mounted');
-    console.log('📋 Current enrolled profiles:', enrolledProfiles);
+    console.log('📋 Current detected speakers:', detectedSpeakers);
     // Check if browser supports speech recognition
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
@@ -143,7 +139,7 @@ export const TranscriptionApp = () => {
         if (audioStreamRef.current) {
           console.log('🔍 Starting background voice analysis...');
           
-          const analysisPromise = voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
+          const analysisPromise = new VoiceIdentifier().analyzeAudioStream(audioStreamRef.current);
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Voice analysis timeout')), 1000)
           );
@@ -151,17 +147,13 @@ export const TranscriptionApp = () => {
           Promise.race([analysisPromise, timeoutPromise])
             .then((pattern: any) => {
               console.log('📊 Voice pattern:', pattern);
-              let identification;
               
-              if (useEnrollment && enrolledProfiles.length > 0) {
-                // Use enrollment-based identification
-                identification = voiceIdentifierRef.current.identifySpeaker(pattern);
-                console.log('👤 Enrollment-based identification:', identification);
-              } else {
-                // Use clustering-based identification
-                identification = voiceClusteringRef.current.identifySpeaker(pattern);
-                console.log('🎯 Clustering-based identification:', identification);
-              }
+              // Use clustering-based identification
+              const identification = voiceClusteringRef.current.identifySpeaker(pattern);
+              console.log('🎯 Clustering-based identification:', identification);
+              
+              // Update detected speakers list
+              setDetectedSpeakers(voiceClusteringRef.current.getClusters());
               
               const speakerLabel = identification.confidence > 0 ? 
                 `${identification.name} (${Math.round(identification.confidence * 100)}%)` : 
@@ -214,7 +206,7 @@ export const TranscriptionApp = () => {
         recognitionRef.current.stop();
       }
     };
-  }, [isRecording, toast, enrolledProfiles]); // Add enrolledProfiles dependency
+  }, [isRecording, toast]);
 
   const startRecording = async () => {
     console.log('startRecording function called');
@@ -238,8 +230,8 @@ export const TranscriptionApp = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
       console.log('Microphone permission granted, stream:', stream);
-      console.log('📋 Available enrolled profiles for identification:', enrolledProfiles);
-      console.log('🔧 Voice identifier profiles updated:', voiceIdentifierRef.current);
+      console.log('📋 Available detected speakers for identification:', detectedSpeakers);
+      console.log('🔧 Voice clustering ready for analysis');
       
       if (recognitionRef.current) {
         console.log('Starting speech recognition...');
@@ -278,13 +270,6 @@ export const TranscriptionApp = () => {
     });
   };
 
-  const handleProfilesUpdate = (profiles: VoiceProfile[]) => {
-    console.log('📋 Updating voice profiles:', profiles);
-    setEnrolledProfiles(profiles);
-    voiceIdentifierRef.current.updateProfiles(profiles);
-    setUseEnrollment(profiles.length > 0);
-  };
-
   const handleSpeakerCountChange = (count: number) => {
     setExpectedSpeakers(count);
     voiceClusteringRef.current.setExpectedSpeakers(count);
@@ -292,9 +277,32 @@ export const TranscriptionApp = () => {
 
   const handleResetSpeakers = () => {
     voiceClusteringRef.current.reset();
+    setDetectedSpeakers([]);
     toast({
       title: "Speaker Detection Reset",
       description: "All speaker clusters have been cleared.",
+    });
+  };
+
+  const handleSpeakerNameChange = (speakerId: string, newName: string) => {
+    voiceClusteringRef.current.updateSpeakerName(speakerId, newName);
+    setDetectedSpeakers(voiceClusteringRef.current.getClusters());
+    
+    // Update existing transcript entries with the new name
+    setTranscript(prev => prev.map(entry => {
+      // Check if this entry matches the speaker being renamed
+      const speakerPattern = new RegExp(`Speaker ${speakerId}\\s*\\(\\d+%\\)`);
+      if (speakerPattern.test(entry.speaker)) {
+        const confidenceMatch = entry.speaker.match(/\((\d+)%\)/);
+        const confidence = confidenceMatch ? confidenceMatch[1] : '50';
+        return { ...entry, speaker: `${newName} (${confidence}%)` };
+      }
+      return entry;
+    }));
+    
+    toast({
+      title: "Speaker Renamed",
+      description: `Speaker ${speakerId} is now called ${newName}`,
     });
   };
 
@@ -382,11 +390,8 @@ export const TranscriptionApp = () => {
               expectedSpeakers={expectedSpeakers}
               onSpeakerCountChange={handleSpeakerCountChange}
               onReset={handleResetSpeakers}
-            />
-            
-            <VoiceEnrollment
-              onProfilesUpdate={handleProfilesUpdate}
-              enrolledProfiles={enrolledProfiles}
+              detectedSpeakers={detectedSpeakers}
+              onSpeakerNameChange={handleSpeakerNameChange}
             />
             
             <RecordingControls
