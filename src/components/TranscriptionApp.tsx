@@ -135,13 +135,14 @@ export const TranscriptionApp = () => {
         console.log('📝 Adding transcript entry immediately:', newEntry);
         setTranscript(prev => [...prev, newEntry]);
         
-        // Analyze voice pattern in background (non-blocking)
+        // Quick background voice analysis (completely non-blocking)
         if (audioStreamRef.current) {
-          console.log('🔍 Starting background voice analysis...');
+          console.log('🔍 Starting ultra-fast voice analysis...');
           
+          // Ultra-fast analysis with aggressive timeout
           const analysisPromise = new VoiceIdentifier().analyzeAudioStream(audioStreamRef.current);
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Voice analysis timeout')), 1000)
+            setTimeout(() => reject(new Error('Quick timeout')), 500) // Only 500ms max
           );
           
           Promise.race([analysisPromise, timeoutPromise])
@@ -169,8 +170,8 @@ export const TranscriptionApp = () => {
               console.log('✅ Updated speaker to:', speakerLabel);
             })
             .catch(error => {
-              console.error('❌ Voice analysis error:', error);
-              // Fallback to Unknown Speaker
+              console.log('⚡ Quick analysis timeout - using fallback');
+              // Quick fallback to Unknown Speaker - don't slow down transcript
               setTranscript(prev => prev.map(entry => 
                 entry.id === entryId 
                   ? { ...entry, speaker: "Unknown Speaker" }
@@ -178,14 +179,12 @@ export const TranscriptionApp = () => {
               ));
             });
         } else {
-          // No voice analysis available, set to Unknown Speaker
-          setTimeout(() => {
-            setTranscript(prev => prev.map(entry => 
-              entry.id === entryId 
-                ? { ...entry, speaker: "Unknown Speaker" }
-                : entry
-            ));
-          }, 100);
+          // No voice analysis - immediately set to Unknown Speaker
+          setTranscript(prev => prev.map(entry => 
+            entry.id === entryId 
+              ? { ...entry, speaker: "Unknown Speaker" }
+              : entry
+          ));
         }
       }
     };

@@ -70,7 +70,7 @@ export class VoiceIdentifier {
         
         sampleCount++;
         
-        if (sampleCount < 15) { // Super fast 0.75 seconds for quick analysis
+        if (sampleCount < 8) { // Super fast 0.4 seconds analysis
           requestAnimationFrame(collectData);
         } else {
           // Calculate final pattern
