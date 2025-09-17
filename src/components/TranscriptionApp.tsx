@@ -108,7 +108,7 @@ export const TranscriptionApp = () => {
       }
     };
 
-    recognition.onresult = async (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
       
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -120,51 +120,68 @@ export const TranscriptionApp = () => {
 
       if (finalTranscript) {
         console.log('🎤 Processing speech result:', finalTranscript);
-        let speakerLabel = "Unknown Speaker";
         
-        // Quick voice analysis with timeout to prevent delays
-        if (audioStreamRef.current && enrolledProfiles.length > 0) {
-          console.log('🔍 Starting voice analysis...');
-          try {
-            // Add timeout to prevent hanging
-            const analysisPromise = voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Voice analysis timeout')), 2000)
-            );
-            
-            const pattern = await Promise.race([analysisPromise, timeoutPromise]) as any;
-            console.log('📊 Voice pattern:', pattern);
-            
-            const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
-            console.log('👤 Speaker identification result:', identification);
-            
-            if (identification.confidence > 0) {
-              speakerLabel = `${identification.name} (${Math.round(identification.confidence * 100)}%)`;
-              console.log('✅ Speaker identified:', speakerLabel);
-            }
-          } catch (error) {
-            console.error('❌ Voice analysis error:', error);
-            // Fallback: use previous speaker if available
-            const lastEntry = transcript[transcript.length - 1];
-            if (lastEntry && lastEntry.speaker !== "Unknown Speaker") {
-              speakerLabel = lastEntry.speaker;
-              console.log('🔄 Using previous speaker as fallback:', speakerLabel);
-            }
-          }
-        } else {
-          console.log('⚠️ No enrolled profiles or audio stream for identification');
-        }
-
+        // Create entry immediately with placeholder speaker
+        const entryId = Date.now().toString();
         const newEntry: TranscriptEntry = {
-          id: Date.now().toString(),
-          speaker: speakerLabel,
+          id: entryId,
+          speaker: "Analyzing...",
           text: finalTranscript.trim(),
           timestamp: new Date(),
           confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
         };
 
-        console.log('📝 Adding transcript entry:', newEntry);
+        console.log('📝 Adding transcript entry immediately:', newEntry);
         setTranscript(prev => [...prev, newEntry]);
+        
+        // Analyze voice pattern in background (non-blocking)
+        if (audioStreamRef.current && enrolledProfiles.length > 0) {
+          console.log('🔍 Starting background voice analysis...');
+          
+          // Quick timeout for voice analysis
+          const analysisPromise = voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Voice analysis timeout')), 1000)
+          );
+          
+          Promise.race([analysisPromise, timeoutPromise])
+            .then((pattern: any) => {
+              console.log('📊 Voice pattern:', pattern);
+              const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
+              console.log('👤 Speaker identification result:', identification);
+              
+              const speakerLabel = identification.confidence > 0 ? 
+                `${identification.name} (${Math.round(identification.confidence * 100)}%)` : 
+                "Unknown Speaker";
+              
+              // Update the entry with speaker identification
+              setTranscript(prev => prev.map(entry => 
+                entry.id === entryId 
+                  ? { ...entry, speaker: speakerLabel }
+                  : entry
+              ));
+              
+              console.log('✅ Updated speaker to:', speakerLabel);
+            })
+            .catch(error => {
+              console.error('❌ Voice analysis error:', error);
+              // Fallback to Unknown Speaker
+              setTranscript(prev => prev.map(entry => 
+                entry.id === entryId 
+                  ? { ...entry, speaker: "Unknown Speaker" }
+                  : entry
+              ));
+            });
+        } else {
+          // No voice analysis available, set to Unknown Speaker
+          setTimeout(() => {
+            setTranscript(prev => prev.map(entry => 
+              entry.id === entryId 
+                ? { ...entry, speaker: "Unknown Speaker" }
+                : entry
+            ));
+          }, 100);
+        }
       }
     };
 
