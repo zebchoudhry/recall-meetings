@@ -423,20 +423,113 @@ export const TranscriptionApp = () => {
 
   const generateLocalSummary = (transcriptText: string): string => {
     const lines = transcriptText.split('\n').filter(line => line.trim());
-    const speakers = [...new Set(lines.map(line => line.split(':')[0]))];
+    const speakers = [...new Set(lines.map(line => line.split(':')[0].trim()))];
+    
+    // Extract content without speaker labels
+    const statements = lines.map(line => {
+      const colonIndex = line.indexOf(':');
+      return colonIndex > -1 ? line.substring(colonIndex + 1).trim() : line.trim();
+    });
+    
+    // Identify key topics and themes
+    const keyWords = extractKeyTopics(statements);
+    const actionItems = extractActionItems(statements);
+    const decisions = extractDecisions(statements);
+    const questions = extractQuestions(statements);
     
     return `## Meeting Summary
 
-**Participants:** ${speakers.join(', ')}
+**Participants:** ${speakers.join(', ')} (${statements.length} total exchanges)
 
-**Total Statements:** ${lines.length}
+### 🎯 Key Topics Discussed
+${keyWords.length > 0 ? keyWords.map(topic => `• ${topic}`).join('\n') : '• No specific topics identified'}
 
-**Key Discussion Points:**
-${lines.slice(0, 5).map((line, i) => `${i + 1}. ${line}`).join('\n')}
+### ✅ Decisions Made
+${decisions.length > 0 ? decisions.map(decision => `• ${decision}`).join('\n') : '• No clear decisions identified'}
 
-**Overview:** This conversation involved ${speakers.length} participant(s) with ${lines.length} total statements recorded. The discussion covered various topics as captured in the transcript above.
+### 📋 Action Items & Next Steps  
+${actionItems.length > 0 ? actionItems.map(action => `• ${action}`).join('\n') : '• No action items mentioned'}
 
-*Note: This is a basic summary. For AI-powered analysis, please ensure the backend service is properly configured.*`;
+### ❓ Questions Raised
+${questions.length > 0 ? questions.map(q => `• ${q}`).join('\n') : '• No questions identified'}
+
+### 💬 Key Highlights
+${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).join('\n')}
+
+---
+*Summary generated from ${statements.length} statements. Review the full transcript for complete context.*`;
+  };
+
+  const extractKeyTopics = (statements: string[]): string[] => {
+    const topics: string[] = [];
+    const topicKeywords = ['about', 'regarding', 'concerning', 'discuss', 'talk about', 'focus on'];
+    
+    statements.forEach(statement => {
+      const lower = statement.toLowerCase();
+      // Look for topic indicators
+      if (lower.includes('we need to') || lower.includes('let\'s talk about') || lower.includes('regarding')) {
+        topics.push(statement.length > 80 ? statement.substring(0, 80) + '...' : statement);
+      }
+      // Extract subjects from longer statements
+      if (statement.length > 20 && !statement.includes('uh') && !statement.includes('um')) {
+        const words = statement.split(' ');
+        if (words.length > 3 && words.length < 15) {
+          topics.push(statement);
+        }
+      }
+    });
+    
+    return topics.slice(0, 5); // Limit to top 5 topics
+  };
+
+  const extractActionItems = (statements: string[]): string[] => {
+    const actions: string[] = [];
+    const actionKeywords = ['need to', 'should', 'will', 'going to', 'have to', 'must', 'by the', 'deadline', 'schedule'];
+    
+    statements.forEach(statement => {
+      const lower = statement.toLowerCase();
+      if (actionKeywords.some(keyword => lower.includes(keyword))) {
+        if (!lower.includes('baby') && statement.length > 10) { // Filter out baby talk
+          actions.push(statement.length > 100 ? statement.substring(0, 100) + '...' : statement);
+        }
+      }
+    });
+    
+    return actions.slice(0, 4);
+  };
+
+  const extractDecisions = (statements: string[]): string[] => {
+    const decisions: string[] = [];
+    const decisionKeywords = ['decided', 'agreed', 'final', 'conclusion', 'resolved', 'determined', 'chose'];
+    
+    statements.forEach(statement => {
+      const lower = statement.toLowerCase();
+      if (decisionKeywords.some(keyword => lower.includes(keyword))) {
+        decisions.push(statement.length > 100 ? statement.substring(0, 100) + '...' : statement);
+      }
+    });
+    
+    return decisions.slice(0, 3);
+  };
+
+  const extractQuestions = (statements: string[]): string[] => {
+    return statements
+      .filter(statement => statement.includes('?') && statement.length > 5)
+      .map(q => q.length > 80 ? q.substring(0, 80) + '...' : q)
+      .slice(0, 4);
+  };
+
+  const getKeyHighlights = (statements: string[]): string[] => {
+    // Get the most substantial statements (not just baby talk)
+    return statements
+      .filter(statement => 
+        statement.length > 15 && 
+        !statement.toLowerCase().includes('baby baby baby') &&
+        !statement.toLowerCase().includes('uh') &&
+        !statement.toLowerCase().includes('um')
+      )
+      .slice(0, 3)
+      .map(statement => statement.length > 120 ? statement.substring(0, 120) + '...' : statement);
   };
 
   const exportTranscript = () => {
