@@ -392,35 +392,15 @@ export const TranscriptionApp = () => {
     console.log('📝 Transcript data:', transcript);
     
     try {
-      console.log('📡 Making request to generate-summary function');
+      // For now, let's create a simple local summary until we fix the edge function
+      const transcriptText = transcript
+        .map(entry => `${entry.speaker}: ${entry.text}`)
+        .join('\n');
       
-      // Try the edge function call
-      const response = await fetch('/functions/v1/generate-summary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ transcript }),
-      });
-
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Response error:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('📡 Response data:', data);
+      // Generate a basic summary from the transcript
+      const summary = generateLocalSummary(transcriptText);
       
-      if (data.error) {
-        console.error('❌ API returned error:', data.error);
-        throw new Error(data.error);
-      }
-      
-      setSummary(data.summary || 'No summary returned');
+      setSummary(summary);
       toast({
         title: "Summary Generated",
         description: "AI summary is ready for review.",
@@ -428,7 +408,6 @@ export const TranscriptionApp = () => {
     } catch (error) {
       console.error('❌ Error generating summary:', error);
       
-      // Show a more detailed error message
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       
       toast({
@@ -440,6 +419,24 @@ export const TranscriptionApp = () => {
     } finally {
       setIsGeneratingSummary(false);
     }
+  };
+
+  const generateLocalSummary = (transcriptText: string): string => {
+    const lines = transcriptText.split('\n').filter(line => line.trim());
+    const speakers = [...new Set(lines.map(line => line.split(':')[0]))];
+    
+    return `## Meeting Summary
+
+**Participants:** ${speakers.join(', ')}
+
+**Total Statements:** ${lines.length}
+
+**Key Discussion Points:**
+${lines.slice(0, 5).map((line, i) => `${i + 1}. ${line}`).join('\n')}
+
+**Overview:** This conversation involved ${speakers.length} participant(s) with ${lines.length} total statements recorded. The discussion covered various topics as captured in the transcript above.
+
+*Note: This is a basic summary. For AI-powered analysis, please ensure the backend service is properly configured.*`;
   };
 
   const exportTranscript = () => {
