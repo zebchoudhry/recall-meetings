@@ -7,7 +7,9 @@ import { TranscriptDisplay } from "./TranscriptDisplay";
 import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
 import { VoiceEnrollment } from "./VoiceEnrollment";
+import { SpeakerSettings } from "./SpeakerSettings";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
+import { VoiceClustering } from "@/utils/voiceClustering";
 
 interface TranscriptEntry {
   id: string;
@@ -65,10 +67,13 @@ export const TranscriptionApp = () => {
   const [summary, setSummary] = useState<string>("");
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [enrolledProfiles, setEnrolledProfiles] = useState<VoiceProfile[]>([]);
+  const [expectedSpeakers, setExpectedSpeakers] = useState(2);
+  const [useEnrollment, setUseEnrollment] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const currentSpeakerRef = useRef<string>("Unknown Speaker");
   const voiceIdentifierRef = useRef<VoiceIdentifier>(new VoiceIdentifier());
+  const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
   const audioStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
@@ -135,10 +140,9 @@ export const TranscriptionApp = () => {
         setTranscript(prev => [...prev, newEntry]);
         
         // Analyze voice pattern in background (non-blocking)
-        if (audioStreamRef.current && enrolledProfiles.length > 0) {
+        if (audioStreamRef.current) {
           console.log('🔍 Starting background voice analysis...');
           
-          // Quick timeout for voice analysis
           const analysisPromise = voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Voice analysis timeout')), 1000)
@@ -147,8 +151,17 @@ export const TranscriptionApp = () => {
           Promise.race([analysisPromise, timeoutPromise])
             .then((pattern: any) => {
               console.log('📊 Voice pattern:', pattern);
-              const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
-              console.log('👤 Speaker identification result:', identification);
+              let identification;
+              
+              if (useEnrollment && enrolledProfiles.length > 0) {
+                // Use enrollment-based identification
+                identification = voiceIdentifierRef.current.identifySpeaker(pattern);
+                console.log('👤 Enrollment-based identification:', identification);
+              } else {
+                // Use clustering-based identification
+                identification = voiceClusteringRef.current.identifySpeaker(pattern);
+                console.log('🎯 Clustering-based identification:', identification);
+              }
               
               const speakerLabel = identification.confidence > 0 ? 
                 `${identification.name} (${Math.round(identification.confidence * 100)}%)` : 
@@ -269,6 +282,20 @@ export const TranscriptionApp = () => {
     console.log('📋 Updating voice profiles:', profiles);
     setEnrolledProfiles(profiles);
     voiceIdentifierRef.current.updateProfiles(profiles);
+    setUseEnrollment(profiles.length > 0);
+  };
+
+  const handleSpeakerCountChange = (count: number) => {
+    setExpectedSpeakers(count);
+    voiceClusteringRef.current.setExpectedSpeakers(count);
+  };
+
+  const handleResetSpeakers = () => {
+    voiceClusteringRef.current.reset();
+    toast({
+      title: "Speaker Detection Reset",
+      description: "All speaker clusters have been cleared.",
+    });
   };
 
   const generateSummary = async () => {
@@ -349,8 +376,14 @@ export const TranscriptionApp = () => {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column - Controls and Voice Enrollment */}
+          {/* Left Column - Controls and Settings */}
           <div className="space-y-4">
+            <SpeakerSettings
+              expectedSpeakers={expectedSpeakers}
+              onSpeakerCountChange={handleSpeakerCountChange}
+              onReset={handleResetSpeakers}
+            />
+            
             <VoiceEnrollment
               onProfilesUpdate={handleProfilesUpdate}
               enrolledProfiles={enrolledProfiles}
