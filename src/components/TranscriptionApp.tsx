@@ -106,7 +106,7 @@ export const TranscriptionApp = () => {
       }
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = async (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
       
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -116,31 +116,42 @@ export const TranscriptionApp = () => {
         }
       }
 
-        if (finalTranscript) {
-          const newEntry: TranscriptEntry = {
-            id: Date.now().toString(),
-            speaker: currentSpeakerRef.current,
-            text: finalTranscript.trim(),
-            timestamp: new Date(),
-            confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
-          };
-
-          setTranscript(prev => [...prev, newEntry]);
-          
-          // Real-time voice identification
-          if (audioStreamRef.current && enrolledProfiles.length > 0) {
-            voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current)
-              .then(pattern => {
-                const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
-                if (identification.confidence > 0.6) {
-                  currentSpeakerRef.current = `${identification.name} (${Math.round(identification.confidence * 100)}%)`;
-                } else {
-                  currentSpeakerRef.current = "Unknown Speaker";
-                }
-              })
-              .catch(console.error);
+      if (finalTranscript) {
+        console.log('🎤 Processing speech result:', finalTranscript);
+        let speakerLabel = "Unknown Speaker";
+        
+        // Analyze voice pattern for speaker identification BEFORE creating entry
+        if (audioStreamRef.current && enrolledProfiles.length > 0) {
+          console.log('🔍 Analyzing voice for speaker identification...');
+          try {
+            const pattern = await voiceIdentifierRef.current.analyzeAudioStream(audioStreamRef.current);
+            console.log('📊 Voice pattern:', pattern);
+            
+            const identification = voiceIdentifierRef.current.identifySpeaker(pattern);
+            console.log('👤 Speaker identification result:', identification);
+            
+            if (identification.confidence > 0) {
+              speakerLabel = `${identification.name} (${Math.round(identification.confidence * 100)}%)`;
+              console.log('✅ Speaker identified:', speakerLabel);
+            }
+          } catch (error) {
+            console.error('❌ Voice analysis error:', error);
           }
+        } else {
+          console.log('⚠️ No enrolled profiles or audio stream for identification');
         }
+
+        const newEntry: TranscriptEntry = {
+          id: Date.now().toString(),
+          speaker: speakerLabel,
+          text: finalTranscript.trim(),
+          timestamp: new Date(),
+          confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
+        };
+
+        console.log('📝 Adding transcript entry:', newEntry);
+        setTranscript(prev => [...prev, newEntry]);
+      }
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -222,6 +233,7 @@ export const TranscriptionApp = () => {
   };
 
   const handleProfilesUpdate = (profiles: VoiceProfile[]) => {
+    console.log('📋 Updating voice profiles:', profiles);
     setEnrolledProfiles(profiles);
     voiceIdentifierRef.current.updateProfiles(profiles);
   };
