@@ -14,7 +14,9 @@ export class VoiceIdentifier {
   private audioContext: AudioContext | null = null;
 
   updateProfiles(profiles: VoiceProfile[]) {
+    console.log('🔄 VoiceIdentifier: Updating profiles to:', profiles);
     this.profiles = profiles;
+    console.log('✅ VoiceIdentifier: Profiles updated, total count:', this.profiles.length);
   }
 
   async analyzeAudioStream(stream: MediaStream): Promise<VoiceProfile['voicePattern']> {
@@ -124,16 +126,23 @@ export class VoiceIdentifier {
     confidence: number; 
     id: string | null;
   } {
+    console.log('🔍 VoiceIdentifier: identifySpeaker called with pattern:', currentPattern);
+    console.log('📊 VoiceIdentifier: Available profiles for matching:', this.profiles.length);
+    
     if (this.profiles.length === 0) {
+      console.log('❌ VoiceIdentifier: No profiles available for identification');
       return { name: "Unknown Speaker", confidence: 0, id: null };
     }
 
     let bestMatch = { name: "Unknown Speaker", confidence: 0, id: null };
     
     for (const profile of this.profiles) {
+      console.log('🎯 VoiceIdentifier: Comparing with profile:', profile.name, profile.voicePattern);
       const confidence = this.calculateSimilarity(currentPattern, profile.voicePattern);
+      console.log(`📈 VoiceIdentifier: Similarity for ${profile.name}: ${confidence.toFixed(3)} (${(confidence*100).toFixed(1)}%)`);
       
       if (confidence > bestMatch.confidence && confidence > 0.5) { // 50% threshold
+        console.log(`✅ VoiceIdentifier: New best match found: ${profile.name} with ${(confidence*100).toFixed(1)}% confidence`);
         bestMatch = {
           name: profile.name,
           confidence,
@@ -142,6 +151,7 @@ export class VoiceIdentifier {
       }
     }
     
+    console.log('🏆 VoiceIdentifier: Final result:', bestMatch);
     return bestMatch;
   }
 

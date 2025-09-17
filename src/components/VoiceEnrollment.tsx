@@ -34,10 +34,18 @@ export const VoiceEnrollment = ({ onProfilesUpdate, enrolledProfiles }: VoiceEnr
 
   useEffect(() => {
     // Load saved profiles from localStorage
+    console.log('🔄 VoiceEnrollment: Loading saved profiles from localStorage');
     const saved = localStorage.getItem('voiceProfiles');
     if (saved) {
-      const profiles = JSON.parse(saved);
-      onProfilesUpdate(profiles);
+      try {
+        const profiles = JSON.parse(saved);
+        console.log('✅ VoiceEnrollment: Loaded profiles:', profiles);
+        onProfilesUpdate(profiles);
+      } catch (error) {
+        console.error('❌ VoiceEnrollment: Error parsing saved profiles:', error);
+      }
+    } else {
+      console.log('📭 VoiceEnrollment: No saved profiles found');
     }
   }, [onProfilesUpdate]);
 

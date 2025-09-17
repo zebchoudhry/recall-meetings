@@ -72,6 +72,8 @@ export const TranscriptionApp = () => {
   const audioStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
+    console.log('🚀 TranscriptionApp mounted');
+    console.log('📋 Current enrolled profiles:', enrolledProfiles);
     // Check if browser supports speech recognition
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
@@ -170,7 +172,7 @@ export const TranscriptionApp = () => {
         recognitionRef.current.stop();
       }
     };
-  }, [isRecording, toast]);
+  }, [isRecording, toast, enrolledProfiles]); // Add enrolledProfiles dependency
 
   const startRecording = async () => {
     console.log('startRecording function called');
@@ -193,7 +195,9 @@ export const TranscriptionApp = () => {
       // Request microphone permission and store stream for voice analysis
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
-      console.log('Microphone permission granted');
+      console.log('Microphone permission granted, stream:', stream);
+      console.log('📋 Available enrolled profiles for identification:', enrolledProfiles);
+      console.log('🔧 Voice identifier profiles updated:', voiceIdentifierRef.current);
       
       if (recognitionRef.current) {
         console.log('Starting speech recognition...');
