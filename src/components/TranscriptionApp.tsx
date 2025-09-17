@@ -71,7 +71,8 @@ export const TranscriptionApp = () => {
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
   const audioStreamRef = useRef<MediaStream | null>(null);
-  const isRecordingRef = useRef<boolean>(false);
+  const shouldKeepRecordingRef = useRef<boolean>(false); // More explicit name
+  const stopRequestedRef = useRef<boolean>(false); // Track if stop was explicitly requested
 
   useEffect(() => {
     console.log('🚀 TranscriptionApp mounted');
@@ -103,18 +104,33 @@ export const TranscriptionApp = () => {
     };
 
     recognition.onend = () => {
-      console.log('🔴 Recognition ended, isRecordingRef.current:', isRecordingRef.current);
+      console.log('🔴 Recognition ended');
+      console.log('  - shouldKeepRecordingRef.current:', shouldKeepRecordingRef.current);
+      console.log('  - stopRequestedRef.current:', stopRequestedRef.current);
+      
       setIsListening(false);
-      // Only restart if we're still supposed to be recording using ref (not state)
-      if (isRecordingRef.current) {
+      
+      // Only restart if:
+      // 1. We should keep recording AND
+      // 2. Stop was NOT explicitly requested
+      if (shouldKeepRecordingRef.current && !stopRequestedRef.current) {
         try {
-          console.log('🔄 Restarting recognition...');
-          recognition.start();
+          console.log('🔄 Auto-restarting recognition...');
+          setTimeout(() => {
+            if (shouldKeepRecordingRef.current && !stopRequestedRef.current && recognitionRef.current) {
+              recognitionRef.current.start();
+            }
+          }, 100); // Small delay to prevent rapid restart loops
         } catch (error) {
           console.log('Recognition restart failed:', error);
+          // If restart fails, stop recording completely
+          shouldKeepRecordingRef.current = false;
+          setIsRecording(false);
         }
       } else {
-        console.log('🛑 Not restarting - recording stopped');
+        console.log('🛑 Not restarting - recording should stop');
+        shouldKeepRecordingRef.current = false;
+        setIsRecording(false);
       }
     };
 
@@ -200,11 +216,16 @@ export const TranscriptionApp = () => {
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error);
-      toast({
-        title: "Recognition Error",
-        description: `Error: ${event.error}`,
-        variant: "destructive",
-      });
+      console.log('  - stopRequestedRef.current:', stopRequestedRef.current);
+      
+      // If stop was requested, don't show error toast
+      if (!stopRequestedRef.current) {
+        toast({
+          title: "Recognition Error",
+          description: `Error: ${event.error}`,
+          variant: "destructive",
+        });
+      }
     };
 
     recognitionRef.current = recognition;
@@ -243,8 +264,12 @@ export const TranscriptionApp = () => {
       
       if (recognitionRef.current) {
         console.log('Starting speech recognition...');
+        
+        // Set all flags BEFORE starting
+        shouldKeepRecordingRef.current = true;
+        stopRequestedRef.current = false;
         setIsRecording(true);
-        isRecordingRef.current = true; // Set ref immediately
+        
         recognitionRef.current.start();
       } else {
         console.error('Speech recognition not initialized');
@@ -265,15 +290,20 @@ export const TranscriptionApp = () => {
   };
 
   const stopRecording = () => {
-    console.log('🛑 Stopping recording...');
-    // Set ref first to prevent any restarts
-    isRecordingRef.current = false;
+    console.log('🛑 Stop recording requested');
+    
+    // IMMEDIATELY set flags to prevent any restarts
+    stopRequestedRef.current = true;
+    shouldKeepRecordingRef.current = false;
     setIsRecording(false);
     setIsListening(false);
     
+    console.log('  - Set stopRequestedRef.current = true');
+    console.log('  - Set shouldKeepRecordingRef.current = false');
+    
     if (recognitionRef.current) {
       try {
-        // Use abort() instead of stop() to forcefully end recognition
+        console.log('  - Calling recognition.abort()');
         (recognitionRef.current as any).abort();
         console.log('✅ Recognition aborted successfully');
       } catch (error) {
