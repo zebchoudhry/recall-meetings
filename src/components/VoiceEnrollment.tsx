@@ -174,13 +174,13 @@ export const VoiceEnrollment = ({ onProfilesUpdate, enrolledProfiles }: VoiceEnr
       mediaRecorder.start();
       setIsRecordingEnrollment(true);
       
-      // Auto-stop after 3 seconds
+      // Auto-stop after 5 seconds for better voice sampling
       setTimeout(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
           mediaRecorderRef.current.stop();
           setIsRecordingEnrollment(false);
         }
-      }, 3000);
+      }, 5000);
       
     } catch (error) {
       toast({
@@ -270,7 +270,7 @@ export const VoiceEnrollment = ({ onProfilesUpdate, enrolledProfiles }: VoiceEnr
               disabled={!newSpeakerName.trim()}
             >
               <Mic className="w-4 h-4 mr-2" />
-              Record Voice Sample (3s)
+              Record Voice Sample (5s)
             </Button>
           ) : (
             <div className="text-center space-y-2">
@@ -292,7 +292,7 @@ export const VoiceEnrollment = ({ onProfilesUpdate, enrolledProfiles }: VoiceEnr
           )}
           
           <p className="text-xs text-muted-foreground">
-            Say something clearly for 3 seconds to create a voice profile
+            Say something clearly for 5 seconds to create a better voice profile
           </p>
         </div>
       )}

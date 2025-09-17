@@ -68,7 +68,7 @@ export class VoiceIdentifier {
         
         sampleCount++;
         
-        if (sampleCount < 20) { // Collect for ~1 second at 60fps
+        if (sampleCount < 60) { // Collect for ~3 seconds at 60fps
           requestAnimationFrame(collectData);
         } else {
           // Calculate final pattern
@@ -133,7 +133,7 @@ export class VoiceIdentifier {
     for (const profile of this.profiles) {
       const confidence = this.calculateSimilarity(currentPattern, profile.voicePattern);
       
-      if (confidence > bestMatch.confidence && confidence > 0.6) { // 60% threshold
+      if (confidence > bestMatch.confidence && confidence > 0.5) { // 50% threshold
         bestMatch = {
           name: profile.name,
           confidence,
@@ -149,18 +149,18 @@ export class VoiceIdentifier {
     pattern1: VoiceProfile['voicePattern'], 
     pattern2: VoiceProfile['voicePattern']
   ): number {
-    // Weighted similarity calculation
-    const pitchSimilarity = 1 - Math.abs(pattern1.avgPitch - pattern2.avgPitch) / 200; // Max 200Hz difference
-    const rangeSimilarity = 1 - Math.abs(pattern1.pitchRange - pattern2.pitchRange) / 100;
-    const freqSimilarity = 1 - Math.abs(pattern1.avgFrequency - pattern2.avgFrequency) / 1000;
-    const spectralSimilarity = 1 - Math.abs(pattern1.spectralCentroid - pattern2.spectralCentroid) / 500;
+    // Improved similarity calculation with better tolerance ranges
+    const pitchSimilarity = 1 - Math.min(Math.abs(pattern1.avgPitch - pattern2.avgPitch) / 150, 1); // Tighter 150Hz range
+    const rangeSimilarity = 1 - Math.min(Math.abs(pattern1.pitchRange - pattern2.pitchRange) / 80, 1); // Tighter range
+    const freqSimilarity = 1 - Math.min(Math.abs(pattern1.avgFrequency - pattern2.avgFrequency) / 800, 1); // Better freq matching
+    const spectralSimilarity = 1 - Math.min(Math.abs(pattern1.spectralCentroid - pattern2.spectralCentroid) / 400, 1);
     
-    // Weighted average (pitch is most important for voice identification)
+    // Optimized weights for better voice identification
     const similarity = (
-      pitchSimilarity * 0.4 +
-      rangeSimilarity * 0.3 +
-      freqSimilarity * 0.2 +
-      spectralSimilarity * 0.1
+      pitchSimilarity * 0.45 +
+      rangeSimilarity * 0.25 +
+      freqSimilarity * 0.20 +
+      spectralSimilarity * 0.10
     );
     
     return Math.max(0, Math.min(1, similarity));
