@@ -38,47 +38,53 @@ export const EmailSummary = ({ summary, isGenerating }: EmailSummaryProps) => {
     }
 
     setIsLoading(true);
-    console.log("Preparing to send summary to:", email);
+    console.log("📧 Sending summary to:", email);
 
     try {
-      // For now, let's create a downloadable email content instead of sending
-      const emailContent = `Subject: Meeting Summary
+      console.log("📡 Making request to send-email function");
+      
+      const response = await fetch('/functions/v1/send-email', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to_email: email,
+          summary: summary,
+        }),
+      });
 
-Dear Recipient,
+      console.log("📡 Email response status:", response.status);
+      console.log("📡 Email response ok:", response.ok);
 
-Please find below the meeting summary you requested:
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Email response error:", errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
 
-${summary}
+      const data = await response.json();
+      console.log("📡 Email response data:", data);
 
-Best regards,
-Meeting Transcription Assistant
-
----
-This summary was generated automatically from the recorded conversation.
-`;
-
-      // Create a downloadable text file
-      const blob = new Blob([emailContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `meeting-summary-for-${email.replace('@', '-at-')}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (data.error) {
+        console.error("❌ Email API returned error:", data.error);
+        throw new Error(data.error);
+      }
 
       toast({
-        title: "Summary Ready!",
-        description: `Summary has been downloaded. You can manually send it to ${email}`,
+        title: "Email Sent! ✉️",
+        description: `Summary has been sent to ${email}`,
       });
       
-      setEmail(""); // Clear the email field after successful download
+      setEmail(""); // Clear the email field after successful send
     } catch (error) {
-      console.error("Error preparing email:", error);
+      console.error("❌ Error sending email:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
       toast({
         title: "Email Error",
-        description: "Failed to prepare email content. Please try again.",
+        description: `Failed to send email: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
