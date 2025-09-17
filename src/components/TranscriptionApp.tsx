@@ -509,7 +509,12 @@ export const TranscriptionApp = () => {
               <h3 className="font-semibold text-sm text-foreground">Actions</h3>
               
               <Button
-                onClick={generateSummary}
+                onClick={() => {
+                  console.log('🔥 AI Summary button clicked!');
+                  console.log('📊 Transcript length:', transcript.length);
+                  console.log('📊 Transcript data:', transcript);
+                  generateSummary();
+                }}
                 disabled={transcript.length === 0 || isGeneratingSummary}
                 className="w-full"
                 variant="outline"
