@@ -317,10 +317,15 @@ export const TranscriptionApp = () => {
       }
     }
     
+    // CRITICALLY IMPORTANT: Stop the microphone stream completely
     if (audioStreamRef.current) {
-      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      console.log('  - Stopping all microphone tracks');
+      audioStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('    - Stopped track:', track.kind, track.label);
+      });
       audioStreamRef.current = null;
-      console.log('🎤 Audio stream stopped');
+      console.log('🎤 Audio stream completely stopped');
     }
     
     toast({
