@@ -260,14 +260,26 @@ export const TranscriptionApp = () => {
   };
 
   const stopRecording = () => {
+    console.log('🛑 Stopping recording...');
+    // Set recording to false FIRST to prevent restart
     setIsRecording(false);
+    setIsListening(false);
+    
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.stop();
+        console.log('✅ Recognition stopped successfully');
+      } catch (error) {
+        console.log('Error stopping recognition:', error);
+      }
     }
+    
     if (audioStreamRef.current) {
       audioStreamRef.current.getTracks().forEach(track => track.stop());
       audioStreamRef.current = null;
+      console.log('🎤 Audio stream stopped');
     }
+    
     toast({
       title: "Recording Stopped",
       description: "Transcription complete.",

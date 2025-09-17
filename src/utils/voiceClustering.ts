@@ -67,8 +67,8 @@ export class VoiceClustering {
       }
     }
 
-    // More lenient similarity threshold for better speaker grouping
-    const similarityThreshold = 0.5;
+    // Stricter threshold to better separate male/female voices
+    const similarityThreshold = 0.35;
     
     if (bestMatch.cluster && bestMatch.distance < similarityThreshold) {
       // Add to existing cluster and update centroid
@@ -107,20 +107,22 @@ export class VoiceClustering {
   }
 
   private calculateDistance(pattern1: VoicePattern, pattern2: VoicePattern): number {
-    // Normalized euclidean distance between voice patterns
-    const pitchDiff = Math.abs(pattern1.avgPitch - pattern2.avgPitch) / 200; // Normalize by 200Hz
-    const rangeDiff = Math.abs(pattern1.pitchRange - pattern2.pitchRange) / 100;
-    const freqDiff = Math.abs(pattern1.avgFrequency - pattern2.avgFrequency) / 1000;
-    const spectralDiff = Math.abs(pattern1.spectralCentroid - pattern2.spectralCentroid) / 500;
+    // Enhanced distance calculation for better male/female voice differentiation
+    // Male voices typically: 85-180Hz, Female voices: 165-265Hz
+    const pitchDiff = Math.abs(pattern1.avgPitch - pattern2.avgPitch) / 150; // More sensitive to pitch differences
+    const rangeDiff = Math.abs(pattern1.pitchRange - pattern2.pitchRange) / 80;
+    const freqDiff = Math.abs(pattern1.avgFrequency - pattern2.avgFrequency) / 800;
+    const spectralDiff = Math.abs(pattern1.spectralCentroid - pattern2.spectralCentroid) / 400;
     
-    // Weighted distance (pitch is most important)
+    // Give much more weight to pitch differences (key for male/female distinction)
     const distance = Math.sqrt(
-      (pitchDiff * 0.4) ** 2 +
-      (rangeDiff * 0.3) ** 2 +
-      (freqDiff * 0.2) ** 2 +
-      (spectralDiff * 0.1) ** 2
+      (pitchDiff * 0.6) ** 2 +  // Increased pitch weight
+      (rangeDiff * 0.2) ** 2 +
+      (freqDiff * 0.15) ** 2 +
+      (spectralDiff * 0.05) ** 2
     );
     
+    console.log(`🎵 Voice comparison - Pitch diff: ${pitchDiff.toFixed(3)}, Total distance: ${distance.toFixed(3)}`);
     return distance;
   }
 
