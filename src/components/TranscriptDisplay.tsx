@@ -37,11 +37,11 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
   return (
     <Card className="h-[600px] flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold text-foreground">Live Transcript</h2>
+        <h2 className="text-section-title text-foreground">Live Transcript</h2>
         {isRecording && (
           <div className="flex items-center space-x-2 text-recording-pulse">
             <Mic className="w-4 h-4 animate-recording-pulse" />
-            <span className="text-sm font-medium">Recording</span>
+            <span className="text-caption font-medium">Recording</span>
           </div>
         )}
       </div>
@@ -51,7 +51,7 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
           <div className="flex items-center justify-center h-full text-center">
             <div className="space-y-2">
               <Mic className="w-12 h-12 mx-auto text-muted-foreground" />
-              <p className="text-muted-foreground">
+              <p className="text-body text-muted-foreground">
                 {isRecording 
                   ? "Listening for speech..." 
                   : "Click the record button to start transcribing"
@@ -60,7 +60,7 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 content-spacing-sm">
             {transcript.map((entry) => (
               <div 
                 key={entry.id}
@@ -68,20 +68,20 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
                 className="animate-fade-in group hover:bg-accent/50 rounded-lg p-3 transition-colors"
               >
                 <div className="flex items-start space-x-3">
-                  <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getSpeakerBadgeColor(entry.speaker)}`}>
+                  <div className={`px-2 py-1 rounded-md text-caption font-medium border ${getSpeakerBadgeColor(entry.speaker)}`}>
                     <span className={getSpeakerColor(entry.speaker)}>
                       {entry.speaker}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground leading-relaxed">
+                    <p className="transcript-text text-foreground">
                       {entry.text}
                     </p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-caption">
                         {entry.timestamp.toLocaleTimeString()}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-caption">
                         {Math.round(entry.confidence * 100)}% confidence
                       </span>
                     </div>

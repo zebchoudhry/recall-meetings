@@ -1535,8 +1535,8 @@ Provide exactly 2-3 sentences summarizing the above.`
 
               {/* Original Title - now smaller */}
               <div className="text-center space-y-1">
-                <h1 className="text-2xl font-bold text-foreground">Call Transcription Assistant</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-meeting-title text-foreground">Call Transcription Assistant</h1>
+                <p className="text-body text-muted-foreground">
                   Real-time speech-to-text with speaker identification and AI summarization
                 </p>
               </div>

@@ -79,6 +79,22 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // Meeting title - Large bold heading
+        'meeting-title': ['2rem', { lineHeight: '2.25rem', fontWeight: '700' }],
+        // Section titles - Medium semi-bold  
+        'section-title': ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }],
+        // Subsection titles
+        'subsection-title': ['1.125rem', { lineHeight: '1.5rem', fontWeight: '500' }],
+        // Body text - Regular for transcript and notes
+        'body': ['0.875rem', { lineHeight: '1.5rem', fontWeight: '400' }],
+        'body-lg': ['1rem', { lineHeight: '1.625rem', fontWeight: '400' }],
+        // Small text for timestamps, metadata
+        'caption': ['0.75rem', { lineHeight: '1.25rem', fontWeight: '400' }],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

@@ -219,8 +219,8 @@ export function CheatSheet({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Meeting Cheat Sheet</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-meeting-title text-foreground">Meeting Cheat Sheet</h2>
+            <p className="text-body text-muted-foreground mt-1">
               Duration: {meetingDuration} • {meetingStartTime.toLocaleDateString()}
             </p>
           </div>
@@ -240,18 +240,18 @@ export function CheatSheet({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 content-spacing">
           
           {/* Decisions Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              <h3 className="text-lg font-semibold">Decisions Made</h3>
+              <h3 className="text-section-title">Decisions Made</h3>
               <Badge variant="secondary">{decisions.length}</Badge>
             </div>
             
             {decisions.length === 0 ? (
-              <p className="text-muted-foreground">No decisions were recorded during this meeting.</p>
+              <p className="text-body text-muted-foreground">No decisions were recorded during this meeting.</p>
             ) : (
               <div className="space-y-3">
                 {decisions.map((decision) => (
@@ -261,7 +261,7 @@ export function CheatSheet({
                         <p className="font-medium mb-1">{decision.speaker}</p>
                         <p className="text-sm leading-relaxed">{decision.text}</p>
                       </div>
-                      <span className="text-xs text-muted-foreground ml-4">
+                      <span className="text-caption ml-4">
                         {decision.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
@@ -277,23 +277,23 @@ export function CheatSheet({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold">Action Items</h3>
+              <h3 className="text-section-title">Action Items</h3>
               <Badge variant="secondary">{actionItems.length}</Badge>
             </div>
 
             {Object.keys(groupedActionItems).length === 0 ? (
-              <p className="text-muted-foreground">No action items were recorded during this meeting.</p>
+              <p className="text-body text-muted-foreground">No action items were recorded during this meeting.</p>
             ) : (
               <div className="space-y-4">
                 {Object.entries(groupedActionItems)
                   .sort(([a], [b]) => a === currentUser ? -1 : b === currentUser ? 1 : 0)
                   .map(([person, items]) => (
                     <div key={person} className="space-y-2">
-                      <h4 className="font-medium flex items-center gap-2">
+                      <h4 className="text-subsection-title flex items-center gap-2">
                         {person === currentUser && <span>⭐</span>}
                         {person}
-                        {person === currentUser && <span className="text-sm text-muted-foreground">(Your Tasks)</span>}
-                        <Badge variant="outline" className="text-xs">{items.length}</Badge>
+                        {person === currentUser && <span className="text-caption text-muted-foreground">(Your Tasks)</span>}
+                        <Badge variant="outline" className="text-caption">{items.length}</Badge>
                       </h4>
                       
                       <div className="space-y-2 ml-4">
@@ -304,7 +304,7 @@ export function CheatSheet({
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <p className="text-sm leading-relaxed">{item.taskDescription}</p>
+                                <p className="text-body leading-relaxed">{item.taskDescription}</p>
                                 <div className="flex items-center gap-2 mt-2">
                                   <span className="text-xs text-muted-foreground">
                                     By: {item.assignedBy}

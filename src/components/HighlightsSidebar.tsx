@@ -151,8 +151,8 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
     >
       {!collapsed && (
         <div className="p-4 border-b">
-          <h2 className="font-semibold text-lg text-foreground">Smart Highlights</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-section-title text-foreground">Smart Highlights</h2>
+          <p className="text-caption mt-1">
             Zone-Out Catch-Up
           </p>
         </div>
@@ -261,7 +261,7 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                 <SidebarGroupLabel className="flex items-center gap-2">
                   {!collapsed && (
                     <>
-                      <span>⭐ Your Tasks</span>
+                      <span className="text-subsection-title">⭐ Your Tasks</span>
                       <Badge variant="secondary" className="text-xs">
                         {actionItems.filter(item => item.isForCurrentUser).length}
                       </Badge>
@@ -283,25 +283,25 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                               <span className="text-lg">⭐</span>
                               {!collapsed && (
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-xs font-medium mb-1 flex items-center gap-1">
+                                  <div className="text-caption font-medium mb-1 flex items-center gap-1">
                                     <span>{actionItem.responsiblePerson}</span>
                                     {actionItem.priority === 'high' && <span className="text-red-600">🔥</span>}
                                   </div>
-                                  <div className="text-sm leading-relaxed font-medium">
+                                  <div className="text-body leading-relaxed font-medium">
                                     {actionItem.taskDescription.length > 60
                                       ? actionItem.taskDescription.substring(0, 60) + '...'
                                       : actionItem.taskDescription}
                                   </div>
                                   <div className="flex items-center justify-between mt-2">
-                                    <span className="text-xs opacity-75">
+                                    <span className="text-caption opacity-75">
                                       {actionItem.timestamp.toLocaleTimeString()}
                                     </span>
-                                    <span className="text-xs text-orange-700">
+                                    <span className="text-caption text-orange-700">
                                       By: {actionItem.assignedBy}
                                     </span>
                                   </div>
                                   {actionItem.dueDate && (
-                                    <div className="text-xs text-orange-700 mt-1">
+                                    <div className="text-caption text-orange-700 mt-1">
                                       Due: {actionItem.dueDate.toLocaleDateString()}
                                     </div>
                                   )}
@@ -321,7 +321,7 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                   <SidebarGroupLabel className="flex items-center gap-2">
                     {!collapsed && (
                       <>
-                        <span>{getGroupLabel(groupKey)}</span>
+                        <span className="text-subsection-title">{getGroupLabel(groupKey)}</span>
                         <Badge variant="secondary" className="text-xs">
                           {groupHighlights.length}
                         </Badge>
@@ -361,20 +361,20 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                                   <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                   {!collapsed && (
                                     <div className="flex-1 min-w-0">
-                                      <div className="text-xs font-medium mb-1">
+                                      <div className="text-caption font-medium mb-1">
                                         {highlight.speaker}
                                       </div>
-                                      <div className="text-sm leading-relaxed">
+                                      <div className="text-body leading-relaxed">
                                         {highlight.text.length > 80
                                           ? highlight.text.substring(0, 80) + '...'
                                           : highlight.text}
                                       </div>
                                       <div className="flex items-center justify-between mt-2">
-                                        <span className="text-xs opacity-75">
+                                        <span className="text-caption opacity-75">
                                           {highlight.timestamp.toLocaleTimeString()}
                                         </span>
                                         {highlight.confidence > 0.8 && (
-                                          <Badge variant="outline" className="text-xs">
+                                          <Badge variant="outline" className="text-caption">
                                             High confidence
                                           </Badge>
                                         )}
@@ -393,10 +393,10 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
             ))}
 
             {highlights.length === 0 && !collapsed && (
-              <div className="p-4 text-center text-muted-foreground">
+              <div className="p-4 text-center text-muted-foreground content-spacing-sm">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No highlights detected yet</p>
-                <p className="text-xs mt-1">Key points will appear here as the meeting progresses</p>
+                <p className="text-body">No highlights detected yet</p>
+                <p className="text-caption mt-1">Key points will appear here as the meeting progresses</p>
               </div>
             )}
           </>

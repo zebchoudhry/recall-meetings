@@ -131,6 +131,24 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04'; /* Enable Inter's alternate characters */
+  }
+  
+  /* Improved readability for transcript */
+  .transcript-text {
+    @apply text-body leading-relaxed tracking-normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Better spacing for lists and content */
+  .content-spacing > * + * {
+    @apply mt-4;
+  }
+  
+  .content-spacing-sm > * + * {
+    @apply mt-2;
   }
 }
