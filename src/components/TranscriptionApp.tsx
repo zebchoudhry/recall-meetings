@@ -1243,29 +1243,6 @@ Summary (2-3 sentences max):`
       return undefined;
   };
 
-  const getMeetingDuration = (): number => {
-    if (!meetingStartTime) return 0;
-    const now = new Date();
-    return Math.floor((now.getTime() - meetingStartTime.getTime()) / (1000 * 60));
-  };
-
-  const exportMeetingSummary = async (summaryText: string) => {
-    const blob = new Blob([summaryText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Summary Exported",
-      description: "Meeting summary has been downloaded",
-    });
-  };
-
 
     // Check each pattern
     personalActionPatterns.forEach(pattern => {
@@ -1302,6 +1279,37 @@ Summary (2-3 sentences max):`
         item.id === id ? { ...item, status } : item
       )
     );
+  };
+
+  const getMeetingDuration = (): number => {
+    if (!meetingStartTime) return 0;
+    const now = new Date();
+    return Math.floor((now.getTime() - meetingStartTime.getTime()) / (1000 * 60));
+  };
+
+  const exportMeetingSummary = async (summaryText: string) => {
+    const blob = new Blob([summaryText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Summary Exported",
+      description: "Meeting summary has been downloaded",
+    });
+  };
+
+  const emailMeetingSummary = async (summaryText: string) => {
+    // This would integrate with the existing email functionality
+    toast({
+      title: "Email Feature",
+      description: "Email integration coming soon!",
+    });
   };
 
   const handleHighlightClick = (transcriptEntryId: string) => {
