@@ -803,8 +803,8 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
 
   const handleCatchUpQuery = async (originalQuery: string): Promise<ChatMessage> => {
     try {
-      // Get the last 7 minutes of conversation (good middle ground between 5-10)
-      const catchUpMinutes = 7;
+      // Get the last 10 minutes of conversation
+      const catchUpMinutes = 10;
       const cutoffTime = new Date(Date.now() - catchUpMinutes * 60 * 1000);
       const recentTranscript = transcript.filter(entry => entry.timestamp >= cutoffTime);
       
@@ -812,7 +812,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
         return {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: `Nothing significant happened in the last ${catchUpMinutes} minutes. You're all caught up! 👍`,
+          content: `**Catch Me Up – Last ${catchUpMinutes} mins**\n\nNothing significant happened in the last ${catchUpMinutes} minutes. You're all caught up! 👍`,
           timestamp: new Date()
         };
       }
@@ -822,7 +822,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
         return {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: `Quick catch-up: ${entry.speaker} just said "${entry.text.substring(0, 100)}${entry.text.length > 100 ? '...' : ''}"`,
+          content: `**Catch Me Up – Last ${catchUpMinutes} mins**\n\n${entry.speaker} just said: "${entry.text.substring(0, 100)}${entry.text.length > 100 ? '...' : ''}"`,
           timestamp: new Date(),
           transcriptReferences: [{
             id: entry.id,
@@ -832,7 +832,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
         };
       }
 
-      // Generate a very brief summary using a modified prompt
+      // Generate a focused summary
       const response = await fetch(`${window.location.origin}/functions/v1/generate-summary`, {
         method: 'POST',
         headers: {
@@ -844,12 +844,17 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
             speaker: entry.speaker,
             timestamp: entry.timestamp
           })),
-          prompt: `Provide a very brief 2-3 sentence summary of this recent meeting conversation. Focus only on the most important points, decisions, or topics discussed. Be concise and conversational - this is for someone who briefly zoned out and needs to quickly catch up without others noticing.
+          prompt: `Analyze this recent meeting conversation and provide a concise 2-3 sentence recap that covers:
+1. What was discussed
+2. Any key decisions made
+3. Any tasks assigned or action items mentioned
+
+Be conversational and direct - this is for someone who needs to quickly catch up. Focus only on the most important information.
 
 Recent conversation:
 ${recentTranscript.map(entry => `${entry.speaker}: ${entry.text}`).join('\n')}
 
-Summary (2-3 sentences max):`
+Provide exactly 2-3 sentences summarizing the above.`
         })
       });
 
@@ -862,9 +867,9 @@ Summary (2-3 sentences max):`
       return {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: `Quick catch-up: ${summary}`,
+        content: `**Catch Me Up – Last ${catchUpMinutes} mins**\n\n${summary}`,
         timestamp: new Date(),
-        transcriptReferences: recentTranscript.slice(0, 2).map(entry => ({
+        transcriptReferences: recentTranscript.slice(0, 3).map(entry => ({
           id: entry.id,
           text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
           speaker: entry.speaker
@@ -875,7 +880,7 @@ Summary (2-3 sentences max):`
       console.error('Error generating catch-up summary:', error);
       
       // Fallback: provide a simple summary of recent speakers and topics
-      const catchUpMinutes = 7;
+      const catchUpMinutes = 10;
       const cutoffTime = new Date(Date.now() - catchUpMinutes * 60 * 1000);
       const recentTranscript = transcript.filter(entry => entry.timestamp >= cutoffTime);
       
@@ -883,7 +888,7 @@ Summary (2-3 sentences max):`
         return {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: "Nothing happened in the last few minutes. You're all caught up!",
+          content: `**Catch Me Up – Last ${catchUpMinutes} mins**\n\nNothing happened in the last ${catchUpMinutes} minutes. You're all caught up!`,
           timestamp: new Date()
         };
       }
@@ -891,10 +896,19 @@ Summary (2-3 sentences max):`
       const speakers = [...new Set(recentTranscript.map(entry => entry.speaker))];
       const lastEntry = recentTranscript[recentTranscript.length - 1];
       
+      // Generate basic summary from fallback
+      const topics = recentTranscript
+        .map(entry => entry.text)
+        .join(' ')
+        .split(' ')
+        .filter(word => word.length > 4)
+        .slice(0, 3)
+        .join(', ');
+      
       return {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: `Quick catch-up: ${speakers.join(' and ')} have been discussing. Most recent: "${lastEntry.text.substring(0, 80)}${lastEntry.text.length > 80 ? '...' : ''}"`,
+        content: `**Catch Me Up – Last ${catchUpMinutes} mins**\n\n${speakers.join(' and ')} discussed topics including ${topics}. Most recent comment: "${lastEntry.text.substring(0, 80)}${lastEntry.text.length > 80 ? '...' : ''}"`,
         timestamp: new Date(),
         transcriptReferences: recentTranscript.slice(-2).map(entry => ({
           id: entry.id,
