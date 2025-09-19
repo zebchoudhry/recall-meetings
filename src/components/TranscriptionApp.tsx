@@ -9,6 +9,8 @@ import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
 import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
+import { HighlightsSidebar, Highlight } from "./HighlightsSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
@@ -96,6 +98,7 @@ export const TranscriptionApp = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
   const [isDetectingActions, setIsDetectingActions] = useState(false);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -193,6 +196,12 @@ export const TranscriptionApp = () => {
 
         console.log('📝 Adding transcript entry immediately:', newEntry);
         setTranscript(prev => [...prev, newEntry]);
+        
+        // Auto-detect highlights for this entry
+        const detectedHighlights = detectHighlights(newEntry);
+        if (detectedHighlights.length > 0) {
+          setHighlights(prev => [...prev, ...detectedHighlights]);
+        }
         
         // Quick background voice analysis (completely non-blocking)
         if (audioStreamRef.current) {
@@ -1035,228 +1044,358 @@ Summary (2-3 sentences max):`
     }
   };
 
+  const detectHighlights = (entry: TranscriptEntry): Highlight[] => {
+    const text = entry.text.toLowerCase();
+    const highlights: Highlight[] = [];
+    
+    // Decision indicators
+    const decisionPatterns = [
+      /we (?:decided|decide|agreed|agree|will go with|chose)/i,
+      /(?:decision|conclusion|final|verdict).*(?:is|was)/i,
+      /(?:let's|we'll) (?:go with|choose|pick|select)/i,
+      /(?:agreed|consensus|settled) (?:on|that)/i,
+    ];
+    
+    // Important update indicators
+    const updatePatterns = [
+      /(?:important|urgent|critical|breaking).*(?:update|news|information)/i,
+      /(?:new|latest|recent) (?:development|progress|update)/i,
+      /(?:changed|updated|modified|revised)/i,
+      /(?:announce|announcing|announcement)/i,
+    ];
+    
+    // Agreement indicators
+    const agreementPatterns = [
+      /(?:everyone|all|we) (?:agree|agreed|consensus)/i,
+      /(?:unanimous|universal) (?:agreement|consensus)/i,
+      /(?:yes|right|exactly|absolutely|definitely).*(?:agreed|agree)/i,
+      /(?:sounds good|looks good|works for me|i'm on board)/i,
+    ];
+    
+    // Action item indicators
+    const actionPatterns = [
+      /(?:will|going to|need to|have to|must|should) (?:do|complete|finish|handle)/i,
+      /(?:action item|task|todo|assignment)/i,
+      /(?:responsible for|in charge of|will take care of)/i,
+      /(?:deadline|due date|by (?:tomorrow|next week|friday))/i,
+    ];
+    
+    // Question indicators
+    const questionPatterns = [
+      /\?$/,
+      /(?:what|how|when|where|why|who) (?:do you|should we|can we)/i,
+      /(?:question|concern|issue|problem)/i,
+    ];
+    
+    // Check for decisions
+    if (decisionPatterns.some(pattern => pattern.test(entry.text))) {
+      highlights.push({
+        id: `highlight_${entry.id}_decision`,
+        type: 'decision',
+        text: entry.text,
+        speaker: entry.speaker,
+        timestamp: entry.timestamp,
+        transcriptEntryId: entry.id,
+        confidence: 0.8,
+      });
+    }
+    
+    // Check for updates
+    if (updatePatterns.some(pattern => pattern.test(entry.text))) {
+      highlights.push({
+        id: `highlight_${entry.id}_update`,
+        type: 'update',
+        text: entry.text,
+        speaker: entry.speaker,
+        timestamp: entry.timestamp,
+        transcriptEntryId: entry.id,
+        confidence: 0.7,
+      });
+    }
+    
+    // Check for agreements
+    if (agreementPatterns.some(pattern => pattern.test(entry.text))) {
+      highlights.push({
+        id: `highlight_${entry.id}_agreement`,
+        type: 'agreement',
+        text: entry.text,
+        speaker: entry.speaker,
+        timestamp: entry.timestamp,
+        transcriptEntryId: entry.id,
+        confidence: 0.9,
+      });
+    }
+    
+    // Check for action items
+    if (actionPatterns.some(pattern => pattern.test(entry.text))) {
+      highlights.push({
+        id: `highlight_${entry.id}_action`,
+        type: 'action',
+        text: entry.text,
+        speaker: entry.speaker,
+        timestamp: entry.timestamp,
+        transcriptEntryId: entry.id,
+        confidence: 0.8,
+      });
+    }
+    
+    // Check for questions
+    if (questionPatterns.some(pattern => pattern.test(entry.text))) {
+      highlights.push({
+        id: `highlight_${entry.id}_question`,
+        type: 'question',
+        text: entry.text,
+        speaker: entry.speaker,
+        timestamp: entry.timestamp,
+        transcriptEntryId: entry.id,
+        confidence: 0.6,
+      });
+    }
+    
+    return highlights;
+  };
+
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Call Transcription Assistant</h1>
-          <p className="text-muted-foreground">
-            Real-time speech-to-text with speaker identification and AI summarization
-          </p>
-        </div>
+    <SidebarProvider>
+      <div className="min-h-screen bg-background flex w-full">
+        {/* Main Content */}
+        <div className="flex-1 p-4">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex-1" />
+                <div className="flex-1 text-center">
+                  <h1 className="text-3xl font-bold text-foreground">Call Transcription Assistant</h1>
+                  <p className="text-muted-foreground">
+                    Real-time speech-to-text with speaker identification and AI summarization
+                  </p>
+                </div>
+                <div className="flex-1 flex justify-end">
+                  <SidebarTrigger className="lg:hidden" />
+                </div>
+              </div>
+            </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column - Controls and Settings */}
-          <div className="space-y-4">
-            <SpeakerSettings
-              expectedSpeakers={expectedSpeakers}
-              onSpeakerCountChange={handleSpeakerCountChange}
-              onReset={handleResetSpeakers}
-              detectedSpeakers={detectedSpeakers}
-              onSpeakerNameChange={handleSpeakerNameChange}
-            />
-            
-            <RecordingControls
-              isRecording={isRecording}
-              isListening={isListening}
-              onStartRecording={startRecording}
-              onStopRecording={stopRecording}
-              onClear={clearTranscript}
-              transcriptLength={transcript.length}
-            />
-            
-            {/* Export and Summary Controls */}
-            <Card className="p-4 space-y-3">
-              <h3 className="font-semibold text-sm text-foreground">Actions</h3>
-              
-              <Button
-                onClick={() => {
-                  console.log('🔥 AI Summary button clicked!');
-                  console.log('📊 Transcript length:', transcript.length);
-                  console.log('📊 Transcript data:', transcript);
-                  generateSummary();
-                }}
-                disabled={transcript.length === 0 || isGeneratingSummary}
-                className="w-full"
-                variant="outline"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {isGeneratingSummary ? "Generating..." : "AI Summary"}
-              </Button>
-              
-              <Button
-                onClick={exportTranscript}
-                disabled={transcript.length === 0}
-                className="w-full"
-                variant="outline"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export Transcript
-              </Button>
-              
-              {/* Action Items Detection Button */}
-              <Button
-                onClick={detectActionItems}
-                disabled={transcript.length === 0 || isDetectingActions}
-                className="w-full"
-                variant="outline"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {isDetectingActions ? "Detecting..." : "Detect Action Items"}
-              </Button>
-              
-              {/* Voice Assistant Button */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={toggleVoiceAssistant}
-                      variant={isVoiceAssistantListening ? "default" : "outline"}
-                      className={`w-full ${isVoiceAssistantListening ? "animate-pulse" : ""}`}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Voice Assistant
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>🎤 Tip: Mute yourself in Zoom/Teams/Meet before speaking to the assistant so others don't hear your query.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              {/* Text Input for Assistant Queries */}
-              <div className="space-y-2">
-                <form onSubmit={handleQuerySubmit} className="flex gap-2">
-                  <Input
-                    value={assistantQuery}
-                    onChange={(e) => setAssistantQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type your question to the assistant..."
-                    className="flex-1"
-                  />
-                  <Button 
-                    type="submit" 
-                    size="icon"
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Left Column - Controls and Settings */}
+              <div className="space-y-4">
+                <SpeakerSettings
+                  expectedSpeakers={expectedSpeakers}
+                  onSpeakerCountChange={handleSpeakerCountChange}
+                  onReset={handleResetSpeakers}
+                  detectedSpeakers={detectedSpeakers}
+                  onSpeakerNameChange={handleSpeakerNameChange}
+                />
+                
+                <RecordingControls
+                  isRecording={isRecording}
+                  isListening={isListening}
+                  onStartRecording={startRecording}
+                  onStopRecording={stopRecording}
+                  onClear={clearTranscript}
+                  transcriptLength={transcript.length}
+                />
+                
+                {/* Export and Summary Controls */}
+                <Card className="p-4 space-y-3">
+                  <h3 className="font-semibold text-sm text-foreground">Actions</h3>
+                  
+                  <Button
+                    onClick={() => {
+                      console.log('🔥 AI Summary button clicked!');
+                      console.log('📊 Transcript length:', transcript.length);
+                      console.log('📊 Transcript data:', transcript);
+                      generateSummary();
+                    }}
+                    disabled={transcript.length === 0 || isGeneratingSummary}
+                    className="w-full"
                     variant="outline"
-                    disabled={!assistantQuery.trim()}
                   >
-                    <Send className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isGeneratingSummary ? "Generating..." : "AI Summary"}
                   </Button>
-                </form>
-              </div>
-            </Card>
-
-            {/* Chat Panel for Assistant Responses */}
-            {chatMessages.length > 0 && (
-              <Card className="p-4">
-                <h3 className="font-semibold text-sm text-foreground mb-3">Assistant Chat</h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {chatMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`p-3 rounded-lg text-sm ${
-                        message.type === 'user'
-                          ? 'bg-primary text-primary-foreground ml-4'
-                          : 'bg-secondary text-secondary-foreground mr-4'
-                      }`}
-                    >
-                      <div className="font-medium text-xs opacity-75 mb-1">
-                        {message.type === 'user' ? 'You' : 'Assistant'}
-                      </div>
-                      <div className="mb-2">{message.content}</div>
-                      
-                      {/* Transcript References */}
-                      {message.transcriptReferences && message.transcriptReferences.length > 0 && (
-                        <div className="space-y-1 mt-2 pt-2 border-t border-border/50">
-                          <div className="text-xs opacity-75 mb-1">Related transcript:</div>
-                          {message.transcriptReferences.map((ref) => (
-                            <button
-                              key={ref.id}
-                              onClick={() => scrollToTranscriptEntry(ref.id)}
-                              className="block w-full text-left p-2 rounded bg-background/50 hover:bg-background/80 transition-colors text-xs"
-                            >
-                              <div className="font-medium text-primary">{ref.speaker}</div>
-                              <div className="opacity-80">"{ref.text}"</div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            {/* Action Items Panel */}
-            {actionItems.length > 0 && (
-              <Card className="p-4">
-                <h3 className="font-semibold text-sm text-foreground mb-3">
-                  Detected Action Items ({actionItems.length})
-                </h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {actionItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-3 rounded-lg bg-secondary/50 border border-border"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="font-medium text-sm text-primary">
-                          {item.responsiblePerson}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {Math.round(item.confidence * 100)}% confidence
-                        </div>
-                      </div>
-                      <div className="text-sm text-foreground mb-2">
-                        {item.taskDescription}
-                      </div>
-                      <button
-                        onClick={() => scrollToTranscriptEntry(item.transcriptEntryId)}
-                        className="text-xs text-primary hover:underline"
+                  
+                  <Button
+                    onClick={exportTranscript}
+                    disabled={transcript.length === 0}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Transcript
+                  </Button>
+                  
+                  {/* Action Items Detection Button */}
+                  <Button
+                    onClick={detectActionItems}
+                    disabled={transcript.length === 0 || isDetectingActions}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isDetectingActions ? "Detecting..." : "Detect Action Items"}
+                  </Button>
+                  
+                  {/* Voice Assistant Button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={toggleVoiceAssistant}
+                          variant={isVoiceAssistantListening ? "default" : "outline"}
+                          className={`w-full ${isVoiceAssistantListening ? "animate-pulse" : ""}`}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Voice Assistant
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>🎤 Tip: Mute yourself in Zoom/Teams/Meet before speaking to the assistant so others don't hear your query.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  {/* Text Input for Assistant Queries */}
+                  <div className="space-y-2">
+                    <form onSubmit={handleQuerySubmit} className="flex gap-2">
+                      <Input
+                        value={assistantQuery}
+                        onChange={(e) => setAssistantQuery(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type your question to the assistant..."
+                        className="flex-1"
+                      />
+                      <Button 
+                        type="submit" 
+                        size="icon"
+                        variant="outline"
+                        disabled={!assistantQuery.trim()}
                       >
-                        📍 View in transcript ({item.timestamp.toLocaleTimeString()})
-                      </button>
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </form>
+                  </div>
+                </Card>
+
+                {/* Chat Panel for Assistant Responses */}
+                {chatMessages.length > 0 && (
+                  <Card className="p-4">
+                    <h3 className="font-semibold text-sm text-foreground mb-3">Assistant Chat</h3>
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {chatMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`p-3 rounded-lg text-sm ${
+                            message.type === 'user'
+                              ? 'bg-primary text-primary-foreground ml-4'
+                              : 'bg-secondary text-secondary-foreground mr-4'
+                          }`}
+                        >
+                          <div className="font-medium text-xs opacity-75 mb-1">
+                            {message.type === 'user' ? 'You' : 'Assistant'}
+                          </div>
+                          <div className="mb-2">{message.content}</div>
+                          
+                          {/* Transcript References */}
+                          {message.transcriptReferences && message.transcriptReferences.length > 0 && (
+                            <div className="space-y-1 mt-2 pt-2 border-t border-border/50">
+                              <div className="text-xs opacity-75 mb-1">Related transcript:</div>
+                              {message.transcriptReferences.map((ref) => (
+                                <button
+                                  key={ref.id}
+                                  onClick={() => scrollToTranscriptEntry(ref.id)}
+                                  className="block w-full text-left p-2 rounded bg-background/50 hover:bg-background/80 transition-colors text-xs"
+                                >
+                                  <div className="font-medium text-primary">{ref.speaker}</div>
+                                  <div className="opacity-80">"{ref.text}"</div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+                  </Card>
+                )}
 
-            {/* Summary Panel */}
-            {summary && (
-              <SummaryPanel summary={summary} isGenerating={isGeneratingSummary} />
-            )}
+                {/* Action Items Panel */}
+                {actionItems.length > 0 && (
+                  <Card className="p-4">
+                    <h3 className="font-semibold text-sm text-foreground mb-3">
+                      Detected Action Items ({actionItems.length})
+                    </h3>
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {actionItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="p-3 rounded-lg bg-secondary/50 border border-border"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="font-medium text-sm text-primary">
+                              {item.responsiblePerson}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {Math.round(item.confidence * 100)}% confidence
+                            </div>
+                          </div>
+                          <div className="text-sm text-foreground mb-2">
+                            {item.taskDescription}
+                          </div>
+                          <button
+                            onClick={() => scrollToTranscriptEntry(item.transcriptEntryId)}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            📍 View in transcript ({item.timestamp.toLocaleTimeString()})
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
 
-            {/* Email Summary */}
-            <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
-          </div>
+                {/* Summary Panel */}
+                {summary && (
+                  <SummaryPanel summary={summary} isGenerating={isGeneratingSummary} />
+                )}
 
-          {/* Right Column - Transcript Display */}
-          <div className="lg:col-span-3 space-y-4">
-            <TranscriptDisplay 
-              transcript={transcript} 
-              isRecording={isRecording}
-            />
-            
-            {/* Mobile-only Stop Recording Button */}
-            {isRecording && (
-              <div className="block lg:hidden">
-                <Button
-                  onClick={stopRecording}
-                  className="w-full"
-                  variant="destructive"
-                  size="lg"
-                >
-                  <Square className="w-4 h-4 mr-2 fill-current" />
-                  Stop Recording
-                </Button>
+                {/* Email Summary */}
+                <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
               </div>
-            )}
+
+              {/* Right Column - Transcript Display */}
+              <div className="lg:col-span-3 space-y-4">
+                <TranscriptDisplay 
+                  transcript={transcript} 
+                  isRecording={isRecording}
+                />
+                
+                {/* Mobile-only Stop Recording Button */}
+                {isRecording && (
+                  <div className="block lg:hidden">
+                    <Button
+                      onClick={stopRecording}
+                      className="w-full"
+                      variant="destructive"
+                      size="lg"
+                    >
+                      <Square className="w-4 h-4 mr-2 fill-current" />
+                      Stop Recording
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Highlights Sidebar */}
+        <HighlightsSidebar 
+          highlights={highlights} 
+          onHighlightClick={scrollToTranscriptEntry}
+        />
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
