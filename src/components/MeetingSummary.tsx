@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Highlight } from "./HighlightsSidebar";
-import { ActionItem } from "./TranscriptionApp";
+import { ActionItem } from "./HighlightsSidebar";
 import { PersonalActionItem } from "./PersonalDashboard";
 
 interface TranscriptEntry {
@@ -277,7 +277,7 @@ export function MeetingSummary({
                           <div className="flex items-center gap-2 mt-2">
                             {'dueDate' in item && item.dueDate && (
                               <Badge variant="outline" className="text-xs">
-                                Due: {item.dueDate}
+                                Due: {item.dueDate instanceof Date ? item.dueDate.toLocaleDateString() : item.dueDate}
                               </Badge>
                             )}
                             {'priority' in item && item.priority && (

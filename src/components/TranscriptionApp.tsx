@@ -9,7 +9,7 @@ import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
 import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
-import { HighlightsSidebar, Highlight } from "./HighlightsSidebar";
+import { HighlightsSidebar, Highlight, ActionItem } from "./HighlightsSidebar";
 import { ReplayModal } from "./ReplayModal";
 import { PersonalDashboard, PersonalActionItem } from "./PersonalDashboard";
 import { ActionItemNotification } from "./ActionItemNotification";
@@ -40,16 +40,6 @@ interface ChatMessage {
   }[];
 }
 
-interface ActionItem {
-  id: string;
-  responsiblePerson: string;
-  taskDescription: string;
-  transcriptEntryId: string;
-  timestamp: Date;
-  confidence: number;
-}
-
-export type { ActionItem };
 
 // Type declarations for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
@@ -103,9 +93,9 @@ export const TranscriptionApp = () => {
   const [isVoiceAssistantListening, setIsVoiceAssistantListening] = useState(false);
   const [assistantQuery, setAssistantQuery] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
   const [isDetectingActions, setIsDetectingActions] = useState(false);
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(null);
   const [isReplayModalOpen, setIsReplayModalOpen] = useState(false);
   const [userName, setUserName] = useState<string>("");
@@ -1113,15 +1103,19 @@ Provide exactly 2-3 sentences summarizing the above.`
       /that's what we'll do/i,
     ];
     
-    // Action item indicators - enhanced for specific assignments
+    // Enhanced action item indicators - better person detection
     const actionPatterns = [
-      /(?:[a-zA-Z]+) (?:will|is going to|needs to|should|must) (?:send|create|finish|complete|handle|do|prepare|review|follow up|call|email|schedule)/i,
-      /(?:action item|task|todo|assignment|deliverable)/i,
-      /(?:responsible for|in charge of|will take care of|owns|assigned to)/i,
-      /(?:deadline|due date|by (?:tomorrow|next week|friday|monday|end of week|eod))/i,
-      /(?:will get back to|will follow up|will reach out)/i,
-      /(?:take the lead on|drive this|own this)/i,
-      /(?:I'll|he'll|she'll|they'll) (?:handle|take care of|work on|prepare|send|create)/i,
+      // Person + action verb patterns
+      /([A-Z][a-z]+|I|you|he|she|they)\s+(?:will|is going to|needs? to|should|must|has to)\s+(send|create|finish|complete|handle|do|prepare|review|follow up|call|email|schedule|update|write|draft|contact|organize|coordinate|present|analyze|research|investigate|implement|develop|design|test|deploy|launch)\s*(.+)/i,
+      
+      // Assignment patterns
+      /([A-Z][a-z]+|I|you|he|she|they)\s+(?:is responsible for|will take care of|owns|is assigned to|will handle)\s+(.+)/i,
+      
+      // Task delegation patterns
+      /(?:can|could|please)\s+([A-Z][a-z]+|you|he|she|they)\s+(send|create|finish|complete|handle|do|prepare|review|follow up|call|email|schedule|update|write|draft|contact|organize|coordinate|present|analyze|research|investigate|implement|develop|design|test|deploy|launch)\s*(.+)/i,
+      
+      // Future commitment patterns
+      /([A-Z][a-z]+|I|you|he|she|they)['']?ll\s+(handle|take care of|work on|prepare|send|create|finish|complete|contact|follow up|review|update|schedule|coordinate|organize|present|analyze|research|investigate|implement|develop|design|test|deploy|launch)\s*(.+)/i,
     ];
     
     // Key updates indicators - enhanced for business metrics and important news
@@ -1190,8 +1184,22 @@ Provide exactly 2-3 sentences summarizing the above.`
       });
     }
     
-    // Check for action items
-    if (actionPatterns.some(pattern => pattern.test(entry.text))) {
+    // Check for action items and create structured ActionItem objects
+    const actionItemMatches = actionPatterns.map(pattern => {
+      const match = entry.text.match(pattern);
+      if (match) {
+        return {
+          pattern,
+          match,
+          responsiblePerson: extractPersonFromMatch(match, entry.speaker),
+          taskDescription: extractTaskFromMatch(match)
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    if (actionItemMatches.length > 0) {
+      // Create highlight for action items
       highlights.push({
         id: `highlight_${entry.id}_action`,
         type: 'action',
@@ -1200,6 +1208,26 @@ Provide exactly 2-3 sentences summarizing the above.`
         timestamp: entry.timestamp,
         transcriptEntryId: entry.id,
         confidence: 0.8,
+      });
+
+      // Create structured action items
+      actionItemMatches.forEach((actionMatch, index) => {
+        if (actionMatch) {
+          const newActionItem: ActionItem = {
+            id: `action_${entry.id}_${index}`,
+            responsiblePerson: actionMatch.responsiblePerson,
+            taskDescription: actionMatch.taskDescription,
+            assignedBy: entry.speaker,
+            timestamp: entry.timestamp,
+            transcriptEntryId: entry.id,
+            isForCurrentUser: isUserMentioned(actionMatch.responsiblePerson, userName),
+            priority: extractPriorityFromText(entry.text),
+            dueDate: extractDueDateFromText(entry.text)
+          };
+          
+          // Add to action items state
+          setActionItems(prev => [...prev, newActionItem]);
+        }
       });
     }
     
@@ -1217,6 +1245,78 @@ Provide exactly 2-3 sentences summarizing the above.`
     }
     
     return highlights;
+  };
+
+  // Helper functions for action item extraction
+  const extractPersonFromMatch = (match: RegExpMatchArray, speaker: string): string => {
+    const person = match[1]?.trim();
+    if (!person) return speaker;
+    
+    // Handle pronouns based on speaker context
+    if (person.toLowerCase() === 'i') return speaker;
+    if (person.toLowerCase() === 'you') return userName || 'You';
+    if (person.toLowerCase() === 'he' || person.toLowerCase() === 'she' || person.toLowerCase() === 'they') {
+      return 'Someone'; // Could be enhanced with context tracking
+    }
+    
+    return person;
+  };
+
+  const extractTaskFromMatch = (match: RegExpMatchArray): string => {
+    // Get the action verb and task description
+    const action = match[2]?.trim() || '';
+    const description = match[3]?.trim() || '';
+    
+    if (action && description) {
+      return `${action} ${description}`.trim();
+    } else if (action) {
+      return action;
+    } else {
+      // Fallback to the whole matched portion
+      return match[0]?.trim() || 'Complete task';
+    }
+  };
+
+  const isUserMentioned = (responsiblePerson: string, currentUser: string): boolean => {
+    if (!currentUser) return false;
+    
+    const lowerResponsible = responsiblePerson.toLowerCase();
+    const lowerUser = currentUser.toLowerCase();
+    
+    return lowerResponsible === lowerUser || 
+           lowerResponsible === 'you' ||
+           lowerResponsible.includes(lowerUser);
+  };
+
+  const extractDueDateFromText = (text: string): Date | undefined => {
+    const dueDatePatterns = [
+      { pattern: /by\s+(tomorrow)/i, days: 1 },
+      { pattern: /by\s+(today|tonight)/i, days: 0 },
+      { pattern: /by\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i, days: 7 }, // Rough estimate
+      { pattern: /by\s+(next week)/i, days: 7 },
+      { pattern: /by\s+(this week|end of week)/i, days: 5 },
+      { pattern: /due\s+(tomorrow)/i, days: 1 },
+      { pattern: /deadline\s+(tomorrow)/i, days: 1 },
+    ];
+
+    for (const { pattern, days } of dueDatePatterns) {
+      if (pattern.test(text)) {
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + days);
+        return dueDate;
+      }
+    }
+    
+    return undefined;
+  };
+
+  const extractPriorityFromText = (text: string): 'low' | 'medium' | 'high' => {
+    const urgentWords = /\b(urgent|asap|immediately|critical|high priority|emergency)\b/i;
+    const lowWords = /\b(when you can|whenever|low priority|not urgent)\b/i;
+    
+    if (urgentWords.test(text)) return 'high';
+    if (lowWords.test(text)) return 'low';
+    return 'medium';
   };
 
   const getMeetingDuration = (): number => {
@@ -1605,7 +1705,7 @@ Provide exactly 2-3 sentences summarizing the above.`
                               {item.responsiblePerson}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {Math.round(item.confidence * 100)}% confidence
+                              85% confidence
                             </div>
                           </div>
                           <div className="text-sm text-foreground mb-2">
@@ -1661,7 +1761,9 @@ Provide exactly 2-3 sentences summarizing the above.`
         {/* Highlights Sidebar */}
         <HighlightsSidebar 
           highlights={highlights}
+          actionItems={actionItems}
           transcript={transcript}
+          currentUser={userName}
           onHighlightClick={handleHighlightClick}
         />
 

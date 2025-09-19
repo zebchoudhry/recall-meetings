@@ -25,6 +25,18 @@ export interface Highlight {
   confidence: number;
 }
 
+export interface ActionItem {
+  id: string;
+  responsiblePerson: string;
+  taskDescription: string;
+  assignedBy: string;
+  timestamp: Date;
+  transcriptEntryId: string;
+  isForCurrentUser: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+}
+
 interface TranscriptEntry {
   id: string;
   speaker: string;
@@ -35,7 +47,9 @@ interface TranscriptEntry {
 
 interface HighlightsSidebarProps {
   highlights: Highlight[];
+  actionItems: ActionItem[];
   transcript: TranscriptEntry[];
+  currentUser: string;
   onHighlightClick: (transcriptEntryId: string) => void;
 }
 
@@ -73,7 +87,7 @@ const getHighlightColor = (type: Highlight['type']) => {
   }
 };
 
-export function HighlightsSidebar({ highlights, transcript, onHighlightClick }: HighlightsSidebarProps) {
+export function HighlightsSidebar({ highlights, actionItems, transcript, currentUser, onHighlightClick }: HighlightsSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
@@ -241,6 +255,66 @@ export function HighlightsSidebar({ highlights, transcript, onHighlightClick }: 
         ) : (
           // Highlights List View
           <>
+            {/* Your Tasks Section */}
+            {actionItems.filter(item => item.isForCurrentUser).length > 0 && (
+              <SidebarGroup>
+                <SidebarGroupLabel className="flex items-center gap-2">
+                  {!collapsed && (
+                    <>
+                      <span>⭐ Your Tasks</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {actionItems.filter(item => item.isForCurrentUser).length}
+                      </Badge>
+                    </>
+                  )}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {actionItems
+                      .filter(item => item.isForCurrentUser)
+                      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+                      .map((actionItem) => (
+                        <SidebarMenuItem key={actionItem.id}>
+                          <button
+                            onClick={() => onHighlightClick(actionItem.transcriptEntryId)}
+                            className="w-full text-left p-3 rounded-lg border transition-colors hover:bg-accent/50 bg-orange-100 text-orange-800 border-orange-200"
+                          >
+                            <div className="flex items-start gap-2">
+                              <span className="text-lg">⭐</span>
+                              {!collapsed && (
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-medium mb-1 flex items-center gap-1">
+                                    <span>{actionItem.responsiblePerson}</span>
+                                    {actionItem.priority === 'high' && <span className="text-red-600">🔥</span>}
+                                  </div>
+                                  <div className="text-sm leading-relaxed font-medium">
+                                    {actionItem.taskDescription.length > 60
+                                      ? actionItem.taskDescription.substring(0, 60) + '...'
+                                      : actionItem.taskDescription}
+                                  </div>
+                                  <div className="flex items-center justify-between mt-2">
+                                    <span className="text-xs opacity-75">
+                                      {actionItem.timestamp.toLocaleTimeString()}
+                                    </span>
+                                    <span className="text-xs text-orange-700">
+                                      By: {actionItem.assignedBy}
+                                    </span>
+                                  </div>
+                                  {actionItem.dueDate && (
+                                    <div className="text-xs text-orange-700 mt-1">
+                                      Due: {actionItem.dueDate.toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        </SidebarMenuItem>
+                      ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
             {Object.entries(groupedHighlights).map(([groupKey, groupHighlights]) => (
               <SidebarGroup key={groupKey}>
                 <div className="flex items-center justify-between">
