@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle, Square } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +68,7 @@ export const TranscriptionApp = () => {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [expectedSpeakers, setExpectedSpeakers] = useState(2);
   const [detectedSpeakers, setDetectedSpeakers] = useState<any[]>([]);
+  const [isVoiceAssistantListening, setIsVoiceAssistantListening] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -562,6 +563,21 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     });
   };
 
+  const toggleVoiceAssistant = () => {
+    setIsVoiceAssistantListening(!isVoiceAssistantListening);
+    if (!isVoiceAssistantListening) {
+      toast({
+        title: "Voice Assistant Activated",
+        description: "Say 'Hey Assistant' to activate voice commands",
+      });
+    } else {
+      toast({
+        title: "Voice Assistant Deactivated",
+        description: "Voice commands are now disabled",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -621,6 +637,16 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export Transcript
+              </Button>
+              
+              {/* Voice Assistant Button */}
+              <Button
+                onClick={toggleVoiceAssistant}
+                variant={isVoiceAssistantListening ? "default" : "outline"}
+                className={`w-full ${isVoiceAssistantListening ? "animate-pulse" : ""}`}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Voice Assistant
               </Button>
             </Card>
 
