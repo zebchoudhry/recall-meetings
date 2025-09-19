@@ -1660,7 +1660,8 @@ Provide exactly 2-3 sentences summarizing the above.`
 
         {/* Highlights Sidebar */}
         <HighlightsSidebar 
-          highlights={highlights} 
+          highlights={highlights}
+          transcript={transcript}
           onHighlightClick={handleHighlightClick}
         />
 
