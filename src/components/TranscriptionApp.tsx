@@ -1467,12 +1467,12 @@ Provide exactly 2-3 sentences summarizing the above.`
         
         <div className="flex w-full">
           {/* Main Content */}
-          <div className="flex-1 p-4">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto space-y-8">
             {/* Header with Recall Assistant */}
-            <div className="space-y-4">
+             <div className="space-y-6">
               {/* Top Action Bar with Recall Assistant */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-4">
                   {/* Recall Assistant Button */}
                   <TooltipProvider>
@@ -1539,7 +1539,7 @@ Provide exactly 2-3 sentences summarizing the above.`
               </div>
 
               {/* Original Title - now smaller */}
-              <div className="text-center space-y-1">
+              <div className="text-center space-y-3 py-4">
                 <h1 className="text-meeting-title text-foreground">Call Transcription Assistant</h1>
                 <p className="text-body text-muted-foreground">
                   Real-time speech-to-text with speaker identification and AI summarization
@@ -1548,9 +1548,9 @@ Provide exactly 2-3 sentences summarizing the above.`
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               {/* Left Column - Controls and Settings */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <SpeakerSettings
                   expectedSpeakers={expectedSpeakers}
                   onSpeakerCountChange={handleSpeakerCountChange}

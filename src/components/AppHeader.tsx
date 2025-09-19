@@ -11,7 +11,7 @@ export const AppHeader = () => {
   };
 
   return (
-    <header className="w-full bg-background border-b border-border/50 px-4 py-3 md:px-6">
+    <header className="w-full bg-background border-b border-border/50 px-6 py-4 md:px-8">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo */}
         <button
