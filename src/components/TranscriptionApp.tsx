@@ -26,6 +26,11 @@ interface ChatMessage {
   type: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  transcriptReferences?: {
+    id: string;
+    text: string;
+    speaker: string;
+  }[];
 }
 
 // Type declarations for Speech Recognition API
@@ -607,30 +612,91 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     
     // Simulate assistant response (replace with actual AI integration)
     setTimeout(() => {
-      const assistantResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: generateMockResponse(query),
-        timestamp: new Date()
-      };
-      
+      const assistantResponse = generateMockResponse(query);
       setChatMessages(prev => [assistantResponse, ...prev]);
     }, 1000);
   };
 
-  const generateMockResponse = (query: string): string => {
+  const generateMockResponse = (query: string): ChatMessage => {
     const lowerQuery = query.toLowerCase();
+    let content = "";
+    let transcriptReferences: ChatMessage['transcriptReferences'] = [];
+    
+    // Find relevant transcript entries based on query
+    const findRelevantEntries = (keywords: string[]) => {
+      return transcript.filter(entry => 
+        keywords.some(keyword => 
+          entry.text.toLowerCase().includes(keyword.toLowerCase())
+        )
+      ).slice(0, 3); // Limit to 3 most relevant
+    };
     
     if (lowerQuery.includes('summary') || lowerQuery.includes('summarize')) {
-      return "I can help you summarize the meeting. Click the 'AI Summary' button to generate a comprehensive summary of the current transcript.";
-    } else if (lowerQuery.includes('export') || lowerQuery.includes('download')) {
-      return "You can export the transcript by clicking the 'Export Transcript' button. This will download a text file with all the conversation.";
-    } else if (lowerQuery.includes('speaker') || lowerQuery.includes('who said')) {
-      return "I can see the speaker identification in the transcript. You can customize speaker names in the Speaker Settings panel on the left.";
+      content = "I can help you summarize the meeting. Here are some key moments I found:";
+      transcriptReferences = findRelevantEntries(['decision', 'action', 'need to', 'will do', 'agree'])
+        .map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }));
     } else if (lowerQuery.includes('action') || lowerQuery.includes('todo')) {
-      return "Based on the conversation, I'll help identify action items when you generate the AI summary. The summary includes a dedicated section for action items and next steps.";
+      content = "I found these potential action items in the conversation:";
+      transcriptReferences = findRelevantEntries(['will', 'need to', 'should', 'must', 'action', 'task'])
+        .map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }));
+    } else if (lowerQuery.includes('decision') || lowerQuery.includes('decide')) {
+      content = "Here are the decisions I noticed in the transcript:";
+      transcriptReferences = findRelevantEntries(['decide', 'decision', 'agree', 'choose', 'go with'])
+        .map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }));
+    } else if (lowerQuery.includes('question') || lowerQuery.includes('ask')) {
+      content = "I found these questions in the conversation:";
+      transcriptReferences = transcript.filter(entry => 
+        entry.text.includes('?') || 
+        entry.text.toLowerCase().includes('what') ||
+        entry.text.toLowerCase().includes('how') ||
+        entry.text.toLowerCase().includes('why')
+      ).slice(0, 3)
+        .map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }));
     } else {
-      return `I understand you're asking about "${query}". I'm here to help with meeting transcription, speaker identification, and generating summaries. What specific aspect would you like assistance with?`;
+      content = `I understand you're asking about "${query}". I'm here to help with meeting transcription, speaker identification, and generating summaries.`;
+      // Find any transcript entries that might be relevant to the query
+      const queryWords = query.toLowerCase().split(' ').filter(word => word.length > 3);
+      transcriptReferences = findRelevantEntries(queryWords)
+        .map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }));
+    }
+    
+    return {
+      id: (Date.now() + 1).toString(),
+      type: 'assistant',
+      content,
+      timestamp: new Date(),
+      transcriptReferences: transcriptReferences.length > 0 ? transcriptReferences : undefined
+    };
+  };
+
+  const scrollToTranscriptEntry = (entryId: string) => {
+    const element = document.getElementById(`transcript-entry-${entryId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('bg-primary/20');
+      setTimeout(() => {
+        element.classList.remove('bg-primary/20');
+      }, 2000);
     }
   };
 
@@ -765,7 +831,24 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
                       <div className="font-medium text-xs opacity-75 mb-1">
                         {message.type === 'user' ? 'You' : 'Assistant'}
                       </div>
-                      <div>{message.content}</div>
+                      <div className="mb-2">{message.content}</div>
+                      
+                      {/* Transcript References */}
+                      {message.transcriptReferences && message.transcriptReferences.length > 0 && (
+                        <div className="space-y-1 mt-2 pt-2 border-t border-border/50">
+                          <div className="text-xs opacity-75 mb-1">Related transcript:</div>
+                          {message.transcriptReferences.map((ref) => (
+                            <button
+                              key={ref.id}
+                              onClick={() => scrollToTranscriptEntry(ref.id)}
+                              className="block w-full text-left p-2 rounded bg-background/50 hover:bg-background/80 transition-colors text-xs"
+                            >
+                              <div className="font-medium text-primary">{ref.speaker}</div>
+                              <div className="opacity-80">"{ref.text}"</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

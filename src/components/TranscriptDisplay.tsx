@@ -64,6 +64,7 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
             {transcript.map((entry) => (
               <div 
                 key={entry.id}
+                id={`transcript-entry-${entry.id}`}
                 className="animate-fade-in group hover:bg-accent/50 rounded-lg p-3 transition-colors"
               >
                 <div className="flex items-start space-x-3">
