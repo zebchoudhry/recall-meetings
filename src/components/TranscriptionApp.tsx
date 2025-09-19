@@ -1188,6 +1188,37 @@ Summary (2-3 sentences max):`
     return highlights;
   };
 
+  const getMeetingDuration = (): number => {
+    if (!meetingStartTime) return 0;
+    const now = new Date();
+    return Math.floor((now.getTime() - meetingStartTime.getTime()) / (1000 * 60));
+  };
+
+  const exportMeetingSummary = async (summaryText: string) => {
+    const blob = new Blob([summaryText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Summary Exported",
+      description: "Meeting summary has been downloaded",
+    });
+  };
+
+  const emailMeetingSummary = async (summaryText: string) => {
+    // This would integrate with the existing email functionality
+    toast({
+      title: "Email Feature",
+      description: "Email integration coming soon!",
+    });
+  };
+
   const detectPersonalActionItems = (entry: TranscriptEntry, currentUserName: string): PersonalActionItem[] => {
     const text = entry.text;
     const lowerText = text.toLowerCase();
@@ -1281,36 +1312,6 @@ Summary (2-3 sentences max):`
     );
   };
 
-  const getMeetingDuration = (): number => {
-    if (!meetingStartTime) return 0;
-    const now = new Date();
-    return Math.floor((now.getTime() - meetingStartTime.getTime()) / (1000 * 60));
-  };
-
-  const exportMeetingSummary = async (summaryText: string) => {
-    const blob = new Blob([summaryText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Summary Exported",
-      description: "Meeting summary has been downloaded",
-    });
-  };
-
-  const emailMeetingSummary = async (summaryText: string) => {
-    // This would integrate with the existing email functionality
-    toast({
-      title: "Email Feature",
-      description: "Email integration coming soon!",
-    });
-  };
 
   const handleHighlightClick = (transcriptEntryId: string) => {
     // Find the highlight that matches this transcript entry
