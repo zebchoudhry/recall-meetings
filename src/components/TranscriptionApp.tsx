@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User, FileText } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User, FileText, Brain, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { ActionItemNotification } from "./ActionItemNotification";
 import { MeetingSummary } from "./MeetingSummary";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Label } from "@/components/ui/label";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 
@@ -656,7 +657,12 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
       type: 'user',
       content: query,
       timestamp: new Date()
-    };
+  };
+
+  const handleCatchMeUpShortcut = async () => {
+    const assistantResponse = await handleCatchUpQuery("catch me up");
+    setChatMessages(prev => [assistantResponse, ...prev]);
+  };
     
     setChatMessages(prev => [userMessage, ...prev]);
     
@@ -1331,19 +1337,81 @@ Summary (2-3 sentences max):`
         {/* Main Content */}
         <div className="flex-1 p-4">
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex-1" />
-                <div className="flex-1 text-center">
-                  <h1 className="text-3xl font-bold text-foreground">Call Transcription Assistant</h1>
-                  <p className="text-muted-foreground">
-                    Real-time speech-to-text with speaker identification and AI summarization
-                  </p>
+            {/* Header with Recall Assistant */}
+            <div className="space-y-4">
+              {/* Top Action Bar with Recall Assistant */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+                <div className="flex items-center gap-4">
+                  {/* Recall Assistant Button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={toggleVoiceAssistant}
+                          variant={isVoiceAssistantListening ? "default" : "outline"}
+                          size="lg"
+                          className={`flex items-center gap-3 px-6 py-3 text-base font-semibold transition-all duration-300 ${
+                            isVoiceAssistantListening 
+                              ? "bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30" 
+                              : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
+                          }`}
+                        >
+                          <Brain className={`w-5 h-5 ${isVoiceAssistantListening ? "animate-pulse" : ""}`} />
+                          <span>Recall Assistant</span>
+                          {isVoiceAssistantListening && (
+                            <div className="flex items-center gap-1">
+                              <div className="w-1 h-3 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite]" />
+                              <div className="w-1 h-4 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite_0.2s]" />
+                              <div className="w-1 h-2 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite_0.4s]" />
+                              <div className="w-1 h-5 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite_0.6s]" />
+                            </div>
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-sm">
+                        <p className="text-sm leading-relaxed">
+                          Your backup brain for meetings. Click to ask for a catch-up, highlights, or your action items. 
+                          <br />
+                          <span className="text-amber-600 font-medium">💡 Tip: mute yourself in Zoom/Teams/Meet before speaking so others don't hear your query.</span>
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {/* Catch Me Up Shortcut Button */}
+                  <Button
+                    onClick={handleCatchMeUpShortcut}
+                    variant="outline"
+                    size="lg"
+                    className="flex items-center gap-2 px-4 py-3 text-base border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200"
+                  >
+                    <Zap className="w-4 h-4" />
+                    Catch Me Up
+                  </Button>
                 </div>
-                <div className="flex-1 flex justify-end">
+
+                {/* Right side - Controls */}
+                <div className="flex items-center gap-2">
                   <SidebarTrigger className="lg:hidden" />
+                  <Button
+                    onClick={() => setShowMeetingSummary(true)}
+                    disabled={transcript.length === 0}
+                    variant="outline"
+                    size="lg"
+                    className="flex items-center gap-2 px-4 py-3"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Meeting Summary
+                  </Button>
                 </div>
+              </div>
+
+              {/* Original Title - now smaller */}
+              <div className="text-center space-y-1">
+                <h1 className="text-2xl font-bold text-foreground">Call Transcription Assistant</h1>
+                <p className="text-sm text-muted-foreground">
+                  Real-time speech-to-text with speaker identification and AI summarization
+                </p>
               </div>
             </div>
 
@@ -1397,18 +1465,28 @@ Summary (2-3 sentences max):`
                   Export Transcript
                 </Button>
                 
-                {/* Meeting Summary Button */}
-                <Button
-                  onClick={() => setShowMeetingSummary(true)}
-                  disabled={transcript.length === 0}
-                  className="w-full"
-                  variant="outline"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Meeting Summary
-                </Button>
-                
-                {/* Action Items Detection Button */}
+                {/* Voice Assistant Input - moved to bottom */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Or type to the assistant:</Label>
+                  <form onSubmit={handleQuerySubmit} className="flex gap-2">
+                    <Input
+                      value={assistantQuery}
+                      onChange={(e) => setAssistantQuery(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Type your question..."
+                      className="flex-1 text-sm"
+                    />
+                    <Button 
+                      type="submit" 
+                      size="icon"
+                      variant="outline"
+                      disabled={!assistantQuery.trim()}
+                    >
+                      <Send className="w-3 h-3" />
+                    </Button>
+                  </form>
+                </div>
+              </Card>
                   <Button
                     onClick={detectActionItems}
                     disabled={transcript.length === 0 || isDetectingActions}
@@ -1416,6 +1494,17 @@ Summary (2-3 sentences max):`
                     variant="outline"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
+                  {isDetectingActions ? "Detecting..." : "Detect Action Items"}
+                </Button>
+                
+                {/* Action Items Detection Button */}
+                <Button
+                  onClick={detectActionItems}
+                  disabled={transcript.length === 0 || isDetectingActions}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
                   {isDetectingActions ? "Detecting..." : "Detect Action Items"}
                 </Button>
                 
@@ -1428,50 +1517,10 @@ Summary (2-3 sentences max):`
                   <User className="w-4 h-4 mr-2" />
                   My Action Items ({personalActionItems.filter(item => item.status === 'pending').length})
                 </Button>
-                
-                {/* Voice Assistant Button */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={toggleVoiceAssistant}
-                          variant={isVoiceAssistantListening ? "default" : "outline"}
-                          className={`w-full ${isVoiceAssistantListening ? "animate-pulse" : ""}`}
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          Voice Assistant
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>🎤 Tip: Mute yourself in Zoom/Teams/Meet before speaking to the assistant so others don't hear your query.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  
-                  {/* Text Input for Assistant Queries */}
-                  <div className="space-y-2">
-                    <form onSubmit={handleQuerySubmit} className="flex gap-2">
-                      <Input
-                        value={assistantQuery}
-                        onChange={(e) => setAssistantQuery(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Type your question to the assistant..."
-                        className="flex-1"
-                      />
-                      <Button 
-                        type="submit" 
-                        size="icon"
-                        variant="outline"
-                        disabled={!assistantQuery.trim()}
-                      >
-                        <Send className="w-4 h-4" />
-                      </Button>
-                    </form>
-                  </div>
-                </Card>
+              </Card>
 
-                {/* Chat Panel for Assistant Responses */}
-                {chatMessages.length > 0 && (
+              {/* Chat Panel for Assistant Responses */}
+              {chatMessages.length > 0 && (
                   <Card className="p-4">
                     <h3 className="font-semibold text-sm text-foreground mb-3">Assistant Chat</h3>
                     <div className="space-y-3 max-h-64 overflow-y-auto">
