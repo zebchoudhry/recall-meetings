@@ -8,6 +8,7 @@ import { RecordingControls } from "./RecordingControls";
 import { SummaryPanel } from "./SummaryPanel";
 import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 
@@ -640,14 +641,23 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
               </Button>
               
               {/* Voice Assistant Button */}
-              <Button
-                onClick={toggleVoiceAssistant}
-                variant={isVoiceAssistantListening ? "default" : "outline"}
-                className={`w-full ${isVoiceAssistantListening ? "animate-pulse" : ""}`}
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Voice Assistant
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={toggleVoiceAssistant}
+                      variant={isVoiceAssistantListening ? "default" : "outline"}
+                      className={`w-full ${isVoiceAssistantListening ? "animate-pulse" : ""}`}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Voice Assistant
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>🎤 Tip: Mute yourself in Zoom/Teams/Meet before speaking to the assistant so others don't hear your query.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </Card>
 
             {/* Summary Panel */}
