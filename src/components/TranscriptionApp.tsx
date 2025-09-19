@@ -611,16 +611,23 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     setAssistantQuery("");
     
     // Simulate assistant response (replace with actual AI integration)
-    setTimeout(() => {
-      const assistantResponse = generateMockResponse(query);
+    setTimeout(async () => {
+      const assistantResponse = await generateMockResponse(query);
       setChatMessages(prev => [assistantResponse, ...prev]);
     }, 1000);
   };
 
-  const generateMockResponse = (query: string): ChatMessage => {
+  const generateMockResponse = async (query: string): Promise<ChatMessage> => {
     const lowerQuery = query.toLowerCase();
     let content = "";
     let transcriptReferences: ChatMessage['transcriptReferences'] = [];
+    
+    // Check for time-based summary requests
+    const timeMatch = lowerQuery.match(/(\d+)\s*(minute|minutes|min)/);
+    if ((lowerQuery.includes('summary') || lowerQuery.includes('summarize')) && timeMatch) {
+      const minutes = parseInt(timeMatch[1]);
+      return await handleTimeSummary(minutes, query);
+    }
     
     // Find relevant transcript entries based on query
     const findRelevantEntries = (keywords: string[]) => {
@@ -687,6 +694,65 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
       timestamp: new Date(),
       transcriptReferences: transcriptReferences.length > 0 ? transcriptReferences : undefined
     };
+  };
+
+  const handleTimeSummary = async (minutes: number, originalQuery: string): Promise<ChatMessage> => {
+    try {
+      // Filter transcript entries from the last X minutes
+      const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
+      const recentTranscript = transcript.filter(entry => entry.timestamp >= cutoffTime);
+      
+      if (recentTranscript.length === 0) {
+        return {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: `No conversation found in the last ${minutes} minute${minutes > 1 ? 's' : ''}. Try recording more content first.`,
+          timestamp: new Date()
+        };
+      }
+
+      // Call the Supabase edge function for AI summarization
+      const response = await fetch(`${window.location.origin}/functions/v1/generate-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcript: recentTranscript.map(entry => ({
+            text: entry.text,
+            speaker: entry.speaker,
+            timestamp: entry.timestamp
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate summary');
+      }
+
+      const { summary } = await response.json();
+      
+      return {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `Here's a summary of the last ${minutes} minute${minutes > 1 ? 's' : ''}:\n\n${summary}`,
+        timestamp: new Date(),
+        transcriptReferences: recentTranscript.slice(0, 3).map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }))
+      };
+      
+    } catch (error) {
+      console.error('Error generating time-based summary:', error);
+      return {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `Sorry, I couldn't generate a summary for the last ${minutes} minute${minutes > 1 ? 's' : ''}. Please try again.`,
+        timestamp: new Date()
+      };
+    }
   };
 
   const scrollToTranscriptEntry = (entryId: string) => {
