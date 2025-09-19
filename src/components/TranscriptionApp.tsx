@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
 import { HighlightsSidebar, Highlight } from "./HighlightsSidebar";
 import { ReplayModal } from "./ReplayModal";
+import { PersonalDashboard, PersonalActionItem } from "./PersonalDashboard";
+import { ActionItemNotification } from "./ActionItemNotification";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VoiceClustering } from "@/utils/voiceClustering";
@@ -102,6 +104,11 @@ export const TranscriptionApp = () => {
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(null);
   const [isReplayModalOpen, setIsReplayModalOpen] = useState(false);
+  const [userName, setUserName] = useState<string>("");
+  const [personalActionItems, setPersonalActionItems] = useState<PersonalActionItem[]>([]);
+  const [currentNotification, setCurrentNotification] = useState<PersonalActionItem | null>(null);
+  const [showNotification, setShowNotification] = useState(false);
+  const [showPersonalDashboard, setShowPersonalDashboard] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -204,6 +211,19 @@ export const TranscriptionApp = () => {
         const detectedHighlights = detectHighlights(newEntry);
         if (detectedHighlights.length > 0) {
           setHighlights(prev => [...prev, ...detectedHighlights]);
+        }
+
+        // Auto-detect personal action items
+        if (userName) {
+          const personalActions = detectPersonalActionItems(newEntry, userName);
+          if (personalActions.length > 0) {
+            setPersonalActionItems(prev => [...prev, ...personalActions]);
+            // Show notification for the first new personal action item
+            if (personalActions[0]) {
+              setCurrentNotification(personalActions[0]);
+              setShowNotification(true);
+            }
+          }
         }
         
         // Quick background voice analysis (completely non-blocking)
@@ -1158,6 +1178,97 @@ Summary (2-3 sentences max):`
     return highlights;
   };
 
+  const detectPersonalActionItems = (entry: TranscriptEntry, currentUserName: string): PersonalActionItem[] => {
+    const text = entry.text;
+    const lowerText = text.toLowerCase();
+    const lowerUserName = currentUserName.toLowerCase();
+    const personalActions: PersonalActionItem[] = [];
+    
+    // Patterns for detecting personal assignments
+    const personalActionPatterns = [
+      // Direct name assignments
+      new RegExp(`${lowerUserName}\\s+(?:will|should|needs? to|has to|must|is going to)\\s+(.+)`, 'i'),
+      new RegExp(`(?:please|can)\\s+${lowerUserName}\\s+(.+)`, 'i'),
+      new RegExp(`${lowerUserName}[,:]?\\s+(?:you|your)\\s+(?:need to|should|will|task is to)\\s+(.+)`, 'i'),
+      
+      // "You" assignments (when current user is speaking or being addressed)
+      /(?:you|your)\s+(?:need to|should|will|have to|must|are responsible for|task is to)\s+(.+)/i,
+      /(?:can you|could you|please)\s+(.+)/i,
+      /(?:your|you're)\s+(?:responsible for|in charge of|handling)\s+(.+)/i,
+      
+      // Assignment patterns
+      /(?:assigned? to|delegated? to|giving to)\s+(?:you|${lowerUserName})[,:]?\s*(.+)/i,
+      /(?:action item for|task for)\s+(?:you|${lowerUserName})[,:]?\s*(.+)/i,
+    ];
+
+    // Priority detection
+    const getPriority = (text: string): PersonalActionItem['priority'] => {
+      const lowerText = text.toLowerCase();
+      if (lowerText.includes('urgent') || lowerText.includes('asap') || lowerText.includes('immediately')) {
+        return 'high';
+      }
+      if (lowerText.includes('soon') || lowerText.includes('priority') || lowerText.includes('important')) {
+        return 'medium';
+      }
+      return 'low';
+    };
+
+    // Due date extraction
+    const extractDueDate = (text: string): string | undefined => {
+      const dueDatePatterns = [
+        /by\s+(tomorrow|today|tonight)/i,
+        /by\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+        /by\s+(next week|this week|end of week)/i,
+        /by\s+(\d{1,2}\/\d{1,2})/,
+        /due\s+(tomorrow|today|tonight)/i,
+        /deadline\s+(tomorrow|today|tonight)/i,
+      ];
+
+      for (const pattern of dueDatePatterns) {
+        const match = text.match(pattern);
+        if (match) {
+          return match[1];
+        }
+      }
+      return undefined;
+    };
+
+    // Check each pattern
+    personalActionPatterns.forEach(pattern => {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const taskDescription = match[1].trim();
+        
+        // Skip if the task description is too short or generic
+        if (taskDescription.length < 5 || taskDescription.toLowerCase().includes('know')) {
+          return;
+        }
+
+        personalActions.push({
+          id: `personal_${entry.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          taskDescription: taskDescription,
+          assignedBy: entry.speaker,
+          dueDate: extractDueDate(text),
+          priority: getPriority(text),
+          status: 'pending',
+          transcriptEntryId: entry.id,
+          timestamp: entry.timestamp,
+          confidence: 0.8,
+        });
+      }
+    });
+
+    return personalActions;
+  };
+
+  const handlePersonalActionUpdate = (id: string, status: PersonalActionItem['status']) => {
+    setPersonalActionItems(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, status } : item
+      )
+    );
+  };
+
   const handleHighlightClick = (transcriptEntryId: string) => {
     // Find the highlight that matches this transcript entry
     const highlight = highlights.find(h => h.transcriptEntryId === transcriptEntryId);
@@ -1250,10 +1361,20 @@ Summary (2-3 sentences max):`
                     variant="outline"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {isDetectingActions ? "Detecting..." : "Detect Action Items"}
-                  </Button>
-                  
-                  {/* Voice Assistant Button */}
+                  {isDetectingActions ? "Detecting..." : "Detect Action Items"}
+                </Button>
+                
+                {/* Personal Dashboard Button */}
+                <Button
+                  onClick={() => setShowPersonalDashboard(!showPersonalDashboard)}
+                  variant={showPersonalDashboard ? "default" : "outline"}
+                  className="w-full"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  My Action Items ({personalActionItems.filter(item => item.status === 'pending').length})
+                </Button>
+                
+                {/* Voice Assistant Button */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1333,9 +1454,20 @@ Summary (2-3 sentences max):`
                       ))}
                     </div>
                   </Card>
-                )}
+            )}
 
-                {/* Action Items Panel */}
+            {/* Personal Dashboard */}
+            {showPersonalDashboard && (
+              <PersonalDashboard
+                personalActionItems={personalActionItems}
+                userName={userName}
+                onUserNameChange={setUserName}
+                onActionItemUpdate={handlePersonalActionUpdate}
+                onViewInTranscript={scrollToTranscriptEntry}
+              />
+            )}
+
+            {/* Action Items Panel */}
                 {actionItems.length > 0 && (
                   <Card className="p-4">
                     <h3 className="font-semibold text-sm text-foreground mb-3">
@@ -1420,6 +1552,17 @@ Summary (2-3 sentences max):`
             setIsReplayModalOpen(false);
             setSelectedHighlight(null);
           }}
+        />
+
+        {/* Personal Action Item Notification */}
+        <ActionItemNotification
+          actionItem={currentNotification}
+          isVisible={showNotification}
+          onDismiss={() => {
+            setShowNotification(false);
+            setCurrentNotification(null);
+          }}
+          onViewDashboard={() => setShowPersonalDashboard(true)}
         />
       </div>
     </SidebarProvider>
