@@ -68,10 +68,10 @@ export function HighlightsSidebar({ highlights, onHighlightClick }: HighlightsSi
   const collapsed = state === "collapsed";
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     decisions: true,
-    updates: true,
+    updates: true, 
     agreements: true,
     actions: true,
-    questions: true,
+    questions: false, // Keep questions collapsed by default since they're less important
   });
 
   const toggleGroup = (groupKey: string) => {
@@ -107,9 +107,9 @@ export function HighlightsSidebar({ highlights, onHighlightClick }: HighlightsSi
     >
       {!collapsed && (
         <div className="p-4 border-b">
-          <h2 className="font-semibold text-lg text-foreground">Key Highlights</h2>
+          <h2 className="font-semibold text-lg text-foreground">Smart Highlights</h2>
           <p className="text-sm text-muted-foreground">
-            Auto-detected important moments
+            Zone-Out Catch-Up
           </p>
         </div>
       )}

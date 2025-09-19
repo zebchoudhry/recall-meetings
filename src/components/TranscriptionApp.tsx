@@ -1101,20 +1101,39 @@ Provide exactly 2-3 sentences summarizing the above.`
     const text = entry.text.toLowerCase();
     const highlights: Highlight[] = [];
     
-    // Decision indicators
+    // Decision indicators - enhanced patterns
     const decisionPatterns = [
-      /we (?:decided|decide|agreed|agree|will go with|chose)/i,
-      /(?:decision|conclusion|final|verdict).*(?:is|was)/i,
-      /(?:let's|we'll) (?:go with|choose|pick|select)/i,
-      /(?:agreed|consensus|settled) (?:on|that)/i,
+      /we (?:decided|decide|agreed|agree|will go with|chose|are going with)/i,
+      /(?:decision|conclusion|final|verdict).*(?:is|was|will be)/i,
+      /(?:let's|we'll) (?:go with|choose|pick|select|proceed with)/i,
+      /(?:agreed|consensus|settled) (?:on|that|to)/i,
+      /final decision.*(?:is|was|will be)/i,
+      /we are moving forward with/i,
+      /it's decided/i,
+      /that's what we'll do/i,
     ];
     
-    // Important update indicators
+    // Action item indicators - enhanced for specific assignments
+    const actionPatterns = [
+      /(?:[a-zA-Z]+) (?:will|is going to|needs to|should|must) (?:send|create|finish|complete|handle|do|prepare|review|follow up|call|email|schedule)/i,
+      /(?:action item|task|todo|assignment|deliverable)/i,
+      /(?:responsible for|in charge of|will take care of|owns|assigned to)/i,
+      /(?:deadline|due date|by (?:tomorrow|next week|friday|monday|end of week|eod))/i,
+      /(?:will get back to|will follow up|will reach out)/i,
+      /(?:take the lead on|drive this|own this)/i,
+      /(?:I'll|he'll|she'll|they'll) (?:handle|take care of|work on|prepare|send|create)/i,
+    ];
+    
+    // Key updates indicators - enhanced for business metrics and important news
     const updatePatterns = [
-      /(?:important|urgent|critical|breaking).*(?:update|news|information)/i,
-      /(?:new|latest|recent) (?:development|progress|update)/i,
-      /(?:changed|updated|modified|revised)/i,
+      /(?:revenue|sales|profit|growth|performance|metrics|numbers|results) (?:increased|decreased|improved|dropped|rose|fell|up|down)/i,
+      /(?:increased|decreased|improved|grew|dropped|rose|fell) (?:by )?(?:\d+%|\d+ percent)/i,
+      /(?:quarterly|monthly|annual|yearly) (?:results|numbers|performance|revenue|sales)/i,
+      /(?:important|urgent|critical|breaking|major|significant).*(?:update|news|information|development|change)/i,
+      /(?:new|latest|recent) (?:development|progress|update|milestone|achievement)/i,
+      /(?:changed|updated|modified|revised|announced|launched)/i,
       /(?:announce|announcing|announcement)/i,
+      /(?:milestone|achievement|breakthrough|success|win)/i,
     ];
     
     // Agreement indicators
@@ -1123,14 +1142,6 @@ Provide exactly 2-3 sentences summarizing the above.`
       /(?:unanimous|universal) (?:agreement|consensus)/i,
       /(?:yes|right|exactly|absolutely|definitely).*(?:agreed|agree)/i,
       /(?:sounds good|looks good|works for me|i'm on board)/i,
-    ];
-    
-    // Action item indicators
-    const actionPatterns = [
-      /(?:will|going to|need to|have to|must|should) (?:do|complete|finish|handle)/i,
-      /(?:action item|task|todo|assignment)/i,
-      /(?:responsible for|in charge of|will take care of)/i,
-      /(?:deadline|due date|by (?:tomorrow|next week|friday))/i,
     ];
     
     // Question indicators
@@ -1346,7 +1357,7 @@ Provide exactly 2-3 sentences summarizing the above.`
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen bg-background flex w-full">
         {/* Main Content */}
         <div className="flex-1 p-4">
