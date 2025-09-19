@@ -648,6 +648,11 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     }
   };
 
+  const handleCatchMeUpShortcut = async () => {
+    const assistantResponse = await handleCatchUpQuery("catch me up");
+    setChatMessages(prev => [assistantResponse, ...prev]);
+  };
+
   const handleAssistantQuery = (query: string) => {
     if (!query.trim()) return;
     
@@ -657,12 +662,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
       type: 'user',
       content: query,
       timestamp: new Date()
-  };
-
-  const handleCatchMeUpShortcut = async () => {
-    const assistantResponse = await handleCatchUpQuery("catch me up");
-    setChatMessages(prev => [assistantResponse, ...prev]);
-  };
+    };
     
     setChatMessages(prev => [userMessage, ...prev]);
     
@@ -1487,16 +1487,8 @@ Summary (2-3 sentences max):`
                   </form>
                 </div>
               </Card>
-                  <Button
-                    onClick={detectActionItems}
-                    disabled={transcript.length === 0 || isDetectingActions}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                  {isDetectingActions ? "Detecting..." : "Detect Action Items"}
-                </Button>
-                
+
+              <Card className="p-4 space-y-3">
                 {/* Action Items Detection Button */}
                 <Button
                   onClick={detectActionItems}
