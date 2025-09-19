@@ -8,41 +8,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Professional color scheme for transcription app */
+    /* Brand color palette */
     --background: 210 20% 98%;
-    --foreground: 215 25% 27%;
+    --foreground: 217 19% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 217 19% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 217 19% 12%;
 
-    /* Professional blue primary for recording states */
-    --primary: 217 89% 61%;
+    /* Deep Blue primary */
+    --primary: 217 65% 33%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 217 89% 75%;
+    --primary-glow: 217 65% 45%;
 
     --secondary: 210 16% 93%;
-    --secondary-foreground: 215 25% 27%;
+    --secondary-foreground: 217 19% 12%;
 
     --muted: 210 16% 95%;
-    --muted-foreground: 215 15% 58%;
+    --muted-foreground: 217 12% 47%;
 
-    --accent: 217 89% 95%;
-    --accent-foreground: 217 89% 61%;
+    /* Gold accent for highlights */
+    --accent: 45 96% 58%;
+    --accent-foreground: 217 19% 12%;
 
-    /* Error states for recording issues */
-    --destructive: 0 65% 51%;
+    /* Error states */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success state for completed recordings */
-    --success: 142 70% 45%;
+    /* Success state */
+    --success: 158 82% 40%;
     --success-foreground: 0 0% 100%;
 
+    /* Info state */
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
     /* Warning for speaker detection issues */
-    --warning: 38 100% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 45 96% 58%;
+    --warning-foreground: 217 19% 12%;
 
     --border: 215 15% 87%;
     --input: 215 15% 87%;
@@ -50,22 +55,23 @@ All colors MUST be HSL.
 
     /* Transcript specific colors */
     --transcript-bg: 0 0% 100%;
-    --speaker-1: 217 89% 61%;
-    --speaker-2: 142 70% 45%;
-    --speaker-3: 38 100% 50%;
-    --speaker-unknown: 215 15% 58%;
+    --speaker-1: 217 65% 33%;
+    --speaker-2: 158 82% 40%;
+    --speaker-3: 45 96% 58%;
+    --speaker-unknown: 217 12% 47%;
 
     /* Recording pulse animation */
-    --recording-pulse: 0 65% 51%;
+    --recording-pulse: 0 84% 60%;
     
     /* Gradients for professional look */
-    --gradient-primary: linear-gradient(135deg, hsl(217 89% 61%), hsl(217 89% 75%));
-    --gradient-success: linear-gradient(135deg, hsl(142 70% 45%), hsl(142 70% 60%));
+    --gradient-primary: linear-gradient(135deg, hsl(217 65% 33%), hsl(217 65% 45%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 96% 58%), hsl(45 96% 68%));
+    --gradient-success: linear-gradient(135deg, hsl(158 82% 40%), hsl(158 82% 50%));
     
     /* Shadows for depth */
-    --shadow-soft: 0 2px 8px hsl(215 25% 27% / 0.08);
-    --shadow-medium: 0 4px 16px hsl(215 25% 27% / 0.12);
-    --shadow-strong: 0 8px 32px hsl(215 25% 27% / 0.16);
+    --shadow-soft: 0 2px 8px hsl(217 19% 12% / 0.08);
+    --shadow-medium: 0 4px 16px hsl(217 19% 12% / 0.12);
+    --shadow-strong: 0 8px 32px hsl(217 19% 12% / 0.16);
 
     --radius: 0.5rem;
 
