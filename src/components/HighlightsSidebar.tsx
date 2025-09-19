@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Clock, CheckCircle, AlertCircle, Users, ChevronDown, ChevronRight, ArrowLeft, Play } from "lucide-react";
+import { Clock, CheckCircle, AlertCircle, Users, ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -188,11 +188,6 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                   <span className="text-sm font-medium">Context Replay</span>
                 </div>
 
-                {/* Play Button */}
-                <Button variant="outline" size="sm" className="w-full">
-                  <Play className="h-4 w-4 mr-2" />
-                  Play 1-minute audio
-                </Button>
 
                 {/* Context Entries */}
                 <div className="space-y-2 max-h-96 overflow-y-auto">

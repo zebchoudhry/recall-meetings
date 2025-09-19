@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Play, Pause, RotateCcw, Clock } from "lucide-react";
+import { X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +21,6 @@ interface ReplayModalProps {
 }
 
 export function ReplayModal({ highlight, transcript, isOpen, onClose }: ReplayModalProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackTime, setPlaybackTime] = useState(0);
 
   if (!isOpen || !highlight) return null;
 
@@ -42,32 +40,6 @@ export function ReplayModal({ highlight, transcript, isOpen, onClose }: ReplayMo
   };
 
   const contextEntries = getContextEntries();
-  const totalDuration = 30; // 30 second window
-
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      setIsPlaying(false);
-    } else {
-      setIsPlaying(true);
-      // Simulate audio playback
-      const interval = setInterval(() => {
-        setPlaybackTime(prev => {
-          if (prev >= totalDuration) {
-            setIsPlaying(false);
-            clearInterval(interval);
-            return 0;
-          }
-          return prev + 0.1;
-        });
-      }, 100);
-    }
-  };
-
-  const handleRestart = () => {
-    setPlaybackTime(0);
-    setIsPlaying(false);
-  };
-
   const getHighlightTypeColor = (type: Highlight['type']) => {
     switch (type) {
       case 'decision':
@@ -94,56 +66,13 @@ export function ReplayModal({ highlight, transcript, isOpen, onClose }: ReplayMo
             <Badge className={getHighlightTypeColor(highlight.type)}>
               {highlight.type.charAt(0).toUpperCase() + highlight.type.slice(1)}
             </Badge>
-            <h2 className="text-lg font-semibold">30-Second Replay</h2>
+            <h2 className="text-lg font-semibold">Context Replay</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Audio Controls */}
-        <div className="p-6 border-b bg-secondary/50">
-          <div className="flex items-center gap-4 mb-4">
-            <Button 
-              onClick={handlePlayPause}
-              variant={isPlaying ? "secondary" : "default"}
-              size="lg"
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5 mr-2" />
-              ) : (
-                <Play className="h-5 w-5 mr-2" />
-              )}
-              {isPlaying ? "Pause" : "Play Context"}
-            </Button>
-            
-            <Button onClick={handleRestart} variant="outline">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Restart
-            </Button>
-
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              {Math.floor(playbackTime)}s / {totalDuration}s
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="w-full bg-muted rounded-full h-2">
-            <div 
-              className="bg-primary h-2 rounded-full transition-all duration-100"
-              style={{ width: `${(playbackTime / totalDuration) * 100}%` }}
-            />
-          </div>
-
-          {/* Audio recording note */}
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-800">
-              <strong>Note:</strong> Audio replay requires recording capabilities. 
-              Currently showing transcript context from ±30 seconds around this moment.
-            </p>
-          </div>
-        </div>
 
         {/* Transcript Context */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -224,7 +153,7 @@ export function ReplayModal({ highlight, transcript, isOpen, onClose }: ReplayMo
               Showing conversation context from {highlight.timestamp.toLocaleString()}
             </p>
             <Button onClick={onClose} variant="outline">
-              Close Replay
+              Close
             </Button>
           </div>
         </div>
