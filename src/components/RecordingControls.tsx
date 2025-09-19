@@ -35,7 +35,7 @@ export const RecordingControls = ({
             className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground font-semibold"
           >
             <Mic className="w-5 h-5 mr-2" />
-            Start Recording
+            Start Transcription
           </Button>
         ) : (
           <Button
@@ -45,7 +45,7 @@ export const RecordingControls = ({
             className="w-full h-12 animate-recording-pulse"
           >
             <MicOff className="w-5 h-5 mr-2" />
-            Stop Recording
+            Stop Transcription
           </Button>
         )}
       </div>
