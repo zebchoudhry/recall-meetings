@@ -8,70 +8,70 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Brand color palette */
-    --background: 210 20% 98%;
-    --foreground: 217 19% 12%;
+    /* Recall Brand Color Palette */
+    --background: 210 20% 98%;          /* Light Gray #F9FAFB */
+    --foreground: 217 39% 11%;          /* Dark Gray #111827 */
 
     --card: 0 0% 100%;
-    --card-foreground: 217 19% 12%;
+    --card-foreground: 217 39% 11%;     /* Dark Gray #111827 */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 217 19% 12%;
+    --popover-foreground: 217 39% 11%;  /* Dark Gray #111827 */
 
-    /* Deep Blue primary */
+    /* Deep Blue primary - #1E3A8A */
     --primary: 217 65% 33%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 217 65% 45%;
 
     --secondary: 210 16% 93%;
-    --secondary-foreground: 217 19% 12%;
+    --secondary-foreground: 217 39% 11%; /* Dark Gray #111827 */
 
     --muted: 210 16% 95%;
-    --muted-foreground: 217 12% 47%;
+    --muted-foreground: 220 9% 46%;     /* Medium Gray #6B7280 */
 
-    /* Gold accent for highlights */
-    --accent: 45 96% 58%;
-    --accent-foreground: 217 19% 12%;
+    /* Gold accent - #FBBF24 */
+    --accent: 43 96% 56%;
+    --accent-foreground: 217 39% 11%;   /* Dark Gray #111827 */
 
-    /* Error states */
+    /* Error state - #EF4444 */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success state */
-    --success: 158 82% 40%;
+    /* Success state - #10B981 */
+    --success: 158 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    /* Info state */
+    /* Info state - #3B82F6 */
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    /* Warning for speaker detection issues */
-    --warning: 45 96% 58%;
-    --warning-foreground: 217 19% 12%;
+    /* Warning uses accent gold */
+    --warning: 43 96% 56%;
+    --warning-foreground: 217 39% 11%;
 
     --border: 215 15% 87%;
     --input: 215 15% 87%;
     --ring: 217 89% 61%;
 
-    /* Transcript specific colors */
+    /* Transcript specific colors using brand palette */
     --transcript-bg: 0 0% 100%;
-    --speaker-1: 217 65% 33%;
-    --speaker-2: 158 82% 40%;
-    --speaker-3: 45 96% 58%;
-    --speaker-unknown: 217 12% 47%;
+    --speaker-1: 217 65% 33%;          /* Deep Blue */
+    --speaker-2: 158 84% 39%;          /* Success Green */
+    --speaker-3: 43 96% 56%;           /* Gold Accent */
+    --speaker-unknown: 220 9% 46%;     /* Medium Gray */
 
-    /* Recording pulse animation */
+    /* Recording pulse animation uses error red */
     --recording-pulse: 0 84% 60%;
     
-    /* Gradients for professional look */
+    /* Gradients using brand colors */
     --gradient-primary: linear-gradient(135deg, hsl(217 65% 33%), hsl(217 65% 45%));
-    --gradient-accent: linear-gradient(135deg, hsl(45 96% 58%), hsl(45 96% 68%));
-    --gradient-success: linear-gradient(135deg, hsl(158 82% 40%), hsl(158 82% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 96% 66%));
+    --gradient-success: linear-gradient(135deg, hsl(158 84% 39%), hsl(158 84% 49%));
     
-    /* Shadows for depth */
-    --shadow-soft: 0 2px 8px hsl(217 19% 12% / 0.08);
-    --shadow-medium: 0 4px 16px hsl(217 19% 12% / 0.12);
-    --shadow-strong: 0 8px 32px hsl(217 19% 12% / 0.16);
+    /* Shadows using dark gray */
+    --shadow-soft: 0 2px 8px hsl(217 39% 11% / 0.08);
+    --shadow-medium: 0 4px 16px hsl(217 39% 11% / 0.12);
+    --shadow-strong: 0 8px 32px hsl(217 39% 11% / 0.16);
 
     --radius: 0.5rem;
 
