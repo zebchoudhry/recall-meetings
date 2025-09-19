@@ -617,10 +617,89 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     }, 1000);
   };
 
+  const handleWhoSaidQuery = (searchTerm: string, originalQuery: string): ChatMessage => {
+    // Search for matching transcript entries
+    const matches = transcript.filter(entry => 
+      entry.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (matches.length === 0) {
+      return {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `I couldn't find anyone who mentioned "${searchTerm}" in the transcript. Try a different keyword or phrase.`,
+        timestamp: new Date()
+      };
+    }
+
+    // Group matches by speaker
+    const speakerMatches = matches.reduce((acc, entry) => {
+      const speaker = entry.speaker;
+      if (!acc[speaker]) {
+        acc[speaker] = [];
+      }
+      acc[speaker].push(entry);
+      return acc;
+    }, {} as Record<string, typeof matches>);
+
+    const speakerList = Object.keys(speakerMatches);
+    const totalMatches = matches.length;
+
+    let content = `Found ${totalMatches} mention${totalMatches > 1 ? 's' : ''} of "${searchTerm}":\n\n`;
+    
+    speakerList.forEach(speaker => {
+      const count = speakerMatches[speaker].length;
+      content += `• **${speaker}** mentioned it ${count} time${count > 1 ? 's' : ''}\n`;
+    });
+
+    content += `\nClick on any snippet below to jump to that moment in the transcript.`;
+
+    // Prepare transcript references (limit to 5 most recent)
+    const transcriptReferences = matches
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 5)
+      .map(entry => {
+        // Highlight the search term in the text preview
+        const text = entry.text;
+        const maxLength = 80;
+        const searchIndex = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+        
+        let preview = text;
+        if (searchIndex !== -1) {
+          // Try to center the search term in the preview
+          const start = Math.max(0, searchIndex - 30);
+          const end = Math.min(text.length, start + maxLength);
+          preview = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '');
+        } else if (text.length > maxLength) {
+          preview = text.substring(0, maxLength) + '...';
+        }
+
+        return {
+          id: entry.id,
+          text: preview,
+          speaker: entry.speaker
+        };
+      });
+
+    return {
+      id: (Date.now() + 1).toString(),
+      type: 'assistant',
+      content,
+      timestamp: new Date(),
+      transcriptReferences
+    };
+  };
+
   const generateMockResponse = async (query: string): Promise<ChatMessage> => {
     const lowerQuery = query.toLowerCase();
     let content = "";
     let transcriptReferences: ChatMessage['transcriptReferences'] = [];
+    
+    // Check for "who said" queries
+    const whoSaidMatch = lowerQuery.match(/who said (.+?)(?:\?|$)/);
+    if (whoSaidMatch) {
+      return handleWhoSaidQuery(whoSaidMatch[1].trim(), query);
+    }
     
     // Check for time-based summary requests
     const timeMatch = lowerQuery.match(/(\d+)\s*(minute|minutes|min)/);
@@ -751,7 +830,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
         type: 'assistant',
         content: `Sorry, I couldn't generate a summary for the last ${minutes} minute${minutes > 1 ? 's' : ''}. Please try again.`,
         timestamp: new Date()
-      };
+  };
     }
   };
 
