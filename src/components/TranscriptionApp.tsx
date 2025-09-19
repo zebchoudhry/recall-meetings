@@ -10,6 +10,7 @@ import { SummaryPanel } from "./SummaryPanel";
 import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
 import { HighlightsSidebar, Highlight } from "./HighlightsSidebar";
+import { ReplayModal } from "./ReplayModal";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VoiceClustering } from "@/utils/voiceClustering";
@@ -99,6 +100,8 @@ export const TranscriptionApp = () => {
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
   const [isDetectingActions, setIsDetectingActions] = useState(false);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(null);
+  const [isReplayModalOpen, setIsReplayModalOpen] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -1155,6 +1158,18 @@ Summary (2-3 sentences max):`
     return highlights;
   };
 
+  const handleHighlightClick = (transcriptEntryId: string) => {
+    // Find the highlight that matches this transcript entry
+    const highlight = highlights.find(h => h.transcriptEntryId === transcriptEntryId);
+    if (highlight) {
+      setSelectedHighlight(highlight);
+      setIsReplayModalOpen(true);
+    }
+    
+    // Also scroll to the transcript entry
+    scrollToTranscriptEntry(transcriptEntryId);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-background flex w-full">
@@ -1393,7 +1408,18 @@ Summary (2-3 sentences max):`
         {/* Highlights Sidebar */}
         <HighlightsSidebar 
           highlights={highlights} 
-          onHighlightClick={scrollToTranscriptEntry}
+          onHighlightClick={handleHighlightClick}
+        />
+
+        {/* Replay Modal */}
+        <ReplayModal
+          highlight={selectedHighlight}
+          transcript={transcript}
+          isOpen={isReplayModalOpen}
+          onClose={() => {
+            setIsReplayModalOpen(false);
+            setSelectedHighlight(null);
+          }}
         />
       </div>
     </SidebarProvider>
