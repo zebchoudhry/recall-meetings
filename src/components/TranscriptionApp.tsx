@@ -753,10 +753,120 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     }
   };
 
+  const handleCatchUpQuery = async (originalQuery: string): Promise<ChatMessage> => {
+    try {
+      // Get the last 7 minutes of conversation (good middle ground between 5-10)
+      const catchUpMinutes = 7;
+      const cutoffTime = new Date(Date.now() - catchUpMinutes * 60 * 1000);
+      const recentTranscript = transcript.filter(entry => entry.timestamp >= cutoffTime);
+      
+      if (recentTranscript.length === 0) {
+        return {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: `Nothing significant happened in the last ${catchUpMinutes} minutes. You're all caught up! 👍`,
+          timestamp: new Date()
+        };
+      }
+
+      if (recentTranscript.length === 1) {
+        const entry = recentTranscript[0];
+        return {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: `Quick catch-up: ${entry.speaker} just said "${entry.text.substring(0, 100)}${entry.text.length > 100 ? '...' : ''}"`,
+          timestamp: new Date(),
+          transcriptReferences: [{
+            id: entry.id,
+            text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+            speaker: entry.speaker
+          }]
+        };
+      }
+
+      // Generate a very brief summary using a modified prompt
+      const response = await fetch(`${window.location.origin}/functions/v1/generate-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcript: recentTranscript.map(entry => ({
+            text: entry.text,
+            speaker: entry.speaker,
+            timestamp: entry.timestamp
+          })),
+          prompt: `Provide a very brief 2-3 sentence summary of this recent meeting conversation. Focus only on the most important points, decisions, or topics discussed. Be concise and conversational - this is for someone who briefly zoned out and needs to quickly catch up without others noticing.
+
+Recent conversation:
+${recentTranscript.map(entry => `${entry.speaker}: ${entry.text}`).join('\n')}
+
+Summary (2-3 sentences max):`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate catch-up summary');
+      }
+
+      const { summary } = await response.json();
+      
+      return {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `Quick catch-up: ${summary}`,
+        timestamp: new Date(),
+        transcriptReferences: recentTranscript.slice(0, 2).map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }))
+      };
+      
+    } catch (error) {
+      console.error('Error generating catch-up summary:', error);
+      
+      // Fallback: provide a simple summary of recent speakers and topics
+      const catchUpMinutes = 7;
+      const cutoffTime = new Date(Date.now() - catchUpMinutes * 60 * 1000);
+      const recentTranscript = transcript.filter(entry => entry.timestamp >= cutoffTime);
+      
+      if (recentTranscript.length === 0) {
+        return {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: "Nothing happened in the last few minutes. You're all caught up!",
+          timestamp: new Date()
+        };
+      }
+      
+      const speakers = [...new Set(recentTranscript.map(entry => entry.speaker))];
+      const lastEntry = recentTranscript[recentTranscript.length - 1];
+      
+      return {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `Quick catch-up: ${speakers.join(' and ')} have been discussing. Most recent: "${lastEntry.text.substring(0, 80)}${lastEntry.text.length > 80 ? '...' : ''}"`,
+        timestamp: new Date(),
+        transcriptReferences: recentTranscript.slice(-2).map(entry => ({
+          id: entry.id,
+          text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
+          speaker: entry.speaker
+        }))
+      };
+    }
+  };
+
   const generateMockResponse = async (query: string): Promise<ChatMessage> => {
     const lowerQuery = query.toLowerCase();
     let content = "";
     let transcriptReferences: ChatMessage['transcriptReferences'] = [];
+    
+    // Check for "catch me up" queries
+    const catchUpMatch = lowerQuery.match(/catch\s+me\s+up|catch\s*up|what\s+did\s+i\s+miss|what\s+happened/);
+    if (catchUpMatch) {
+      return await handleCatchUpQuery(query);
+    }
     
     // Check for "who said" queries
     const whoSaidMatch = lowerQuery.match(/who said (.+?)(?:\?|$)/);
@@ -855,7 +965,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
           type: 'assistant',
           content: `No conversation found in the last ${minutes} minute${minutes > 1 ? 's' : ''}. Try recording more content first.`,
           timestamp: new Date()
-        };
+  };
       }
 
       // Call the Supabase edge function for AI summarization
