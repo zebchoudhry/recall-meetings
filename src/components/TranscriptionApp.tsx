@@ -33,6 +33,15 @@ interface ChatMessage {
   }[];
 }
 
+interface ActionItem {
+  id: string;
+  responsiblePerson: string;
+  taskDescription: string;
+  transcriptEntryId: string;
+  timestamp: Date;
+  confidence: number;
+}
+
 // Type declarations for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
   resultIndex: number;
@@ -85,6 +94,8 @@ export const TranscriptionApp = () => {
   const [isVoiceAssistantListening, setIsVoiceAssistantListening] = useState(false);
   const [assistantQuery, setAssistantQuery] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  const [isDetectingActions, setIsDetectingActions] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -690,6 +701,58 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     };
   };
 
+  const detectActionItems = async () => {
+    if (transcript.length === 0 || isDetectingActions) return;
+    
+    setIsDetectingActions(true);
+    
+    try {
+      console.log('🎯 Detecting action items...');
+      
+      const response = await fetch(`${window.location.origin}/functions/v1/detect-action-items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcript: transcript.map(entry => ({
+            id: entry.id,
+            text: entry.text,
+            speaker: entry.speaker,
+            timestamp: entry.timestamp
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to detect action items');
+      }
+
+      const { actionItems: detectedItems } = await response.json();
+      
+      setActionItems(detectedItems || []);
+      
+      if (detectedItems && detectedItems.length > 0) {
+        toast({
+          title: "Action Items Detected",
+          description: `Found ${detectedItems.length} action item${detectedItems.length !== 1 ? 's' : ''}`,
+        });
+      }
+      
+      console.log('✅ Action items detected:', detectedItems);
+      
+    } catch (error) {
+      console.error('Error detecting action items:', error);
+      toast({
+        title: "Action Detection Failed",
+        description: "Unable to detect action items. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDetectingActions(false);
+    }
+  };
+
   const generateMockResponse = async (query: string): Promise<ChatMessage> => {
     const lowerQuery = query.toLowerCase();
     let content = "";
@@ -733,6 +796,11 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
           text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
           speaker: entry.speaker
         }));
+      
+      // Trigger automatic action item detection if we haven't done it recently
+      if (transcript.length > 0 && !isDetectingActions) {
+        detectActionItems();
+      }
     } else if (lowerQuery.includes('decision') || lowerQuery.includes('decide')) {
       content = "Here are the decisions I noticed in the transcript:";
       transcriptReferences = findRelevantEntries(['decide', 'decision', 'agree', 'choose', 'go with'])
@@ -821,7 +889,7 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
           text: entry.text.substring(0, 60) + (entry.text.length > 60 ? '...' : ''),
           speaker: entry.speaker
         }))
-      };
+  };
       
     } catch (error) {
       console.error('Error generating time-based summary:', error);
@@ -918,6 +986,17 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
                 Export Transcript
               </Button>
               
+              {/* Action Items Detection Button */}
+              <Button
+                onClick={detectActionItems}
+                disabled={transcript.length === 0 || isDetectingActions}
+                className="w-full"
+                variant="outline"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isDetectingActions ? "Detecting..." : "Detect Action Items"}
+              </Button>
+              
               {/* Voice Assistant Button */}
               <TooltipProvider>
                 <Tooltip>
@@ -994,6 +1073,41 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
                           ))}
                         </div>
                       )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Action Items Panel */}
+            {actionItems.length > 0 && (
+              <Card className="p-4">
+                <h3 className="font-semibold text-sm text-foreground mb-3">
+                  Detected Action Items ({actionItems.length})
+                </h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {actionItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-lg bg-secondary/50 border border-border"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="font-medium text-sm text-primary">
+                          {item.responsiblePerson}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {Math.round(item.confidence * 100)}% confidence
+                        </div>
+                      </div>
+                      <div className="text-sm text-foreground mb-2">
+                        {item.taskDescription}
+                      </div>
+                      <button
+                        onClick={() => scrollToTranscriptEntry(item.transcriptEntryId)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        📍 View in transcript ({item.timestamp.toLocaleTimeString()})
+                      </button>
                     </div>
                   ))}
                 </div>
