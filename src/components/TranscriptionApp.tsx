@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { TranscriptDisplay } from "./TranscriptDisplay";
 import { RecordingControls } from "./RecordingControls";
@@ -70,6 +71,7 @@ export const TranscriptionApp = () => {
   const [expectedSpeakers, setExpectedSpeakers] = useState(2);
   const [detectedSpeakers, setDetectedSpeakers] = useState<any[]>([]);
   const [isVoiceAssistantListening, setIsVoiceAssistantListening] = useState(false);
+  const [assistantQuery, setAssistantQuery] = useState("");
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -579,6 +581,33 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
     }
   };
 
+  const handleAssistantQuery = (query: string) => {
+    if (!query.trim()) return;
+    
+    toast({
+      title: "Processing Query",
+      description: `"${query}"`,
+    });
+    
+    // Clear the input
+    setAssistantQuery("");
+    
+    // Here you would typically send the query to your AI assistant
+    console.log("Assistant query:", query);
+  };
+
+  const handleQuerySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAssistantQuery(assistantQuery);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAssistantQuery(assistantQuery);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -658,6 +687,27 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              
+              {/* Text Input for Assistant Queries */}
+              <div className="space-y-2">
+                <form onSubmit={handleQuerySubmit} className="flex gap-2">
+                  <Input
+                    value={assistantQuery}
+                    onChange={(e) => setAssistantQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your question to the assistant..."
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="submit" 
+                    size="icon"
+                    variant="outline"
+                    disabled={!assistantQuery.trim()}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
             </Card>
 
             {/* Summary Panel */}
