@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -634,11 +634,26 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
           </div>
 
           {/* Right Column - Transcript Display */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 space-y-4">
             <TranscriptDisplay 
               transcript={transcript} 
               isRecording={isRecording}
             />
+            
+            {/* Mobile-only Stop Recording Button */}
+            {isRecording && (
+              <div className="block lg:hidden">
+                <Button
+                  onClick={stopRecording}
+                  className="w-full"
+                  variant="destructive"
+                  size="lg"
+                >
+                  <Square className="w-4 h-4 mr-2 fill-current" />
+                  Stop Recording
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
