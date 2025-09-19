@@ -15,6 +15,7 @@ import { PersonalDashboard, PersonalActionItem } from "./PersonalDashboard";
 import { ActionItemNotification } from "./ActionItemNotification";
 import { MeetingSummary } from "./MeetingSummary";
 import { CheatSheet } from "./CheatSheet";
+import { AppHeader } from "./AppHeader";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
@@ -1460,9 +1461,13 @@ Provide exactly 2-3 sentences summarizing the above.`
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen bg-background flex w-full">
-        {/* Main Content */}
-        <div className="flex-1 p-4">
+      <div className="min-h-screen bg-background">
+        {/* App Header */}
+        <AppHeader />
+        
+        <div className="flex w-full">
+          {/* Main Content */}
+          <div className="flex-1 p-4">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Header with Recall Assistant */}
             <div className="space-y-4">
@@ -1758,6 +1763,7 @@ Provide exactly 2-3 sentences summarizing the above.`
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Highlights Sidebar */}
