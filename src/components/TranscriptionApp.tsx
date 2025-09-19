@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { HighlightsSidebar, Highlight } from "./HighlightsSidebar";
 import { ReplayModal } from "./ReplayModal";
 import { PersonalDashboard, PersonalActionItem } from "./PersonalDashboard";
 import { ActionItemNotification } from "./ActionItemNotification";
+import { MeetingSummary } from "./MeetingSummary";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VoiceClustering } from "@/utils/voiceClustering";
@@ -46,6 +47,8 @@ interface ActionItem {
   timestamp: Date;
   confidence: number;
 }
+
+export type { ActionItem };
 
 // Type declarations for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
@@ -109,6 +112,8 @@ export const TranscriptionApp = () => {
   const [currentNotification, setCurrentNotification] = useState<PersonalActionItem | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [showPersonalDashboard, setShowPersonalDashboard] = useState(false);
+  const [showMeetingSummary, setShowMeetingSummary] = useState(false);
+  const [meetingStartTime, setMeetingStartTime] = useState<Date | null>(null);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -336,6 +341,11 @@ export const TranscriptionApp = () => {
         shouldKeepRecordingRef.current = true;
         stopRequestedRef.current = false;
         setIsRecording(true);
+        
+        // Track meeting start time
+        if (!meetingStartTime) {
+          setMeetingStartTime(new Date());
+        }
         
         recognitionRef.current.start();
       } else {
@@ -1231,7 +1241,31 @@ Summary (2-3 sentences max):`
         }
       }
       return undefined;
-    };
+  };
+
+  const getMeetingDuration = (): number => {
+    if (!meetingStartTime) return 0;
+    const now = new Date();
+    return Math.floor((now.getTime() - meetingStartTime.getTime()) / (1000 * 60));
+  };
+
+  const exportMeetingSummary = async (summaryText: string) => {
+    const blob = new Blob([summaryText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `meeting-summary-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Summary Exported",
+      description: "Meeting summary has been downloaded",
+    });
+  };
+
 
     // Check each pattern
     personalActionPatterns.forEach(pattern => {
@@ -1248,6 +1282,7 @@ Summary (2-3 sentences max):`
           id: `personal_${entry.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           taskDescription: taskDescription,
           assignedBy: entry.speaker,
+          responsiblePerson: currentUserName,
           dueDate: extractDueDate(text),
           priority: getPriority(text),
           status: 'pending',
@@ -1350,10 +1385,21 @@ Summary (2-3 sentences max):`
                     variant="outline"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Export Transcript
-                  </Button>
-                  
-                  {/* Action Items Detection Button */}
+                  Export Transcript
+                </Button>
+                
+                {/* Meeting Summary Button */}
+                <Button
+                  onClick={() => setShowMeetingSummary(true)}
+                  disabled={transcript.length === 0}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Meeting Summary
+                </Button>
+                
+                {/* Action Items Detection Button */}
                   <Button
                     onClick={detectActionItems}
                     disabled={transcript.length === 0 || isDetectingActions}
@@ -1563,6 +1609,19 @@ Summary (2-3 sentences max):`
             setCurrentNotification(null);
           }}
           onViewDashboard={() => setShowPersonalDashboard(true)}
+        />
+
+        {/* Meeting Summary Modal */}
+        <MeetingSummary
+          transcript={transcript}
+          highlights={highlights}
+          actionItems={actionItems}
+          personalActionItems={personalActionItems}
+          meetingDuration={getMeetingDuration()}
+          isVisible={showMeetingSummary}
+          onClose={() => setShowMeetingSummary(false)}
+          onExport={exportMeetingSummary}
+          onEmail={emailMeetingSummary}
         />
       </div>
     </SidebarProvider>

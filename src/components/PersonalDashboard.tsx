@@ -10,6 +10,7 @@ export interface PersonalActionItem {
   id: string;
   taskDescription: string;
   assignedBy: string;
+  responsiblePerson: string;
   dueDate?: string;
   priority: 'low' | 'medium' | 'high';
   status: 'pending' | 'in-progress' | 'completed';
