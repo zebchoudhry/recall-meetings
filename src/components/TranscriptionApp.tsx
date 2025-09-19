@@ -21,6 +21,13 @@ interface TranscriptEntry {
   confidence: number;
 }
 
+interface ChatMessage {
+  id: string;
+  type: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 // Type declarations for Speech Recognition API
 interface SpeechRecognitionEvent extends Event {
   resultIndex: number;
@@ -72,6 +79,7 @@ export const TranscriptionApp = () => {
   const [detectedSpeakers, setDetectedSpeakers] = useState<any[]>([]);
   const [isVoiceAssistantListening, setIsVoiceAssistantListening] = useState(false);
   const [assistantQuery, setAssistantQuery] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -584,16 +592,46 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
   const handleAssistantQuery = (query: string) => {
     if (!query.trim()) return;
     
-    toast({
-      title: "Processing Query",
-      description: `"${query}"`,
-    });
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: query,
+      timestamp: new Date()
+    };
+    
+    setChatMessages(prev => [userMessage, ...prev]);
     
     // Clear the input
     setAssistantQuery("");
     
-    // Here you would typically send the query to your AI assistant
-    console.log("Assistant query:", query);
+    // Simulate assistant response (replace with actual AI integration)
+    setTimeout(() => {
+      const assistantResponse: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: generateMockResponse(query),
+        timestamp: new Date()
+      };
+      
+      setChatMessages(prev => [assistantResponse, ...prev]);
+    }, 1000);
+  };
+
+  const generateMockResponse = (query: string): string => {
+    const lowerQuery = query.toLowerCase();
+    
+    if (lowerQuery.includes('summary') || lowerQuery.includes('summarize')) {
+      return "I can help you summarize the meeting. Click the 'AI Summary' button to generate a comprehensive summary of the current transcript.";
+    } else if (lowerQuery.includes('export') || lowerQuery.includes('download')) {
+      return "You can export the transcript by clicking the 'Export Transcript' button. This will download a text file with all the conversation.";
+    } else if (lowerQuery.includes('speaker') || lowerQuery.includes('who said')) {
+      return "I can see the speaker identification in the transcript. You can customize speaker names in the Speaker Settings panel on the left.";
+    } else if (lowerQuery.includes('action') || lowerQuery.includes('todo')) {
+      return "Based on the conversation, I'll help identify action items when you generate the AI summary. The summary includes a dedicated section for action items and next steps.";
+    } else {
+      return `I understand you're asking about "${query}". I'm here to help with meeting transcription, speaker identification, and generating summaries. What specific aspect would you like assistance with?`;
+    }
   };
 
   const handleQuerySubmit = (e: React.FormEvent) => {
@@ -709,6 +747,30 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
                 </form>
               </div>
             </Card>
+
+            {/* Chat Panel for Assistant Responses */}
+            {chatMessages.length > 0 && (
+              <Card className="p-4">
+                <h3 className="font-semibold text-sm text-foreground mb-3">Assistant Chat</h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {chatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`p-3 rounded-lg text-sm ${
+                        message.type === 'user'
+                          ? 'bg-primary text-primary-foreground ml-4'
+                          : 'bg-secondary text-secondary-foreground mr-4'
+                      }`}
+                    >
+                      <div className="font-medium text-xs opacity-75 mb-1">
+                        {message.type === 'user' ? 'You' : 'Assistant'}
+                      </div>
+                      <div>{message.content}</div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Summary Panel */}
             {summary && (
