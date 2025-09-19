@@ -24,13 +24,13 @@ export const AppHeader = () => {
             alt="Recall"
             className={`
               h-auto object-contain transition-all duration-200
-              w-10 md:w-[120px] xl:w-[160px]
+              w-32 md:w-40 lg:w-48 xl:w-56
               ${theme === 'dark' ? 'filter brightness-0 invert' : ''}
             `}
             style={{
-              minWidth: '40px', // Minimum clear space (width of quill nib)
+              minWidth: '128px', // Minimum clear space 
               padding: '8px', // Additional clear space around logo
-              maxHeight: '60px' // Ensure header doesn't get too tall
+              maxHeight: '80px' // Allow taller logo
             }}
           />
         </button>
