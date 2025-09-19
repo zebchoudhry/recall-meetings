@@ -14,6 +14,7 @@ import { ReplayModal } from "./ReplayModal";
 import { PersonalDashboard, PersonalActionItem } from "./PersonalDashboard";
 import { ActionItemNotification } from "./ActionItemNotification";
 import { MeetingSummary } from "./MeetingSummary";
+import { CheatSheet } from "./CheatSheet";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
@@ -104,6 +105,7 @@ export const TranscriptionApp = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [showPersonalDashboard, setShowPersonalDashboard] = useState(false);
   const [showMeetingSummary, setShowMeetingSummary] = useState(false);
+  const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [meetingStartTime, setMeetingStartTime] = useState<Date | null>(null);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
@@ -1787,6 +1789,18 @@ Provide exactly 2-3 sentences summarizing the above.`
             setCurrentNotification(null);
           }}
           onViewDashboard={() => setShowPersonalDashboard(true)}
+        />
+
+        {/* Cheat Sheet */}
+        <CheatSheet
+          transcript={transcript}
+          highlights={highlights}
+          actionItems={actionItems}
+          currentUser={userName}
+          meetingDuration={`${getMeetingDuration()} minutes`}
+          meetingStartTime={meetingStartTime || new Date()}
+          isVisible={showCheatSheet}
+          onClose={() => setShowCheatSheet(false)}
         />
 
         {/* Meeting Summary Modal */}
