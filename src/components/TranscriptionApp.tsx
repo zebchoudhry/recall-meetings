@@ -442,6 +442,22 @@ export const TranscriptionApp = () => {
     });
   };
 
+  const handleActionItemUpdate = (id: string, status: PersonalActionItem['status']) => {
+    setPersonalActionItems(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, status } : item
+      )
+    );
+    
+    const item = personalActionItems.find(item => item.id === id);
+    if (item) {
+      toast({
+        title: "Action Item Updated",
+        description: `"${item.taskDescription}" marked as ${status}`,
+      });
+    }
+  };
+
   const generateSummary = async () => {
     if (transcript.length === 0) {
       toast({
@@ -1841,6 +1857,29 @@ ${keyPoints}`;
           onExport={exportMeetingSummary}
           onEmail={emailMeetingSummary}
         />
+
+        {/* Personal Dashboard Modal */}
+        {showPersonalDashboard && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="relative max-h-[90vh] overflow-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 z-10"
+                onClick={() => setShowPersonalDashboard(false)}
+              >
+                ×
+              </Button>
+              <PersonalDashboard
+                personalActionItems={personalActionItems}
+                userName={userName}
+                onUserNameChange={setUserName}
+                onActionItemUpdate={handleActionItemUpdate}
+                onViewInTranscript={scrollToTranscriptEntry}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </SidebarProvider>
   );
