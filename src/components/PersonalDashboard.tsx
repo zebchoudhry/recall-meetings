@@ -75,29 +75,29 @@ export function PersonalDashboard({
   const completedItems = personalActionItems.filter(item => item.status === 'completed');
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 w-full max-w-md">
       <div className="space-y-6">
-        {/* Header with User Name */}
-        <div className="flex items-center justify-between">
+        {/* Header - Title Above Input */}
+        <div className="space-y-4">
           <div className="flex items-center gap-3">
             <User className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold">My Action Items</h2>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="space-y-2">
             {isEditingName ? (
               <div className="flex items-center gap-2">
                 <Input
                   value={tempName}
                   onChange={(e) => setTempName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-32"
+                  className="flex-1"
                   onKeyPress={(e) => e.key === 'Enter' && handleNameSave()}
                 />
                 <Button size="sm" onClick={handleNameSave}>Save</Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between">
                 <Badge variant="outline" className="text-sm">
                   {userName || 'Set your name'}
                 </Badge>
