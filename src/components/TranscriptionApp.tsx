@@ -108,6 +108,8 @@ export const TranscriptionApp = () => {
   const [showMeetingSummary, setShowMeetingSummary] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [meetingStartTime, setMeetingStartTime] = useState<Date | null>(null);
+  const [catchUpData, setCatchUpData] = useState<string>("");
+  const [showCatchUpData, setShowCatchUpData] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -643,6 +645,9 @@ ${getKeyHighlights(statements).map((highlight, i) => `${i + 1}. ${highlight}`).j
 
   const handleCatchMeUpShortcut = async () => {
     const assistantResponse = await handleCatchUpQuery("catch me up");
+    setCatchUpData(assistantResponse.content);
+    setShowCatchUpData(true);
+    // Also add to chat for full history
     setChatMessages(prev => [assistantResponse, ...prev]);
   };
 
@@ -886,22 +891,38 @@ Provide exactly 2-3 sentences summarizing the above.`
         };
       }
       
-      const speakers = [...new Set(recentTranscript.map(entry => entry.speaker))];
+      const speakers = [...new Set(recentTranscript.map(entry => 
+        entry.speaker.replace(/\s*\(\d+%\)/, '') // Remove confidence percentages for cleaner display
+      ))];
       const lastEntry = recentTranscript[recentTranscript.length - 1];
       
-      // Generate basic summary from fallback
-      const topics = recentTranscript
-        .map(entry => entry.text)
-        .join(' ')
-        .split(' ')
-        .filter(word => word.length > 4)
-        .slice(0, 3)
-        .join(', ');
+      // Get speaker participation percentages
+      const speakerStats = speakers.map(speaker => {
+        const speakerEntries = recentTranscript.filter(entry => 
+          entry.speaker.replace(/\s*\(\d+%\)/, '') === speaker
+        );
+        const percentage = Math.round((speakerEntries.length / recentTranscript.length) * 100);
+        return `${speaker} (${percentage}% participation)`;
+      });
+      
+      // Get recent key points
+      const keyPoints = recentTranscript
+        .slice(-3) // Last 3 entries
+        .map(entry => `• ${entry.speaker.replace(/\s*\(\d+%\)/, '')}: "${entry.text.substring(0, 80)}${entry.text.length > 80 ? '...' : ''}"`)
+        .join('\n');
+      
+      const content = `**Catch Me Up – Last ${catchUpMinutes} mins**
+
+**Participants:**
+${speakerStats.join('\n')}
+
+**Recent Discussion:**
+${keyPoints}`;
       
       return {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: `**Catch Me Up – Last ${catchUpMinutes} mins**\n\n${speakers.join(' and ')} discussed topics including ${topics}. Most recent comment: "${lastEntry.text.substring(0, 80)}${lastEntry.text.length > 80 ? '...' : ''}"`,
+        content: content,
         timestamp: new Date(),
         transcriptReferences: recentTranscript.slice(-2).map(entry => ({
           id: entry.id,
@@ -1701,6 +1722,53 @@ Provide exactly 2-3 sentences summarizing the above.`
                     </Tooltip>
                   </TooltipProvider>
                 </Card>
+                
+                {/* Catch Me Up Output */}
+                {showCatchUpData && (
+                  <Card className="p-4 border-l-4 border-l-blue-500 bg-blue-50/50">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-blue-600" />
+                        <h4 className="font-semibold text-blue-900">Summary</h4>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="ml-auto h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                          onClick={() => setShowCatchUpData(false)}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                      <div className="text-sm space-y-2">
+                        {catchUpData.split('\n').map((line, index) => {
+                          if (line.startsWith('**') && line.endsWith('**')) {
+                            return (
+                              <h5 key={index} className="font-semibold text-blue-800 border-b border-blue-200 pb-1 mb-2">
+                                {line.replace(/\*\*/g, '')}
+                              </h5>
+                            );
+                          }
+                          if (line.startsWith('•')) {
+                            return (
+                              <div key={index} className="flex items-start gap-2 text-gray-700 leading-relaxed">
+                                <span className="text-blue-600 font-bold mt-0.5">•</span>
+                                <span className="flex-1">{line.substring(1).trim()}</span>
+                              </div>
+                            );
+                          }
+                          if (line.trim() && !line.startsWith('**')) {
+                            return (
+                              <p key={index} className="text-gray-700 leading-relaxed pl-2">
+                                {line}
+                              </p>
+                            );
+                          }
+                          return <div key={index} className="h-1"></div>;
+                        })}
+                      </div>
+                    </div>
+                  </Card>
+                )}
               </div>
             </div>
           </div>
