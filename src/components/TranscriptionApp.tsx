@@ -1501,10 +1501,10 @@ ${keyPoints}`;
         {/* App Header */}
         <AppHeader />
         
-        <div className="flex w-full">
+        <div className="flex w-full max-w-[1600px] mx-auto">
           {/* Main Content */}
           <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="space-y-6">
 
             {/* Title Section */}
             <div className="text-center space-y-2">
@@ -1515,7 +1515,7 @@ ${keyPoints}`;
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
               {/* Left Column - Controls and Settings */}
               <div className="space-y-4">
                 <SpeakerSettings
@@ -1801,16 +1801,18 @@ ${keyPoints}`;
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Highlights Sidebar */}
-        <HighlightsSidebar 
-          highlights={highlights}
-          actionItems={actionItems}
-          transcript={transcript}
-          currentUser={userName}
-          onHighlightClick={handleHighlightClick}
-        />
+          {/* Highlights Sidebar - Integrated within main layout */}
+          <div className="flex-shrink-0">
+            <HighlightsSidebar 
+              highlights={highlights}
+              actionItems={actionItems}
+              transcript={transcript}
+              currentUser={userName}
+              onHighlightClick={handleHighlightClick}
+            />
+          </div>
+        </div>
 
         {/* Replay Modal */}
         <ReplayModal
