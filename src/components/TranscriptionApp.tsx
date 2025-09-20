@@ -1548,23 +1548,6 @@ ${keyPoints}`;
                   Export Transcript
                 </Button>
                 
-                {/* Voice Assistant Input - moved to bottom */}
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">
-                    Type questions like: "Who mentioned the budget?" or "What did I miss?"
-                  </Label>
-                  <form onSubmit={handleQuerySubmit} className="flex gap-2">
-                    <Input
-                      value={assistantQuery}
-                      onChange={(e) => setAssistantQuery(e.target.value)}
-                      placeholder="Ask about the meeting..."
-                      className="text-sm"
-                    />
-                    <Button type="submit" size="sm" variant="outline">
-                      <Send className="w-3 h-3" />
-                    </Button>
-                  </form>
-                </div>
                 </Card>
 
                 {/* Chat Messages */}
@@ -1639,6 +1622,30 @@ ${keyPoints}`;
                   transcript={transcript} 
                   isRecording={isRecording}
                 />
+                
+                {/* Voice Assistant Input - Full Width */}
+                <Card className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-4 w-4 text-purple-600" />
+                      <h3 className="font-semibold text-sm text-foreground">Ask About Meeting</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Type questions like: "Who mentioned the budget?" or "What did I miss?"
+                    </p>
+                    <form onSubmit={handleQuerySubmit} className="flex gap-2">
+                      <Input
+                        value={assistantQuery}
+                        onChange={(e) => setAssistantQuery(e.target.value)}
+                        placeholder="Ask about the meeting..."
+                        className="flex-1"
+                      />
+                      <Button type="submit" size="sm" variant="outline">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </form>
+                  </div>
+                </Card>
                 
                 {/* Mobile-only Stop Recording Button */}
                 {isRecording && (
