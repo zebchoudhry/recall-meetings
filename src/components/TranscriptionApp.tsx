@@ -1468,89 +1468,85 @@ Provide exactly 2-3 sentences summarizing the above.`
         <div className="flex w-full">
           {/* Main Content */}
           <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header with Recall Assistant */}
-             <div className="space-y-6">
-              {/* Top Action Bar with Recall Assistant */}
-              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
-                <div className="flex items-center gap-4">
-                  {/* Recall Assistant Button */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={toggleVoiceAssistant}
-                          variant={isVoiceAssistantListening ? "default" : "outline"}
-                          size="lg"
-                          className={`flex items-center gap-3 px-6 py-3 text-base font-semibold transition-all duration-300 ${
-                            isVoiceAssistantListening 
-                              ? "bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30" 
-                              : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
-                          }`}
-                        >
-                          <Brain className={`w-5 h-5 ${isVoiceAssistantListening ? "animate-pulse" : ""}`} />
-                          <span>Recall Assistant</span>
-                          {isVoiceAssistantListening && (
-                            <div className="flex items-center gap-1">
-                              <div className="w-1 h-3 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite]" />
-                              <div className="w-1 h-4 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite_0.2s]" />
-                              <div className="w-1 h-2 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite_0.4s]" />
-                              <div className="w-1 h-5 bg-white rounded-full animate-[pulse_1s_ease-in-out_infinite_0.6s]" />
-                            </div>
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-sm">
-                        <p className="text-sm leading-relaxed">
-                          Your backup brain for meetings. Click to ask for a catch-up, highlights, or your action items. 
-                          <br />
-                          <span className="text-amber-600 font-medium">💡 Tip: mute yourself in Zoom/Teams/Meet before speaking so others don't hear your query.</span>
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Top Action Bar with Recall Assistant */}
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+              <div className="flex items-center gap-4">
+                {/* Recall Assistant Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white/50 hover:bg-white/70 border-primary/30 text-primary hover:text-primary-foreground hover:bg-primary transition-all duration-200"
+                        onClick={() => setShowPersonalDashboard(true)}
+                      >
+                        <Brain className="h-4 w-4 mr-2" />
+                        Recall Assistant
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Open AI assistant for meeting insights</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-                  {/* Catch Me Up Shortcut Button */}
-                  <Button
-                    onClick={handleCatchMeUpShortcut}
-                    variant="outline"
-                    size="lg"
-                    className="flex items-center gap-2 px-4 py-3 text-base border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200"
-                  >
-                    <Zap className="w-4 h-4" />
-                    Catch Me Up
-                  </Button>
-                </div>
-
-                {/* Right side - Controls */}
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger className="lg:hidden" />
-                  <Button
-                    onClick={() => setShowMeetingSummary(true)}
-                    disabled={transcript.length === 0}
-                    variant="outline"
-                    size="lg"
-                    className="flex items-center gap-2 px-4 py-3"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Meeting Summary
-                  </Button>
-                </div>
+                {/* Catch Me Up Button */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-200"
+                        onClick={handleCatchMeUpShortcut}
+                        disabled={transcript.length === 0}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Catch Me Up
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Get a quick summary of what you've missed</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
-              {/* Original Title - now smaller */}
-              <div className="text-center space-y-3 py-4">
-                <h1 className="text-meeting-title text-foreground">Call Transcription Assistant</h1>
-                <p className="text-body text-muted-foreground">
-                  Real-time speech-to-text with speaker identification and AI summarization
-                </p>
-              </div>
+              {/* Meeting Summary Button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/50 hover:bg-white/70 border-secondary/30 text-secondary hover:text-secondary-foreground hover:bg-secondary transition-all duration-200"
+                      onClick={() => setShowMeetingSummary(!showMeetingSummary)}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Meeting Summary
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View comprehensive meeting summary and insights</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Title Section */}
+            <div className="text-center space-y-2">
+              <h1 className="text-meeting-title text-foreground">Call Transcription Assistant</h1>
+              <p className="text-body text-muted-foreground">
+                Real-time speech-to-text with speaker identification and AI summarization
+              </p>
             </div>
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               {/* Left Column - Controls and Settings */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <SpeakerSettings
                   expectedSpeakers={expectedSpeakers}
                   onSpeakerCountChange={handleSpeakerCountChange}
