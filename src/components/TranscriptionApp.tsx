@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { TranscriptDisplay } from "./TranscriptDisplay";
 import { RecordingControls } from "./RecordingControls";
-import { SummaryPanel } from "./SummaryPanel";
 import { EmailSummary } from "./EmailSummary";
 import { SpeakerSettings } from "./SpeakerSettings";
 import { HighlightsSidebar, Highlight, ActionItem } from "./HighlightsSidebar";
@@ -1493,22 +1492,22 @@ ${keyPoints}`;
             {/* Top Action Bar with Recall Assistant */}
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
               <div className="flex items-center gap-4">
-                {/* Recall Assistant Button */}
+                {/* Ask About Meeting Button - Enhanced */}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="bg-white/50 hover:bg-white/70 border-primary/30 text-primary hover:text-primary-foreground hover:bg-primary transition-all duration-200"
+                        className="bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-200 shadow-sm"
                         onClick={() => setShowPersonalDashboard(true)}
                       >
                         <Brain className="h-4 w-4 mr-2" />
-                        Recall Assistant
+                        Ask About Meeting
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Open AI assistant for meeting insights</p>
+                      <p className="max-w-xs">Ask questions about the meeting without interrupting - perfect for silent participation, finding specific topics, or getting quick insights</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -1595,7 +1594,9 @@ ${keyPoints}`;
                 
                 {/* Voice Assistant Input - moved to bottom */}
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Or type to the assistant:</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    Type questions like: "Who mentioned the budget?" or "What did I miss?"
+                  </Label>
                   <form onSubmit={handleQuerySubmit} className="flex gap-2">
                     <Input
                       value={assistantQuery}
@@ -1613,7 +1614,13 @@ ${keyPoints}`;
                 {/* Chat Messages */}
                 {chatMessages.length > 0 && (
                   <Card className="p-4 space-y-3 max-h-64 overflow-y-auto">
-                    <h3 className="font-semibold text-sm text-foreground">AI Assistant</h3>
+                    <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                      <Brain className="h-4 w-4 text-purple-600" />
+                      Ask About Meeting
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Silently ask questions without interrupting the conversation
+                    </p>
                     <div className="space-y-3">
                       {chatMessages.slice(0, 3).map((message) => (
                         <div
@@ -1664,11 +1671,6 @@ ${keyPoints}`;
                       )}
                     </div>
                   </Card>
-                )}
-
-                {/* Summary Panel */}
-                {summary && (
-                  <SummaryPanel summary={summary} isGenerating={isGeneratingSummary} />
                 )}
 
                 {/* Email Summary */}
