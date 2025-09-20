@@ -126,18 +126,18 @@ export function PersonalDashboard({
         )}
 
         {/* Statistics */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
-            <div className="text-2xl font-bold text-orange-700">{pendingItems.length}</div>
-            <div className="text-sm text-orange-600">Pending</div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
+            <div className="text-xl sm:text-2xl font-bold text-orange-700">{pendingItems.length}</div>
+            <div className="text-xs sm:text-sm text-orange-600 break-words">Pending</div>
           </div>
-          <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-2xl font-bold text-blue-700">{inProgressItems.length}</div>
-            <div className="text-sm text-blue-600">In Progress</div>
+          <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-xl sm:text-2xl font-bold text-blue-700">{inProgressItems.length}</div>
+            <div className="text-xs sm:text-sm text-blue-600 break-words">In Progress</div>
           </div>
-          <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-            <div className="text-2xl font-bold text-green-700">{completedItems.length}</div>
-            <div className="text-sm text-green-600">Completed</div>
+          <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="text-xl sm:text-2xl font-bold text-green-700">{completedItems.length}</div>
+            <div className="text-xs sm:text-sm text-green-600 break-words">Completed</div>
           </div>
         </div>
 
