@@ -1501,7 +1501,7 @@ ${keyPoints}`;
         {/* App Header */}
         <AppHeader />
         
-        <div className="flex w-full max-w-[1600px] mx-auto">
+        <div className="flex w-full max-w-[1600px] mx-auto gap-3">
           {/* Main Content */}
           <div className="flex-1 p-6">
           <div className="space-y-6">
@@ -1515,7 +1515,7 @@ ${keyPoints}`;
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               {/* Left Column - Controls and Settings */}
               <div className="space-y-4">
                 <SpeakerSettings
