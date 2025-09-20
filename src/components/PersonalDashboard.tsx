@@ -115,11 +115,11 @@ export function PersonalDashboard({
 
         {!userName && (
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <div className="flex items-start gap-2 mb-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <span className="font-medium text-amber-800">Set Your Name</span>
             </div>
-            <p className="text-sm text-amber-700">
+            <p className="text-sm text-amber-700 leading-relaxed break-words">
               Set your name above so I can automatically detect when action items are assigned to you during the meeting.
             </p>
           </div>
