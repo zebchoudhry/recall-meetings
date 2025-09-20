@@ -1657,6 +1657,7 @@ ${keyPoints}`;
               </div>
 
               {/* Right Column - Catch Me Up */}
+              <div className="space-y-4">
                 <Card className="p-4">
                   <h3 className="font-semibold text-sm text-foreground mb-3">Quick Actions</h3>
                   <TooltipProvider>
@@ -1772,6 +1773,7 @@ ${keyPoints}`;
                     </div>
                   </Card>
                 )}
+              </div>
               </div>
             </div>
           </div>
