@@ -1628,8 +1628,6 @@ ${keyPoints}`;
                   </Card>
                 )}
 
-                {/* Email Summary */}
-                <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
               </div>
 
               {/* Center Column - Transcript Display */}
@@ -1749,6 +1747,9 @@ ${keyPoints}`;
                     </TooltipProvider>
                   </div>
                 </Card>
+
+                {/* Email Summary */}
+                <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
                 
                 {/* Catch Me Up Output */}
                 {showCatchUpData && (
