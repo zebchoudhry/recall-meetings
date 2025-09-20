@@ -1548,7 +1548,7 @@ Provide exactly 2-3 sentences summarizing the above.`
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               {/* Left Column - Controls and Settings */}
               <div className="space-y-6">
                 <SpeakerSettings
