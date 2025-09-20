@@ -1489,50 +1489,6 @@ ${keyPoints}`;
           {/* Main Content */}
           <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Top Action Bar with Recall Assistant */}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
-              <div className="flex items-center gap-4">
-                {/* Ask About Meeting Button - Enhanced */}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-200 shadow-sm"
-                        onClick={() => setShowPersonalDashboard(true)}
-                      >
-                        <Brain className="h-4 w-4 mr-2" />
-                        Ask About Meeting
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">Ask questions about the meeting without interrupting - perfect for silent participation, finding specific topics, or getting quick insights</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-
-              {/* Meeting Summary Button */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-white/50 hover:bg-white/70 border-secondary/30 text-secondary hover:text-secondary-foreground hover:bg-secondary transition-all duration-200"
-                      onClick={() => setShowMeetingSummary(!showMeetingSummary)}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Meeting Summary
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>View comprehensive meeting summary and insights</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
 
             {/* Title Section */}
             <div className="text-center space-y-2">
@@ -1701,7 +1657,6 @@ ${keyPoints}`;
               </div>
 
               {/* Right Column - Catch Me Up */}
-              <div className="space-y-4">
                 <Card className="p-4">
                   <h3 className="font-semibold text-sm text-foreground mb-3">Quick Actions</h3>
                   <TooltipProvider>
@@ -1723,6 +1678,52 @@ ${keyPoints}`;
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                </Card>
+
+                {/* Ask About Meeting & Meeting Summary Card */}
+                <Card className="p-4">
+                  <h3 className="font-semibold text-sm text-foreground mb-3">Meeting Tools</h3>
+                  <div className="space-y-2">
+                    {/* Ask About Meeting Button */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-200 shadow-sm"
+                            onClick={() => setShowPersonalDashboard(true)}
+                          >
+                            <Brain className="h-4 w-4 mr-2" />
+                            Ask About Meeting
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">Ask questions about the meeting without interrupting - perfect for silent participation, finding specific topics, or getting quick insights</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    {/* Meeting Summary Button */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full bg-white/50 hover:bg-white/70 border-secondary/30 text-secondary hover:text-secondary-foreground hover:bg-secondary transition-all duration-200"
+                            onClick={() => setShowMeetingSummary(!showMeetingSummary)}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Meeting Summary
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View comprehensive meeting summary and insights</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </Card>
                 
                 {/* Catch Me Up Output */}
@@ -1774,7 +1775,6 @@ ${keyPoints}`;
               </div>
             </div>
           </div>
-        </div>
         </div>
 
         {/* Highlights Sidebar */}
