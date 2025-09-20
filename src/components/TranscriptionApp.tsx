@@ -1491,27 +1491,6 @@ Provide exactly 2-3 sentences summarizing the above.`
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-
-                {/* Catch Me Up Button */}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-200"
-                        onClick={handleCatchMeUpShortcut}
-                        disabled={transcript.length === 0}
-                      >
-                        <Zap className="h-4 w-4 mr-2" />
-                        Catch Me Up
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Get a quick summary of what you've missed</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
 
               {/* Meeting Summary Button */}
@@ -1544,7 +1523,7 @@ Provide exactly 2-3 sentences summarizing the above.`
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               {/* Left Column - Controls and Settings */}
               <div className="space-y-4">
                 <SpeakerSettings
@@ -1600,128 +1579,68 @@ Provide exactly 2-3 sentences summarizing the above.`
                     <Input
                       value={assistantQuery}
                       onChange={(e) => setAssistantQuery(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type your question..."
-                      className="flex-1 text-sm"
+                      placeholder="Ask about the meeting..."
+                      className="text-sm"
                     />
-                    <Button 
-                      type="submit" 
-                      size="icon"
-                      variant="outline"
-                      disabled={!assistantQuery.trim()}
-                    >
+                    <Button type="submit" size="sm" variant="outline">
                       <Send className="w-3 h-3" />
                     </Button>
                   </form>
                 </div>
-              </Card>
+                </Card>
 
-              <Card className="p-4 space-y-3">
-                {/* Action Items Detection Button */}
-                <Button
-                  onClick={detectActionItems}
-                  disabled={transcript.length === 0 || isDetectingActions}
-                  className="w-full"
-                  variant="outline"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isDetectingActions ? "Detecting..." : "Detect Action Items"}
-                </Button>
-                
-                {/* Personal Dashboard Button */}
-                <Button
-                  onClick={() => setShowPersonalDashboard(!showPersonalDashboard)}
-                  variant={showPersonalDashboard ? "default" : "outline"}
-                  className="w-full"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  My Action Items ({personalActionItems.filter(item => item.status === 'pending').length})
-                </Button>
-              </Card>
-
-              {/* Chat Panel for Assistant Responses */}
-              {chatMessages.length > 0 && (
-                  <Card className="p-4">
-                    <h3 className="font-semibold text-sm text-foreground mb-3">Assistant Chat</h3>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {chatMessages.map((message) => (
+                {/* Chat Messages */}
+                {chatMessages.length > 0 && (
+                  <Card className="p-4 space-y-3 max-h-64 overflow-y-auto">
+                    <h3 className="font-semibold text-sm text-foreground">AI Assistant</h3>
+                    <div className="space-y-3">
+                      {chatMessages.slice(0, 3).map((message) => (
                         <div
                           key={message.id}
                           className={`p-3 rounded-lg text-sm ${
-                            message.type === 'user'
-                              ? 'bg-primary text-primary-foreground ml-4'
-                              : 'bg-secondary text-secondary-foreground mr-4'
+                            message.type === 'user' 
+                              ? 'bg-primary/10 border-l-2 border-primary' 
+                              : 'bg-muted border-l-2 border-muted-foreground'
                           }`}
                         >
-                          <div className="font-medium text-xs opacity-75 mb-1">
-                            {message.type === 'user' ? 'You' : 'Assistant'}
+                          <div className="flex items-center gap-2 mb-1">
+                            {message.type === 'user' ? (
+                              <User className="w-3 h-3" />
+                            ) : (
+                              <MessageCircle className="w-3 h-3" />
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {message.timestamp.toLocaleTimeString()}
+                            </span>
                           </div>
-                          <div className="mb-2">{message.content}</div>
+                          <p className="text-foreground leading-relaxed">{message.content}</p>
                           
-                          {/* Transcript References */}
+                          {/* Show transcript references if available */}
                           {message.transcriptReferences && message.transcriptReferences.length > 0 && (
-                            <div className="space-y-1 mt-2 pt-2 border-t border-border/50">
-                              <div className="text-xs opacity-75 mb-1">Related transcript:</div>
-                              {message.transcriptReferences.map((ref) => (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-xs text-muted-foreground">Referenced from transcript:</p>
+                              {message.transcriptReferences.map((ref, index) => (
                                 <button
-                                  key={ref.id}
+                                  key={index}
                                   onClick={() => scrollToTranscriptEntry(ref.id)}
-                                  className="block w-full text-left p-2 rounded bg-background/50 hover:bg-background/80 transition-colors text-xs"
+                                  className="block w-full text-left p-2 bg-background/50 rounded border text-xs hover:bg-accent transition-colors"
                                 >
-                                  <div className="font-medium text-primary">{ref.speaker}</div>
-                                  <div className="opacity-80">"{ref.text}"</div>
+                                  <span className="font-medium">{ref.speaker}:</span> {ref.text.substring(0, 60)}...
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
                       ))}
-                    </div>
-                  </Card>
-            )}
-
-            {/* Personal Dashboard */}
-            {showPersonalDashboard && (
-              <PersonalDashboard
-                personalActionItems={personalActionItems}
-                userName={userName}
-                onUserNameChange={setUserName}
-                onActionItemUpdate={handlePersonalActionUpdate}
-                onViewInTranscript={scrollToTranscriptEntry}
-              />
-            )}
-
-            {/* Action Items Panel */}
-                {actionItems.length > 0 && (
-                  <Card className="p-4">
-                    <h3 className="font-semibold text-sm text-foreground mb-3">
-                      Detected Action Items ({actionItems.length})
-                    </h3>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {actionItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="p-3 rounded-lg bg-secondary/50 border border-border"
+                      
+                      {chatMessages.length > 3 && (
+                        <button
+                          onClick={() => setShowPersonalDashboard(true)}
+                          className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors p-2 border rounded-lg hover:bg-accent"
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="font-medium text-sm text-primary">
-                              {item.responsiblePerson}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              85% confidence
-                            </div>
-                          </div>
-                          <div className="text-sm text-foreground mb-2">
-                            {item.taskDescription}
-                          </div>
-                          <button
-                            onClick={() => scrollToTranscriptEntry(item.transcriptEntryId)}
-                            className="text-xs text-primary hover:underline"
-                          >
-                            📍 View in transcript ({item.timestamp.toLocaleTimeString()})
-                          </button>
-                        </div>
-                      ))}
+                          View all {chatMessages.length} messages in dashboard
+                        </button>
+                      )}
                     </div>
                   </Card>
                 )}
@@ -1735,7 +1654,7 @@ Provide exactly 2-3 sentences summarizing the above.`
                 <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
               </div>
 
-              {/* Right Column - Transcript Display */}
+              {/* Center Column - Transcript Display */}
               <div className="lg:col-span-3 space-y-4">
                 <TranscriptDisplay 
                   transcript={transcript} 
@@ -1756,6 +1675,32 @@ Provide exactly 2-3 sentences summarizing the above.`
                     </Button>
                   </div>
                 )}
+              </div>
+
+              {/* Right Column - Catch Me Up */}
+              <div className="space-y-4">
+                <Card className="p-4">
+                  <h3 className="font-semibold text-sm text-foreground mb-3">Quick Actions</h3>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800 transition-all duration-200"
+                          onClick={handleCatchMeUpShortcut}
+                          disabled={transcript.length === 0}
+                        >
+                          <Zap className="h-4 w-4 mr-2" />
+                          Catch Me Up
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Get a quick summary of what you've missed</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Card>
               </div>
             </div>
           </div>
