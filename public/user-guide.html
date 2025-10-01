@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recall - User Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .cover-page {
+            text-align: center;
+            padding: 100px 0;
+            page-break-after: always;
+        }
+        
+        .cover-page h1 {
+            font-size: 48px;
+            color: #2563eb;
+            margin-bottom: 20px;
+        }
+        
+        .cover-page .subtitle {
+            font-size: 24px;
+            color: #64748b;
+            margin-bottom: 40px;
+        }
+        
+        .cover-page .version {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        h1 {
+            color: #2563eb;
+            font-size: 32px;
+            margin: 40px 0 20px 0;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #3b82f6;
+            font-size: 24px;
+            margin: 30px 0 15px 0;
+        }
+        
+        h3 {
+            color: #60a5fa;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        .feature-box {
+            background: #f1f5f9;
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .feature-box strong {
+            color: #2563eb;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .tip-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .tip-box::before {
+            content: "💡 Tip: ";
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box::before {
+            content: "⚠️ Important: ";
+            font-weight: bold;
+            color: #d97706;
+        }
+        
+        .step {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .step-number {
+            background: #2563eb;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #f1f5f9;
+            color: #2563eb;
+            font-weight: bold;
+        }
+        
+        .toc {
+            background: #f8fafc;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+            page-break-after: always;
+        }
+        
+        .toc h2 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+        
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        
+        .toc li {
+            margin: 12px 0;
+        }
+        
+        .toc a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        @media print {
+            body {
+                padding: 20px;
+            }
+            
+            h1 {
+                page-break-before: always;
+            }
+            
+            h1:first-of-type {
+                page-break-before: avoid;
+            }
+            
+            .step, .feature-box, .tip-box, .warning-box {
+                page-break-inside: avoid;
+            }
+        }
+        
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .keyboard-key {
+            display: inline-block;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: monospace;
+            box-shadow: 0 2px 0 #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cover Page -->
+    <div class="cover-page">
+        <h1>Recall</h1>
+        <div class="subtitle">AI-Powered Meeting Transcription & Intelligence</div>
+        <div class="subtitle" style="font-size: 20px; margin-top: 60px;">User Guide</div>
+        <div class="version" style="margin-top: 40px;">Version 1.0 | 2025</div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#introduction">1. Introduction</a></li>
+            <li><a href="#getting-started">2. Getting Started</a></li>
+            <li><a href="#recording">3. Recording & Transcription</a></li>
+            <li><a href="#speakers">4. Speaker Identification</a></li>
+            <li><a href="#highlights">5. Smart Highlights</a></li>
+            <li><a href="#action-items">6. Action Items</a></li>
+            <li><a href="#summaries">7. Meeting Summaries</a></li>
+            <li><a href="#email">8. Email Summaries</a></li>
+            <li><a href="#assistant">9. Voice Assistant</a></li>
+            <li><a href="#replay">10. Replay Feature</a></li>
+            <li><a href="#dashboard">11. Personal Dashboard</a></li>
+            <li><a href="#export">12. Exporting Data</a></li>
+            <li><a href="#troubleshooting">13. Troubleshooting</a></li>
+            <li><a href="#tips">14. Best Practices</a></li>
+        </ul>
+    </div>
+
+    <!-- Introduction -->
+    <h1 id="introduction">1. Introduction</h1>
+    
+    <p>Welcome to <strong>Recall</strong>, your AI-powered meeting transcription and intelligence platform. Recall helps you capture, analyze, and organize meeting conversations with advanced features including real-time transcription, speaker identification, automatic action item detection, and intelligent summaries.</p>
+    
+    <div class="feature-box">
+        <strong>Key Features:</strong>
+        <ul>
+            <li>Real-time speech-to-text transcription</li>
+            <li>AI-powered speaker identification and voice enrollment</li>
+            <li>Automatic highlight detection for important moments</li>
+            <li>Smart action item extraction and tracking</li>
+            <li>Meeting summaries and email-ready formats</li>
+            <li>Voice assistant for conversational queries</li>
+            <li>Replay functionality to review key moments</li>
+            <li>Personal dashboard for tracking your assignments</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        Recall works best with <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> browsers. Make sure you have a working microphone connected to your device.
+    </div>
+
+    <!-- Getting Started -->
+    <h1 id="getting-started">2. Getting Started</h1>
+    
+    <h2>2.1 System Requirements</h2>
+    <ul>
+        <li><strong>Browser:</strong> Google Chrome (recommended), Microsoft Edge, or Safari</li>
+        <li><strong>Microphone:</strong> Built-in or external microphone</li>
+        <li><strong>Internet Connection:</strong> Required for AI features</li>
+        <li><strong>Permissions:</strong> Microphone access must be granted</li>
+    </ul>
+
+    <h2>2.2 First Time Setup</h2>
+    
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Open the Application</strong>
+        <p>Navigate to the Recall application in your web browser.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Grant Microphone Permission</strong>
+        <p>When prompted, click "Allow" to grant microphone access. This is required for recording.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Enter Your Name (Optional)</strong>
+        <p>In the Personal Dashboard section, enter your name to enable personalized action item tracking.</p>
+    </div>
+
+    <div class="tip-box">
+        If you accidentally denied microphone permission, click the lock icon in your browser's address bar and enable microphone access, then refresh the page.
+    </div>
+
+    <!-- Recording & Transcription -->
+    <h1 id="recording">3. Recording & Transcription</h1>
+
+    <h2>3.1 Starting a Recording</h2>
+    
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Click "Start Transcription"</strong>
+        <p>Find the large blue button in the Recording Controls section and click it to begin.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Check Status</strong>
+        <p>The status indicator will show "Listening" with a pulsing animation when active.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Speak Clearly</strong>
+        <p>Speak at a normal pace and volume. The transcript will appear in real-time on the left side.</p>
+    </div>
+
+    <h2>3.2 Stopping a Recording</h2>
+    
+    <p>Click the red "Stop Transcription" button when you're finished. Your transcript will be saved and available for review.</p>
+
+    <h2>3.3 Understanding the Transcript Display</h2>
+    
+    <p>The transcript shows:</p>
+    <ul>
+        <li><strong>Speaker Name:</strong> Color-coded badges for each speaker</li>
+        <li><strong>Transcript Text:</strong> What was said</li>
+        <li><strong>Timestamp:</strong> When it was said</li>
+        <li><strong>Confidence Score:</strong> Accuracy percentage of the transcription</li>
+    </ul>
+
+    <h2>3.4 Clearing the Transcript</h2>
+    
+    <p>Click the "Clear Transcript" button to remove all entries and start fresh. This action cannot be undone.</p>
+
+    <div class="warning-box">
+        Always export or save important transcripts before clearing!
+    </div>
+
+    <!-- Speaker Identification -->
+    <h1 id="speakers">4. Speaker Identification</h1>
+
+    <h2>4.1 Voice Enrollment</h2>
+    
+    <p>Voice Enrollment allows you to train the system to recognize specific speakers.</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Open Voice Enrollment</strong>
+        <p>Click the "Voice Enrollment" button in the Quick Actions section.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Enter Speaker Name</strong>
+        <p>Type the name of the person who will be speaking.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Record Voice Sample</strong>
+        <p>Click "Start Recording" and have the person speak for 3-5 seconds. They should say a complete sentence.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        <strong>Save Profile</strong>
+        <p>Click "Save Voice Profile" to store the voice pattern.</p>
+    </div>
+
+    <div class="tip-box">
+        For best results, enroll speakers before starting the main meeting recording. Have each person speak clearly in a quiet environment.
+    </div>
+
+    <h2>4.2 Managing Speakers</h2>
+    
+    <p>In the Speaker Settings section, you can:</p>
+    <ul>
+        <li><strong>Set Expected Speakers:</strong> Tell the system how many people will be in the meeting</li>
+        <li><strong>Rename Speakers:</strong> Update speaker names for detected voices</li>
+        <li><strong>Reset Detection:</strong> Clear all speaker data and start fresh</li>
+    </ul>
+
+    <h2>4.3 Speaker Color Coding</h2>
+    
+    <table>
+        <tr>
+            <th>Speaker</th>
+            <th>Color</th>
+        </tr>
+        <tr>
+            <td>Speaker 1</td>
+            <td>Blue</td>
+        </tr>
+        <tr>
+            <td>Speaker 2</td>
+            <td>Green</td>
+        </tr>
+        <tr>
+            <td>Speaker 3</td>
+            <td>Purple</td>
+        </tr>
+        <tr>
+            <td>Speaker 4</td>
+            <td>Orange</td>
+        </tr>
+        <tr>
+            <td>Unknown Speaker</td>
+            <td>Gray</td>
+        </tr>
+    </table>
+
+    <!-- Smart Highlights -->
+    <h1 id="highlights">5. Smart Highlights</h1>
+
+    <h2>5.1 What are Smart Highlights?</h2>
+    
+    <p>Smart Highlights automatically identify important moments in your conversation, including:</p>
+    <ul>
+        <li>Decisions made</li>
+        <li>Questions asked</li>
+        <li>Key insights shared</li>
+        <li>Important announcements</li>
+        <li>Agreement or consensus reached</li>
+    </ul>
+
+    <h2>5.2 Viewing Highlights</h2>
+    
+    <p>Highlights appear in the <strong>Smart Highlights</strong> panel on the right side of the screen. Each highlight shows:</p>
+    <ul>
+        <li>Type (Decision, Question, Key Insight)</li>
+        <li>The highlighted text</li>
+        <li>Who said it</li>
+        <li>When it was said</li>
+    </ul>
+
+    <h2>5.3 Replaying Highlights</h2>
+    
+    <p>Click the <strong>Replay</strong> button on any highlight to see the context around that moment in a detailed modal view.</p>
+
+    <h2>5.4 Detection Keywords</h2>
+    
+    <table>
+        <tr>
+            <th>Highlight Type</th>
+            <th>Trigger Keywords</th>
+        </tr>
+        <tr>
+            <td>Decision</td>
+            <td>decided, approve, agree, let's go with, final decision</td>
+        </tr>
+        <tr>
+            <td>Question</td>
+            <td>Sentences ending with "?"</td>
+        </tr>
+        <tr>
+            <td>Key Insight</td>
+            <td>important, critical, key, significant, must</td>
+        </tr>
+    </table>
+
+    <!-- Action Items -->
+    <h1 id="action-items">6. Action Items</h1>
+
+    <h2>6.1 Automatic Detection</h2>
+    
+    <p>Recall automatically detects action items from your conversation. Action items are extracted when people mention tasks, assignments, or commitments.</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Record Conversation</strong>
+        <p>Action items are detected in real-time as you speak.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Click "Detect Action Items"</strong>
+        <p>After your meeting, click this button in the Quick Actions section to analyze all action items.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Review Action Items</strong>
+        <p>All detected action items appear in the Smart Highlights panel.</p>
+    </div>
+
+    <h2>6.2 Personal Action Items</h2>
+    
+    <p>If you've entered your name, Recall will automatically identify action items assigned to you and show notifications.</p>
+
+    <div class="feature-box">
+        <strong>Personal Action Item Features:</strong>
+        <ul>
+            <li>Real-time notifications when you're assigned a task</li>
+            <li>Personal dashboard showing all your action items</li>
+            <li>Status tracking (Not Started, In Progress, Completed)</li>
+            <li>Priority indicators</li>
+        </ul>
+    </div>
+
+    <h2>6.3 Managing Action Items</h2>
+    
+    <p>In your Personal Dashboard, you can:</p>
+    <ul>
+        <li>View all action items assigned to you</li>
+        <li>Update status (click the status badge to cycle through options)</li>
+        <li>See who assigned each task</li>
+        <li>View when the task was mentioned</li>
+    </ul>
+
+    <div class="tip-box">
+        Action items work best when people clearly state assignments like "John, can you handle that?" or "Sarah will send the report."
+    </div>
+
+    <!-- Meeting Summaries -->
+    <h1 id="summaries">7. Meeting Summaries</h1>
+
+    <h2>7.1 Generating Summaries</h2>
+    
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Complete Your Recording</strong>
+        <p>Stop the transcription when your meeting is finished.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Click "Generate Summary"</strong>
+        <p>Find this button in the Quick Actions section.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Wait for AI Processing</strong>
+        <p>The system will analyze your transcript and create a comprehensive summary.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        <strong>View Summary</strong>
+        <p>The Meeting Summary modal will open with your formatted summary.</p>
+    </div>
+
+    <h2>7.2 Summary Contents</h2>
+    
+    <p>Meeting summaries include:</p>
+    <ul>
+        <li><strong>Meeting Overview:</strong> Key topics discussed</li>
+        <li><strong>Main Points:</strong> Important discussions and decisions</li>
+        <li><strong>Action Items:</strong> All tasks and assignments</li>
+        <li><strong>Participants:</strong> Who was in the meeting</li>
+        <li><strong>Key Decisions:</strong> Decisions made during the meeting</li>
+    </ul>
+
+    <h2>7.3 Copying Summaries</h2>
+    
+    <p>Click the <strong>"Copy Summary"</strong> button to copy the entire summary to your clipboard. You can then paste it into emails, documents, or your note-taking app.</p>
+
+    <!-- Email Summaries -->
+    <h1 id="email">8. Email Summaries</h1>
+
+    <h2>8.1 Creating Email Summaries</h2>
+    
+    <p>Email Summaries create professional, formatted emails ready to send to meeting participants.</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Click "Email Summary"</strong>
+        <p>Located in the Meeting Tools section.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Review Generated Email</strong>
+        <p>The system creates a professional email with subject line, greeting, and formatted content.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Copy to Clipboard</strong>
+        <p>Click "Copy to Clipboard" to copy the entire email.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        <strong>Paste in Email Client</strong>
+        <p>Paste into your email application and add recipients.</p>
+    </div>
+
+    <h2>8.2 Email Format</h2>
+    
+    <p>Email summaries include:</p>
+    <ul>
+        <li>Professional subject line</li>
+        <li>Date and time of meeting</li>
+        <li>List of participants</li>
+        <li>Discussion summary</li>
+        <li>Action items with assignments</li>
+        <li>Next steps</li>
+        <li>Professional closing</li>
+    </ul>
+
+    <!-- Voice Assistant -->
+    <h1 id="assistant">9. Voice Assistant</h1>
+
+    <h2>9.1 Using Voice Assistant</h2>
+    
+    <p>The Voice Assistant lets you ask questions about your meeting using voice commands.</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Scroll to Voice Assistant</strong>
+        <p>Find the Voice Assistant section below the transcript.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Click Microphone Icon</strong>
+        <p>Click the microphone button or type your question.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Ask Your Question</strong>
+        <p>Speak naturally or type questions about the meeting.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        <strong>View AI Response</strong>
+        <p>The assistant will provide an answer based on your transcript.</p>
+    </div>
+
+    <h2>9.2 Example Questions</h2>
+    
+    <ul>
+        <li>"What did we decide about the budget?"</li>
+        <li>"What action items were assigned to John?"</li>
+        <li>"Summarize the discussion about marketing"</li>
+        <li>"What questions were raised?"</li>
+        <li>"Who mentioned the deadline?"</li>
+    </ul>
+
+    <div class="tip-box">
+        The Voice Assistant works best after you have a substantial transcript recorded. It analyzes the conversation to provide accurate answers.
+    </div>
+
+    <!-- Replay Feature -->
+    <h1 id="replay">10. Replay Feature</h1>
+
+    <h2>10.1 Accessing Replay</h2>
+    
+    <p>The Replay feature allows you to review specific moments from your meeting in context.</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Find a Highlight</strong>
+        <p>In the Smart Highlights panel, locate the moment you want to review.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Click Replay Button</strong>
+        <p>Click the replay icon on the highlight.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Review Context</strong>
+        <p>A modal opens showing the highlighted moment plus surrounding conversation.</p>
+    </div>
+
+    <h2>10.2 Replay Modal Features</h2>
+    
+    <ul>
+        <li><strong>Highlighted Moment:</strong> The key phrase or decision is highlighted in yellow</li>
+        <li><strong>Context:</strong> See what was said before and after</li>
+        <li><strong>Speaker Information:</strong> Color-coded speaker badges</li>
+        <li><strong>Timestamps:</strong> Exact time each statement was made</li>
+    </ul>
+
+    <!-- Personal Dashboard -->
+    <h1 id="dashboard">11. Personal Dashboard</h1>
+
+    <h2>11.1 Setting Up Personal Dashboard</h2>
+    
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Enter Your Name</strong>
+        <p>In the Personal Dashboard section, type your full name in the input field.</p>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Click "Set Name"</strong>
+        <p>This enables personal action item tracking.</p>
+    </div>
+
+    <h2>11.2 Dashboard Features</h2>
+    
+    <p>Your Personal Dashboard shows:</p>
+    <ul>
+        <li><strong>Welcome Message:</strong> Personalized greeting</li>
+        <li><strong>Statistics:</strong> Total tasks and completion rate</li>
+        <li><strong>Action Items List:</strong> All tasks assigned to you</li>
+        <li><strong>Status Indicators:</strong> Visual status badges</li>
+        <li><strong>Priority Levels:</strong> High, Medium, or Low priority markers</li>
+    </ul>
+
+    <h2>11.3 Updating Task Status</h2>
+    
+    <p>To update a task:</p>
+    <ol>
+        <li>Find the task in your dashboard</li>
+        <li>Click on the current status badge</li>
+        <li>Status cycles through: Not Started → In Progress → Completed</li>
+    </ol>
+
+    <h2>11.4 Notifications</h2>
+    
+    <p>When a new task is assigned to you during a meeting, you'll receive an on-screen notification showing:</p>
+    <ul>
+        <li>The task description</li>
+        <li>Who assigned it</li>
+        <li>Quick action buttons</li>
+    </ul>
+
+    <!-- Exporting Data -->
+    <h1 id="export">12. Exporting Data</h1>
+
+    <h2>12.1 Export Formats</h2>
+    
+    <p>Recall supports multiple export formats for your meeting data.</p>
+
+    <h3>12.1.1 Transcript Export</h3>
+    <p>Click "Export Transcript" in the Quick Actions section to download your complete transcript as a text file.</p>
+
+    <h3>12.1.2 Summary Export</h3>
+    <p>Use the "Copy Summary" button in the Meeting Summary modal to copy formatted summaries.</p>
+
+    <h3>12.1.3 Email Format</h3>
+    <p>Generate and copy email-formatted summaries from the Email Summary section.</p>
+
+    <h2>12.2 What Gets Exported</h2>
+    
+    <p>Exported transcripts include:</p>
+    <ul>
+        <li>All transcript entries with timestamps</li>
+        <li>Speaker names</li>
+        <li>Confidence scores</li>
+        <li>Meeting metadata</li>
+    </ul>
+
+    <div class="tip-box">
+        Export your data regularly to maintain records of important meetings. Exported files can be opened in any text editor or word processor.
+    </div>
+
+    <!-- Troubleshooting -->
+    <h1 id="troubleshooting">13. Troubleshooting</h1>
+
+    <h2>13.1 Microphone Not Working</h2>
+    
+    <div class="warning-box">
+        If the microphone isn't working:
+    </div>
+    <ul>
+        <li>Check browser permissions (click lock icon in address bar)</li>
+        <li>Ensure microphone is properly connected</li>
+        <li>Try a different browser (Chrome or Edge recommended)</li>
+        <li>Check system microphone settings</li>
+        <li>Refresh the page and grant permission again</li>
+    </ul>
+
+    <h2>13.2 Poor Transcription Quality</h2>
+    
+    <p>If transcripts are inaccurate:</p>
+    <ul>
+        <li><strong>Reduce background noise:</strong> Find a quiet environment</li>
+        <li><strong>Speak clearly:</strong> Enunciate words at a moderate pace</li>
+        <li><strong>Check microphone:</strong> Position microphone closer to speakers</li>
+        <li><strong>One speaker at a time:</strong> Avoid overlapping conversation</li>
+        <li><strong>Good internet connection:</strong> Ensure stable connection</li>
+    </ul>
+
+    <h2>13.3 Speaker Identification Issues</h2>
+    
+    <p>If speakers aren't being identified correctly:</p>
+    <ul>
+        <li>Enroll speakers before starting the meeting</li>
+        <li>Ensure voice samples are clear and at least 3-5 seconds long</li>
+        <li>Set the correct number of expected speakers</li>
+        <li>Re-record voice profiles if needed</li>
+        <li>Manually rename speakers in Speaker Settings</li>
+    </ul>
+
+    <h2>13.4 Summary Generation Failed</h2>
+    
+    <p>If summaries won't generate:</p>
+    <ul>
+        <li>Ensure you have recorded at least some content</li>
+        <li>Check your internet connection</li>
+        <li>Try again after a few moments</li>
+        <li>Clear transcript and start fresh if issues persist</li>
+    </ul>
+
+    <h2>13.5 Browser Compatibility</h2>
+    
+    <table>
+        <tr>
+            <th>Browser</th>
+            <th>Status</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td>Google Chrome</td>
+            <td>✅ Fully Supported</td>
+            <td>Recommended</td>
+        </tr>
+        <tr>
+            <td>Microsoft Edge</td>
+            <td>✅ Fully Supported</td>
+            <td>Recommended</td>
+        </tr>
+        <tr>
+            <td>Safari</td>
+            <td>⚠️ Partial Support</td>
+            <td>Some features may be limited</td>
+        </tr>
+        <tr>
+            <td>Firefox</td>
+            <td>❌ Not Supported</td>
+            <td>Use Chrome or Edge instead</td>
+        </tr>
+    </table>
+
+    <!-- Best Practices -->
+    <h1 id="tips">14. Best Practices</h1>
+
+    <h2>14.1 Before the Meeting</h2>
+    
+    <ul>
+        <li>✅ Test your microphone in advance</li>
+        <li>✅ Enroll known participants' voices</li>
+        <li>✅ Set the expected number of speakers</li>
+        <li>✅ Enter your name for personalized features</li>
+        <li>✅ Close unnecessary browser tabs to free up resources</li>
+        <li>✅ Find a quiet location with minimal background noise</li>
+    </ul>
+
+    <h2>14.2 During the Meeting</h2>
+    
+    <ul>
+        <li>✅ Speak one at a time to avoid overlapping audio</li>
+        <li>✅ Speak clearly at a moderate pace</li>
+        <li>✅ Keep microphone at appropriate distance</li>
+        <li>✅ State action items explicitly ("Sarah will handle the report")</li>
+        <li>✅ Monitor the transcript to ensure accurate capture</li>
+        <li>✅ Use clear language for decisions and key points</li>
+    </ul>
+
+    <h2>14.3 After the Meeting</h2>
+    
+    <ul>
+        <li>✅ Generate and save the meeting summary</li>
+        <li>✅ Export the transcript for records</li>
+        <li>✅ Create and send email summary to participants</li>
+        <li>✅ Review and update personal action items</li>
+        <li>✅ Use Voice Assistant to clarify any points</li>
+        <li>✅ Share important highlights with relevant team members</li>
+    </ul>
+
+    <h2>14.4 Maximizing Accuracy</h2>
+    
+    <div class="feature-box">
+        <strong>Pro Tips for Best Results:</strong>
+        <ul>
+            <li><strong>Environment:</strong> Choose quiet rooms without echo</li>
+            <li><strong>Microphone:</strong> Use external microphone for larger meetings</li>
+            <li><strong>Pacing:</strong> Speak at natural, moderate speed</li>
+            <li><strong>Clarity:</strong> Enunciate important terms and names clearly</li>
+            <li><strong>Turn-taking:</strong> Use visual cues to avoid speaking over others</li>
+            <li><strong>Confirmation:</strong> Confirm important decisions verbally</li>
+        </ul>
+    </div>
+
+    <h2>14.5 Privacy & Security Tips</h2>
+    
+    <ul>
+        <li>🔒 Don't record sensitive or confidential information without proper authorization</li>
+        <li>🔒 Inform all participants that the meeting is being transcribed</li>
+        <li>🔒 Export and securely store important transcripts</li>
+        <li>🔒 Clear transcripts containing sensitive information after exporting</li>
+        <li>🔒 Be mindful of data privacy regulations in your region</li>
+    </ul>
+
+    <h2>14.6 Workflow Integration</h2>
+    
+    <div class="tip-box">
+        Integrate Recall into your workflow by exporting summaries to your project management tools, pasting action items into task trackers, and archiving transcripts in your document management system.
+    </div>
+
+    <!-- Footer -->
+    <div style="margin-top: 80px; padding-top: 30px; border-top: 2px solid #e2e8f0; text-align: center; color: #64748b;">
+        <p><strong>Recall</strong> - AI-Powered Meeting Intelligence</p>
+        <p style="margin-top: 10px; font-size: 14px;">For support and updates, visit our support center</p>
+        <p style="margin-top: 20px; font-size: 12px;">© 2025 Recall. All rights reserved.</p>
+    </div>
+
+</body>
+</html>
