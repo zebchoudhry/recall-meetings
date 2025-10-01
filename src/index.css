@@ -18,10 +18,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 217 39% 11%;  /* Dark Gray #111827 */
 
-    /* Exact Recall logo background color - #1e2349 */
-    --primary: 233 42% 20%;
+    /* Exact Recall logo background color - #1d2349 */
+    --primary: 232 43% 20%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 233 42% 30%;
+    --primary-glow: 232 43% 30%;
 
     --secondary: 210 16% 93%;
     --secondary-foreground: 217 39% 11%; /* Dark Gray #111827 */
@@ -64,7 +64,7 @@ All colors MUST be HSL.
     --recording-pulse: 0 84% 60%;
     
     /* Gradients using brand colors */
-    --gradient-primary: linear-gradient(135deg, hsl(233 42% 20%), hsl(233 42% 30%));
+    --gradient-primary: linear-gradient(135deg, hsl(232 43% 20%), hsl(232 43% 30%));
     --gradient-accent: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 96% 66%));
     --gradient-success: linear-gradient(135deg, hsl(158 84% 39%), hsl(158 84% 49%));
     
