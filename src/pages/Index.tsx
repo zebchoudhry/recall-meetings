@@ -1,7 +1,7 @@
-import { TranscriptionApp } from "@/components/TranscriptionApp";
+import Landing from "./Landing";
 
 const Index = () => {
-  return <TranscriptionApp />;
+  return <Landing />;
 };
 
 export default Index;
