@@ -194,15 +194,33 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                   <h4 className="text-sm font-medium mb-2">Transcript Context</h4>
                   {getContextEntries(selectedHighlight).map((entry) => {
                     const isHighlightEntry = entry.id === selectedHighlight.transcriptEntryId;
-                    const highlightText = selectedHighlight.text.toLowerCase().trim();
                     
-                    // Bold the exact highlight within the text
-                    const displayText = isHighlightEntry 
-                      ? entry.text.replace(
-                          new RegExp(`(${highlightText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
-                          '<strong>$1</strong>'
-                        )
-                      : entry.text;
+                    // Helper function to safely highlight text without dangerouslySetInnerHTML
+                    const renderHighlightedText = () => {
+                      if (!isHighlightEntry) {
+                        return <p className="leading-relaxed">{entry.text}</p>;
+                      }
+                      
+                      const highlightText = selectedHighlight.text.toLowerCase().trim();
+                      const entryTextLower = entry.text.toLowerCase();
+                      const startIndex = entryTextLower.indexOf(highlightText);
+                      
+                      if (startIndex === -1) {
+                        return <p className="leading-relaxed">{entry.text}</p>;
+                      }
+                      
+                      const before = entry.text.slice(0, startIndex);
+                      const highlighted = entry.text.slice(startIndex, startIndex + highlightText.length);
+                      const after = entry.text.slice(startIndex + highlightText.length);
+                      
+                      return (
+                        <p className="leading-relaxed">
+                          {before}
+                          <strong>{highlighted}</strong>
+                          {after}
+                        </p>
+                      );
+                    };
 
                     return (
                       <div
@@ -225,14 +243,7 @@ export function HighlightsSidebar({ highlights, actionItems, transcript, current
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            {isHighlightEntry ? (
-                              <p 
-                                className="leading-relaxed"
-                                dangerouslySetInnerHTML={{ __html: displayText }}
-                              />
-                            ) : (
-                              <p className="leading-relaxed">{entry.text}</p>
-                            )}
+                            {renderHighlightedText()}
                           </div>
                         </div>
                       </div>

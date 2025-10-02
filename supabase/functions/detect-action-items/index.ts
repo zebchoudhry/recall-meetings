@@ -27,20 +27,39 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🎯 Action items detection function called');
     const { transcript } = await req.json()
-    console.log('📝 Received transcript entries:', transcript?.length);
     
+    // Input validation
     if (!transcript || !Array.isArray(transcript)) {
-      console.error('❌ Invalid transcript data:', transcript);
-      throw new Error('Invalid transcript data')
+      return new Response(
+        JSON.stringify({ error: 'Invalid transcript data', actionItems: [] }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    if (transcript.length === 0 || transcript.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Transcript must contain between 1 and 1000 entries', actionItems: [] }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Validate transcript entries
+    for (const entry of transcript) {
+      if (!entry.id || !entry.text || typeof entry.text !== 'string' || entry.text.length > 5000) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid transcript entry format', actionItems: [] }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY')
-    console.log('🔑 API key exists:', !!apiKey);
     if (!apiKey) {
-      console.error('❌ Google Gemini API key not configured');
-      throw new Error('Google Gemini API key not configured')
+      return new Response(
+        JSON.stringify({ error: 'AI service not configured', actionItems: [] }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Format transcript for AI analysis
@@ -147,10 +166,10 @@ Return only valid JSON array, no other text:`
     )
 
   } catch (error) {
-    console.error('Error detecting action items:', error)
+    console.error('Error detecting action items:', error instanceof Error ? error.message : 'Unknown error')
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to detect action items',
+        error: 'Failed to detect action items. Please try again later.',
         actionItems: []
       }),
       { 

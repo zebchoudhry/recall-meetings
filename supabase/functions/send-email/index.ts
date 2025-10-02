@@ -13,8 +13,29 @@ serve(async (req) => {
   try {
     const { to_email, summary } = await req.json()
     
+    // Input validation
     if (!to_email || !summary) {
-      throw new Error('Email address and summary are required')
+      return new Response(
+        JSON.stringify({ error: 'Email address and summary are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(to_email) || to_email.length > 255) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email address' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Summary validation
+    if (typeof summary !== 'string' || summary.length > 50000) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid summary content' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Using Resend API for email sending (you can also use SendGrid, etc.)
@@ -73,7 +94,7 @@ serve(async (req) => {
     console.error('Error sending email:', error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to send email' 
+        error: 'Failed to send email. Please try again later.' 
       }),
       { 
         status: 500,

@@ -18,20 +18,39 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🤖 Generate summary function called');
     const { transcript } = await req.json()
-    console.log('📝 Received transcript:', transcript);
     
+    // Input validation
     if (!transcript || !Array.isArray(transcript)) {
-      console.error('❌ Invalid transcript data:', transcript);
-      throw new Error('Invalid transcript data')
+      return new Response(
+        JSON.stringify({ error: 'Invalid transcript data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    if (transcript.length === 0 || transcript.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Transcript must contain between 1 and 1000 entries' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Validate transcript entries
+    for (const entry of transcript) {
+      if (!entry.text || typeof entry.text !== 'string' || entry.text.length > 5000) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid transcript entry format' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY')
-    console.log('🔑 API key exists:', !!apiKey);
     if (!apiKey) {
-      console.error('❌ Google Gemini API key not configured');
-      throw new Error('Google Gemini API key not configured')
+      return new Response(
+        JSON.stringify({ error: 'AI service not configured' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Format transcript for AI analysis
@@ -91,10 +110,10 @@ Please format your response in a clear, structured way with bullet points where 
     )
 
   } catch (error) {
-    console.error('Error generating summary:', error)
+    console.error('Error generating summary:', error instanceof Error ? error.message : 'Unknown error')
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to generate summary',
+        error: 'Failed to generate summary. Please try again later.',
         summary: 'Unable to generate AI summary. Please try again.' 
       }),
       { 
