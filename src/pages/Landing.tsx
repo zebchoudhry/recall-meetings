@@ -34,7 +34,7 @@ const Landing = () => {
             </span>
           </div>
           
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6">
             <img 
               src={recallHeroLogo} 
               alt="Recall Logo" 
