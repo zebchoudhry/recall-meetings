@@ -14,7 +14,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import recallHeroLogo from "@/assets/recall-hero-logo.svg";
+import recallHeroLogo from "@/assets/recall-main-logo.png";
 
 const Landing = () => {
   const scrollToFeatures = () => {
