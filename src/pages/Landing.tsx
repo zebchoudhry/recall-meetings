@@ -38,7 +38,7 @@ const Landing = () => {
             <img 
               src={recallHeroLogo} 
               alt="Recall Logo" 
-              className="h-32 sm:h-40 lg:h-48 w-auto object-contain drop-shadow-2xl"
+              className="h-48 sm:h-60 lg:h-72 w-auto object-contain drop-shadow-2xl"
             />
           </div>
           
