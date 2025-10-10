@@ -202,7 +202,11 @@ const Landing = () => {
             </p>
             <p className="flex items-center justify-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>Summaries are emailed to you, transcripts are cleared.</span>
+              <span>No tracking, analytics, or behavioral profiling during meetings.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>Zero advertisements—your conversations remain private.</span>
             </p>
             <p className="flex items-center justify-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
