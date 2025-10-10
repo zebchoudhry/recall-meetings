@@ -1524,6 +1524,8 @@ ${keyPoints}`;
                   onReset={handleResetSpeakers}
                   detectedSpeakers={detectedSpeakers}
                   onSpeakerNameChange={handleSpeakerNameChange}
+                  userName={userName}
+                  onUserNameChange={setUserName}
                 />
                 
                 <RecordingControls

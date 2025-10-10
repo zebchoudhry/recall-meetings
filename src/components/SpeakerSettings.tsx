@@ -18,6 +18,8 @@ interface SpeakerSettingsProps {
   onReset: () => void;
   detectedSpeakers: SpeakerCluster[];
   onSpeakerNameChange: (speakerId: string, newName: string) => void;
+  userName: string;
+  onUserNameChange: (name: string) => void;
 }
 
 export const SpeakerSettings = ({ 
@@ -25,7 +27,9 @@ export const SpeakerSettings = ({
   onSpeakerCountChange, 
   onReset,
   detectedSpeakers,
-  onSpeakerNameChange
+  onSpeakerNameChange,
+  userName,
+  onUserNameChange
 }: SpeakerSettingsProps) => {
   const [inputValue, setInputValue] = useState(expectedSpeakers.toString());
   const [editingSpeaker, setEditingSpeaker] = useState<string | null>(null);
@@ -65,6 +69,23 @@ export const SpeakerSettings = ({
       </div>
 
       <div className="space-y-3">
+        <div className="space-y-2">
+          <Label htmlFor="user-name" className="text-sm font-medium">
+            Your Name
+          </Label>
+          <Input
+            id="user-name"
+            type="text"
+            placeholder="Enter your name"
+            value={userName}
+            onChange={(e) => onUserNameChange(e.target.value)}
+            className="w-full"
+          />
+          <p className="text-xs text-muted-foreground">
+            Set your name to get highlighted when mentioned in the meeting
+          </p>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="speaker-count" className="text-sm">
             How many people are speaking?
