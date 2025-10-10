@@ -12,7 +12,9 @@ import {
   LayoutDashboard,
   Lock,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Chrome,
+  AlertCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import recallHeroLogo from "@/assets/recall-main-logo.png";
@@ -106,6 +108,61 @@ const Landing = () => {
               <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
               <span>You stay in control, always.</span>
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Browser Compatibility Notice */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-amber-50 dark:bg-amber-950/20 border-y border-amber-200 dark:border-amber-900">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            <div className="flex-shrink-0">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                <Chrome className="h-8 w-8" />
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
+                <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                Browser Compatibility
+              </h2>
+              
+              <div className="space-y-3 text-muted-foreground">
+                <p className="text-lg">
+                  Recall uses the <strong>Web Speech Recognition API</strong> for real-time transcription. This technology requires a Chromium-based browser.
+                </p>
+                
+                <div className="grid sm:grid-cols-2 gap-4 mt-6">
+                  <div className="bg-background rounded-lg p-4 border border-border">
+                    <h3 className="font-semibold text-success mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5" />
+                      Supported Browsers
+                    </h3>
+                    <ul className="space-y-1 text-sm">
+                      <li>✅ Google Chrome (recommended)</li>
+                      <li>✅ Microsoft Edge</li>
+                      <li>✅ Brave</li>
+                      <li>✅ Opera</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-background rounded-lg p-4 border border-destructive/30">
+                    <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5" />
+                      Not Supported
+                    </h3>
+                    <ul className="space-y-1 text-sm">
+                      <li>❌ Firefox</li>
+                      <li>❌ Safari (limited support)</li>
+                    </ul>
+                    <p className="text-xs mt-2 text-muted-foreground italic">
+                      Firefox does not support the Web Speech Recognition API, which is essential for real-time transcription.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
