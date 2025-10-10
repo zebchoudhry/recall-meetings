@@ -68,8 +68,49 @@ const Landing = () => {
         </div>
       </section>
 
+
+      {/* Privacy & Trust - Front and Center */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background border-b border-border">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 text-success mb-8">
+            <Lock className="h-10 w-10" />
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+            Your privacy is non-negotiable.
+          </h2>
+          
+          <div className="space-y-4 text-lg text-muted-foreground mb-8">
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>All data encrypted in transit with industry-standard TLS encryption.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>Not even RecallMeetings staff can access your meeting contents.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>No audio or meeting data is stored beyond generating the email summary.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>No tracking, analytics, or behavioral profiling during meetings.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>Zero advertisements—your conversations remain private.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>You stay in control, always.</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-16">
             How It Works
@@ -184,45 +225,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Privacy & Trust */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 text-success mb-8">
-            <Lock className="h-10 w-10" />
-          </div>
-          
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-            Your privacy is non-negotiable.
-          </h2>
-          
-          <div className="space-y-4 text-lg text-muted-foreground mb-8">
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>All data encrypted in transit with industry-standard TLS encryption.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>Not even RecallMeetings staff can access your meeting contents.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>No audio or meeting data is stored beyond generating the email summary.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>No tracking, analytics, or behavioral profiling during meetings.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>Zero advertisements—your conversations remain private.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>You stay in control, always.</span>
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Final CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary via-primary-glow to-primary">
