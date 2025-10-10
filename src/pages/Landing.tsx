@@ -192,10 +192,18 @@ const Landing = () => {
           </div>
           
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-            Your data stays yours.
+            Your privacy is non-negotiable.
           </h2>
           
           <div className="space-y-4 text-lg text-muted-foreground mb-8">
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>All data encrypted in transit with industry-standard TLS encryption.</span>
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+              <span>Not even RecallMeetings staff can access your meeting contents.</span>
+            </p>
             <p className="flex items-center justify-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
               <span>No audio or meeting data is stored beyond generating the email summary.</span>
