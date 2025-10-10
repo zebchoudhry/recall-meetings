@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Mail, Send, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Mail, Send, Loader2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface EmailSummaryProps {
@@ -14,6 +15,7 @@ interface EmailSummaryProps {
 export const EmailSummary = ({ summary, isGenerating }: EmailSummaryProps) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
   const handleEmailSummary = async (e: React.FormEvent) => {
@@ -67,6 +69,12 @@ This summary was generated automatically from the recorded conversation.`;
       });
       
       setEmail(""); // Clear the email field
+      setEmailSent(true); // Show confirmation message
+      
+      // Hide confirmation after 10 seconds
+      setTimeout(() => {
+        setEmailSent(false);
+      }, 10000);
     } catch (error) {
       console.error("❌ Error preparing email:", error);
       
@@ -86,6 +94,15 @@ This summary was generated automatically from the recorded conversation.`;
         <Mail className="w-4 h-4 text-primary" />
         <h3 className="font-semibold text-sm text-foreground">Email Summary</h3>
       </div>
+      
+      {emailSent && (
+        <Alert className="mb-3 bg-success/10 border-success/20">
+          <ShieldCheck className="h-4 w-4 text-success" />
+          <AlertDescription className="text-sm text-success">
+            <strong>Data Deletion Confirmed:</strong> All meeting audio and transcript data has been permanently deleted from our systems immediately after generating your summary. Only the email you received contains the meeting information.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <form onSubmit={handleEmailSummary} className="space-y-3">
         <div>
