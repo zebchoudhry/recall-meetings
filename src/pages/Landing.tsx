@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   Mic, 
   Clock, 
@@ -225,6 +226,128 @@ const Landing = () => {
         </div>
       </section>
 
+
+      {/* FAQ Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-4">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-center text-muted-foreground mb-12">
+            Everything you need to know about privacy, security, and how Recall works
+          </p>
+          
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            <AccordionItem value="item-1" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Is my meeting data stored anywhere?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                No. Recall processes everything in your browser using the Web Speech API. No audio is ever uploaded to our servers. Once you send the email summary and close your browser, all meeting data is permanently deleted. We genuinely cannot access your meetings because we never receive them in the first place.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                What encryption do you use?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                All data in transit uses industry-standard TLS (Transport Layer Security) encryption, the same technology banks use. However, since we don't store any meeting data on servers, there's no "data at rest" to encrypt. Your meetings stay in your browser's memory and are never transmitted to external servers except when you choose to email the summary.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Can RecallMeetings staff access my meetings?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Absolutely not. We have zero-knowledge architecture—your meetings are processed entirely in your browser. We don't have servers storing transcripts, we don't have databases with your conversations, and we don't have any technical means to access your meeting content. This isn't just policy; it's how the technology works.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Do you track or analyze my meetings for advertising?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Never. There is zero tracking, zero analytics, and zero behavioral profiling during your meetings. We don't sell data to advertisers, we don't train AI models on your conversations, and we don't monetize your content in any way. Recall is ad-free by design.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                What happens to my data after I email the summary?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                The moment you send the email summary, all meeting data is immediately and permanently deleted from our systems. You'll receive a confirmation message stating this. The only copy of your meeting summary exists in the email you received—nowhere else.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                How does Recall make money if it's free and has no ads?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Currently, Recall is in early access and completely free as we gather feedback and improve the product. In the future, we may introduce premium features for power users, but the core privacy-first transcription will always remain accessible. We will never compromise on privacy to monetize.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Which browsers and devices are supported?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Recall works best on desktop browsers that support the Web Speech API: Google Chrome, Microsoft Edge, and Safari. Mobile support varies, but Chrome on Android works well. Firefox doesn't currently support the Web Speech API, so it won't work there yet.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Can I use Recall for virtual meetings (Zoom, Teams, etc.)?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes! Recall captures audio from your microphone, so it works for in-person meetings, phone calls, and virtual meetings. Just make sure to select the correct audio input (your microphone) in your browser settings and ensure you have permission to record the meeting.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-9" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                How accurate is the transcription?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Transcription accuracy depends on the Web Speech API (built into your browser) and factors like audio quality, accents, and background noise. In good conditions, accuracy is typically 85-95%. Clear audio with minimal background noise produces the best results.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-10" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Do you use my meeting data to train AI models?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                No, never. We don't store your meetings, so we can't use them for anything—including AI training. Your conversations are yours alone. We have no interest in, and no technical capability to, use your data for model training or any other purpose.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-11" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Is there a limit on meeting length?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Currently, there are no hard limits on meeting length. However, very long meetings (3+ hours) may impact browser performance since everything is processed locally. For best results, we recommend meetings under 2 hours or breaking longer sessions into segments.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-12" className="border border-border rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+                Can I save or export the full transcript?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes! You can download the full transcript as a text file using the export button. However, remember that once you close or refresh the browser, all data is lost. Make sure to export or email your summary before ending your session.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
 
       {/* Final CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary via-primary-glow to-primary">
