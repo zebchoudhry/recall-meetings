@@ -46,11 +46,15 @@ const Landing = () => {
           </div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 tracking-tight">
-            Never Miss the Gem in the <span className="text-accent">Waffle</span> Again.
+            Stop Losing Important Details in <span className="text-accent">Every Meeting</span>
           </h1>
           
-          <p className="text-xl sm:text-2xl text-primary-foreground/90 mb-10 max-w-3xl mx-auto">
-            Meet <span className="font-semibold">Recall</span> — your AI meeting memory. It transcribes, summarises, and even catches you up when you zone out.
+          <p className="text-xl sm:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">
+            Missed something crucial? Zoned out for a minute? Forgot who said what?
+          </p>
+          
+          <p className="text-2xl sm:text-3xl font-semibold text-accent mb-10 max-w-3xl mx-auto">
+            Recall captures everything—so you never have to.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -72,42 +76,193 @@ const Landing = () => {
       </section>
 
 
-      {/* Privacy & Trust - Front and Center */}
+      {/* Value Outcomes - What You Actually Get */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-muted/50 to-background border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              What You Get With Recall
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Turn every conversation into searchable insights, action items, and clarity
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-background border border-border rounded-xl p-8 hover:shadow-xl transition-all">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-6">
+                <CheckCircle2 className="h-7 w-7" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Perfect Transcripts</h3>
+              <p className="text-muted-foreground mb-4">
+                Real-time transcription with speaker identification. Search, review, and share every word that was said.
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Automatic speaker detection</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Searchable transcript history</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Export and share instantly</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-background border border-border rounded-xl p-8 hover:shadow-xl transition-all">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success mb-6">
+                <CheckCircle2 className="h-7 w-7" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Never Miss Context</h3>
+              <p className="text-muted-foreground mb-4">
+                Zoned out? Joined late? Get instant 10-minute recaps to catch up without awkward questions.
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>One-click "Catch Me Up" summaries</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Replay any section instantly</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Jump to key moments</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-background border border-border rounded-xl p-8 hover:shadow-xl transition-all">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent/10 text-accent mb-6">
+                <CheckCircle2 className="h-7 w-7" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Actionable Insights</h3>
+              <p className="text-muted-foreground mb-4">
+                Automatically detect action items, questions, and mentions. Know exactly what needs doing and who said what.
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>AI-detected action items</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Highlighted Q&A sections</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                  <span>Personal task dashboard</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases - Who Is This For */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Built for Real Work Scenarios
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-primary/20 hover:border-primary/40 transition-all hover:shadow-lg">
+              <CardContent className="p-8">
+                <div className="text-4xl mb-4">👩‍💼</div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Client Meetings</h3>
+                <p className="text-muted-foreground mb-4">
+                  Focus on building relationships, not frantic note-taking. Recall captures requirements, commitments, and next steps automatically.
+                </p>
+                <div className="text-sm text-primary font-semibold">
+                  → Never forget a client request again
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-success/20 hover:border-success/40 transition-all hover:shadow-lg">
+              <CardContent className="p-8">
+                <div className="text-4xl mb-4">🎓</div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Lectures & Workshops</h3>
+                <p className="text-muted-foreground mb-4">
+                  Stop missing key points while taking notes. Get complete transcripts with searchable content and instant recap when you zone out.
+                </p>
+                <div className="text-sm text-success font-semibold">
+                  → Study smarter, not harder
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-accent/20 hover:border-accent/40 transition-all hover:shadow-lg">
+              <CardContent className="p-8">
+                <div className="text-4xl mb-4">🔬</div>
+                <h3 className="text-xl font-bold text-foreground mb-3">Research Interviews</h3>
+                <p className="text-muted-foreground mb-4">
+                  Capture every nuance without the distraction of note-taking. Searchable transcripts make analysis and quote-finding effortless.
+                </p>
+                <div className="text-sm text-accent font-semibold">
+                  → Focus on insights, not documentation
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Privacy & Trust - Front and Center */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30 border-b border-border">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 text-success mb-8">
             <Lock className="h-10 w-10" />
           </div>
           
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-            Your privacy is non-negotiable.
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            Privacy-First • Browser-Based • Zero Uploads
           </h2>
           
-          <div className="space-y-4 text-lg text-muted-foreground mb-8">
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>All data encrypted in transit with industry-standard TLS encryption.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>Not even RecallMeetings staff can access your meeting contents.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>No audio or meeting data is stored beyond generating the email summary.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>No tracking, analytics, or behavioral profiling during meetings.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>Zero advertisements—your conversations remain private.</span>
-            </p>
-            <p className="flex items-center justify-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-              <span>You stay in control, always.</span>
-            </p>
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Your conversations never leave your device. We built Recall with zero-knowledge architecture so we literally cannot access your meetings.
+          </p>
+          
+          <div className="grid sm:grid-cols-2 gap-6 text-left">
+            <div className="bg-background rounded-lg p-6 border border-border">
+              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Everything Stays Local</h3>
+              <p className="text-sm text-muted-foreground">
+                All processing happens in your browser. No audio uploads, no server storage, no external access.
+              </p>
+            </div>
+            
+            <div className="bg-background rounded-lg p-6 border border-border">
+              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Bank-Grade Encryption</h3>
+              <p className="text-sm text-muted-foreground">
+                Industry-standard TLS encryption for any data in transit when you choose to send email summaries.
+              </p>
+            </div>
+            
+            <div className="bg-background rounded-lg p-6 border border-border">
+              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">No Tracking or Ads</h3>
+              <p className="text-sm text-muted-foreground">
+                Zero behavioral profiling, no analytics during meetings, and absolutely no advertisements.
+              </p>
+            </div>
+            
+            <div className="bg-background rounded-lg p-6 border border-border">
+              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">You Control Everything</h3>
+              <p className="text-sm text-muted-foreground">
+                Delete data anytime. Export when you want. Your meetings, your rules, always.
+              </p>
+            </div>
           </div>
         </div>
       </section>
