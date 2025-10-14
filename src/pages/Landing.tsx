@@ -228,7 +228,7 @@ const Landing = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             <Card className="border-primary/20 hover:shadow-xl transition-all">
               <CardContent className="p-8">
                 <div className="flex gap-1 mb-4">
@@ -284,6 +284,36 @@ const Landing = () => {
                   <div>
                     <p className="font-semibold text-foreground">Asif</p>
                     <p className="text-sm text-muted-foreground">Leeds</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-accent/20 hover:shadow-xl transition-all">
+              <CardContent className="p-8">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg
+                      key={star}
+                      className="w-5 h-5 fill-amber-400 text-amber-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-lg text-foreground mb-6 leading-relaxed">
+                  "The company I work for have told me not to use any AI that will hold or store data. This app has helped me and my boss many times and it has satisfied the leadership teams request for privacy. Nothing stored or recorded, no data leakage."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-lg">
+                    A
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Alex</p>
+                    <p className="text-sm text-muted-foreground">Brighouse</p>
                   </div>
                 </div>
               </CardContent>
