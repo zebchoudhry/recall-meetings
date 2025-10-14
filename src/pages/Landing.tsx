@@ -216,6 +216,52 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/5 to-accent/5 border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              What Our Users Say
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              See how Recall is helping people stay on top of their meetings
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-1 gap-8 max-w-3xl mx-auto">
+            <Card className="border-primary/20 hover:shadow-xl transition-all">
+              <CardContent className="p-8">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg
+                      key={star}
+                      className="w-5 h-5 fill-amber-400 text-amber-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-lg text-foreground mb-6 leading-relaxed">
+                  "This has really helped me out with the endless meetings that I have to be in. I can track my tasks better and I know who will be doing which task and by which deadline. The catch me up button has saved me many times."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                    S
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Sofia</p>
+                    <p className="text-sm text-muted-foreground">Halifax</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Privacy & Trust - Front and Center */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30 border-b border-border">
         <div className="max-w-4xl mx-auto text-center">
