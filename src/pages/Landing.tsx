@@ -14,7 +14,8 @@ import {
   ArrowRight,
   CheckCircle2,
   Chrome,
-  AlertCircle
+  AlertCircle,
+  Shield
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import recallHeroLogo from "@/assets/recall-main-logo.png";
@@ -322,51 +323,153 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Privacy & Trust - Front and Center */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30 border-b border-border">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 text-success mb-8">
-            <Lock className="h-10 w-10" />
+      {/* Privacy & Trust - The Recall Difference */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-success/5 via-muted/30 to-primary/5 border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 text-success mb-8">
+              <Lock className="h-10 w-10" />
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Your Data, Your Device, Your Choice
+            </h2>
+            
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Unlike Otter.ai and other tools that require cloud storage, Recall gives you complete control over your privacy with our unique <strong>two-tier privacy system</strong>.
+            </p>
           </div>
-          
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Privacy-First • Browser-Based • Zero Uploads
-          </h2>
-          
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Your conversations never leave your device. We built Recall with zero-knowledge architecture so we literally cannot access your meetings.
-          </p>
-          
-          <div className="grid sm:grid-cols-2 gap-6 text-left">
-            <div className="bg-background rounded-lg p-6 border border-border">
-              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">Everything Stays Local</h3>
-              <p className="text-sm text-muted-foreground">
-                All processing happens in your browser. No audio uploads, no server storage, no external access.
-              </p>
-            </div>
+
+          {/* Privacy Modes Comparison */}
+          <div className="grid lg:grid-cols-2 gap-8 mb-16">
+            {/* Privacy Mode */}
+            <Card className="border-2 border-primary/20 hover:border-primary/40 hover:shadow-xl transition-all bg-gradient-to-br from-background to-primary/5">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary">
+                    <Lock className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">Privacy Mode</h3>
+                    <p className="text-sm text-muted-foreground">Default - Maximum Privacy</p>
+                  </div>
+                </div>
+                
+                <p className="text-muted-foreground mb-6">
+                  Perfect for sensitive meetings. <strong>Zero trace policy</strong> means transcripts disappear when you close your browser. Nothing stored, nothing tracked, nothing uploaded.
+                </p>
+                
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Session-only storage</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">No browser history</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Zero data footprint</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Perfect for compliance & NDAs</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-border">
+                  <p className="text-xs text-muted-foreground italic">
+                    <strong>Use when:</strong> Discussing confidential information, interviewing candidates, or when your organization requires zero data retention.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Enhanced Mode */}
+            <Card className="border-2 border-accent/20 hover:border-accent/40 hover:shadow-xl transition-all bg-gradient-to-br from-background to-accent/5">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent/10 text-accent">
+                    <Shield className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">Enhanced Mode</h3>
+                    <p className="text-sm text-muted-foreground">Opt-in - Still Private</p>
+                  </div>
+                </div>
+                
+                <p className="text-muted-foreground mb-6">
+                  Get search, history, and AI features while keeping <strong>100% local storage</strong>. All data stays on your device using encrypted browser storage (IndexedDB).
+                </p>
+                
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Search across past meetings</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">AI chat with transcript history</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Meeting analytics & insights</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Still zero cloud uploads</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-border">
+                  <p className="text-xs text-muted-foreground italic">
+                    <strong>Use when:</strong> You want power-user features like search and AI insights, but still need your data to stay on your device only.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* How We're Different */}
+          <div className="bg-background border border-border rounded-xl p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-foreground mb-6 text-center">
+              How Recall Protects Your Privacy
+            </h3>
             
-            <div className="bg-background rounded-lg p-6 border border-border">
-              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">Bank-Grade Encryption</h3>
-              <p className="text-sm text-muted-foreground">
-                Industry-standard TLS encryption for any data in transit when you choose to send email summaries.
-              </p>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold text-success mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5" />
+                  What We Do
+                </h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>✅ Process everything in your browser</li>
+                  <li>✅ Use encrypted local storage (if you enable it)</li>
+                  <li>✅ Give you one-click data deletion</li>
+                  <li>✅ Let you switch modes per meeting</li>
+                  <li>✅ Open about what data exists where</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-destructive mb-3 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" />
+                  What We Don't Do
+                </h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>❌ Never upload audio to servers</li>
+                  <li>❌ Never train AI models on your data</li>
+                  <li>❌ Never share data with third parties</li>
+                  <li>❌ Never require cloud accounts</li>
+                  <li>❌ Never track your behavior</li>
+                </ul>
+              </div>
             </div>
-            
-            <div className="bg-background rounded-lg p-6 border border-border">
-              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">No Tracking or Ads</h3>
-              <p className="text-sm text-muted-foreground">
-                Zero behavioral profiling, no analytics during meetings, and absolutely no advertisements.
-              </p>
-            </div>
-            
-            <div className="bg-background rounded-lg p-6 border border-border">
-              <CheckCircle2 className="h-6 w-6 text-success mb-3" />
-              <h3 className="font-semibold text-foreground mb-2">You Control Everything</h3>
-              <p className="text-sm text-muted-foreground">
-                Delete data anytime. Export when you want. Your meetings, your rules, always.
+
+            <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-sm text-foreground">
+                <strong>Built for compliance:</strong> Whether you're bound by GDPR, HIPAA, attorney-client privilege, or corporate NDAs, Recall's privacy-first architecture means your data stays exactly where you want it.
               </p>
             </div>
           </div>

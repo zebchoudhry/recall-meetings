@@ -1,10 +1,17 @@
+import { useState } from "react";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
+import { Settings, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PrivacySettings } from "@/components/PrivacySettings";
+import { PrivacyModeIndicator } from "@/components/PrivacyModeIndicator";
 import recallLogo from "@/assets/recall-logo-new.svg";
 
 export const AppHeader = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleLogoClick = () => {
     navigate("/");
@@ -34,9 +41,27 @@ export const AppHeader = () => {
           />
         </button>
 
-        {/* Header actions can be added here later */}
-        <div className="flex items-center gap-4">
-          {/* Future: User menu, settings, etc. */}
+        {/* Privacy Settings */}
+        <div className="flex items-center gap-3">
+          <PrivacyModeIndicator />
+          
+          <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Shield className="h-4 w-4" />
+                Settings
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Privacy & Storage Settings
+                </DialogTitle>
+              </DialogHeader>
+              <PrivacySettings onModeChange={() => {}} />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </header>

@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Label } from "@/components/ui/label";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
+import { storageManager, MeetingData } from "@/utils/storageManager";
 
 interface TranscriptEntry {
   id: string;
@@ -109,12 +110,26 @@ export const TranscriptionApp = () => {
   const [meetingStartTime, setMeetingStartTime] = useState<Date | null>(null);
   const [catchUpData, setCatchUpData] = useState<string>("");
   const [showCatchUpData, setShowCatchUpData] = useState(false);
+  const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
   const audioStreamRef = useRef<MediaStream | null>(null);
   const shouldKeepRecordingRef = useRef<boolean>(false); // More explicit name
   const stopRequestedRef = useRef<boolean>(false); // Track if stop was explicitly requested
+
+  // Initialize storage manager
+  useEffect(() => {
+    const initStorage = async () => {
+      try {
+        await storageManager.init();
+        console.log('💾 Storage manager initialized');
+      } catch (error) {
+        console.error('Failed to initialize storage:', error);
+      }
+    };
+    initStorage();
+  }, []);
 
   useEffect(() => {
     console.log('🚀 TranscriptionApp mounted');
@@ -361,7 +376,42 @@ export const TranscriptionApp = () => {
     }
   };
 
-  const stopRecording = () => {
+  const saveMeetingToStorage = async () => {
+    if (!storageManager.isEnabled() || transcript.length === 0) {
+      return;
+    }
+
+    try {
+      const meetingId = currentMeetingId || Date.now().toString();
+      const meetingData: MeetingData = {
+        id: meetingId,
+        title: `Meeting - ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+        date: meetingStartTime || new Date(),
+        duration: getMeetingDuration(),
+        transcript: transcript,
+        summary: summary,
+        highlights: highlights,
+        actionItems: actionItems,
+      };
+
+      await storageManager.saveMeeting(meetingData);
+      console.log('💾 Meeting saved to local storage');
+      
+      toast({
+        title: "Meeting Saved",
+        description: "Your meeting has been saved locally on this device",
+      });
+    } catch (error) {
+      console.error('Failed to save meeting:', error);
+      toast({
+        title: "Save Failed",
+        description: "Could not save meeting to local storage",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = async () => {
     console.log('🛑 Stop recording requested');
     
     // IMMEDIATELY set flags to prevent any restarts
@@ -399,6 +449,9 @@ export const TranscriptionApp = () => {
       audioStreamRef.current = null;
       console.log('🎤 Audio stream completely stopped');
     }
+    
+    // Save meeting if storage is enabled
+    await saveMeetingToStorage();
     
     toast({
       title: "Recording Stopped",
