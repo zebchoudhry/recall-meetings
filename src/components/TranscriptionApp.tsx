@@ -15,6 +15,7 @@ import { ActionItemNotification } from "./ActionItemNotification";
 import { MeetingSummary } from "./MeetingSummary";
 import { CheatSheet } from "./CheatSheet";
 import { AppHeader } from "./AppHeader";
+import { PrivacyBanner } from "./PrivacyBanner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
@@ -1551,13 +1552,15 @@ ${keyPoints}`;
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen bg-background flex">
-        {/* App Header */}
-        <div className="fixed top-0 left-0 right-0 z-40 bg-background border-b">
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Combined Fixed Header Area */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background">
+          <PrivacyBanner />
           <AppHeader />
         </div>
         
-        <div className="flex-1 flex pt-24">
+        {/* Main Content with proper top offset */}
+        <div className="flex-1 flex mt-32">
           {/* Left Sidebar - Compact Controls */}
           <div className="w-80 border-r bg-muted/20 p-4 space-y-4 overflow-y-auto">
             {/* Catch Me Up - Compact Version */}
