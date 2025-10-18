@@ -1648,7 +1648,7 @@ ${keyPoints}`;
                     size="sm"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Export
+                    Export transcript
                   </Button>
                   
                   <Button
