@@ -1551,236 +1551,210 @@ ${keyPoints}`;
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex">
         {/* App Header */}
-        <AppHeader />
+        <div className="fixed top-0 left-0 right-0 z-40 bg-background border-b">
+          <AppHeader />
+        </div>
         
-        <div className="max-w-[1800px] mx-auto p-4 lg:p-6">
-          {/* Title Section */}
-          <div className="text-center space-y-3 mb-8">
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">Call Transcription Assistant</h1>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Real-time speech-to-text with speaker identification and AI summarization
-            </p>
-          </div>
-
-          {/* Prominent Catch Me Up Section */}
-          <div className="mb-8">
-            <Card className="bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 border-2 border-blue-200 shadow-lg">
-              <div className="p-6 lg:p-8">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  <div className="flex-1 text-center lg:text-left">
-                    <h2 className="text-2xl lg:text-3xl font-bold text-blue-900 mb-2 flex items-center justify-center lg:justify-start gap-3">
-                      <Zap className="h-8 w-8 text-blue-600" />
-                      Catch Me Up
-                    </h2>
-                    <p className="text-blue-700 text-lg">
-                      Get an instant summary of what you missed in the meeting
-                    </p>
-                  </div>
-                  <Button
-                    size="lg"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg h-auto shadow-lg hover:shadow-xl transition-all"
-                    onClick={handleCatchMeUpShortcut}
-                    disabled={transcript.length === 0}
-                  >
-                    <Zap className="h-5 w-5 mr-2" />
-                    Catch Me Up Now
-                  </Button>
+        <div className="flex-1 flex pt-16">
+          {/* Left Sidebar - Compact Controls */}
+          <div className="w-80 border-r bg-muted/20 p-4 space-y-4 overflow-y-auto">
+            {/* Catch Me Up - Compact Version */}
+            <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0 shadow-lg">
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  <h3 className="font-bold text-lg">Catch Me Up</h3>
                 </div>
+                <p className="text-sm text-blue-50">Get instant summary of what you missed</p>
+                <Button
+                  size="sm"
+                  className="w-full bg-white text-blue-600 hover:bg-blue-50"
+                  onClick={handleCatchMeUpShortcut}
+                  disabled={transcript.length === 0}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Catch Me Up Now
+                </Button>
               </div>
             </Card>
+
+            {/* Tabbed Controls */}
+            <Card className="p-3">
+              <Tabs defaultValue="record" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-8">
+                  <TabsTrigger value="record" className="text-xs">Record</TabsTrigger>
+                  <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
+                  <TabsTrigger value="actions" className="text-xs">Actions</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="record" className="mt-3">
+                  <RecordingControls
+                    isRecording={isRecording}
+                    isListening={isListening}
+                    onStartRecording={startRecording}
+                    onStopRecording={stopRecording}
+                    onClear={clearTranscript}
+                    transcriptLength={transcript.length}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="settings" className="mt-3">
+                  <SpeakerSettings
+                    expectedSpeakers={expectedSpeakers}
+                    onSpeakerCountChange={handleSpeakerCountChange}
+                    onReset={handleResetSpeakers}
+                    detectedSpeakers={detectedSpeakers}
+                    onSpeakerNameChange={handleSpeakerNameChange}
+                    userName={userName}
+                    onUserNameChange={setUserName}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="actions" className="mt-3 space-y-2">
+                  <Button
+                    onClick={generateSummary}
+                    disabled={transcript.length === 0 || isGeneratingSummary}
+                    className="w-full"
+                    size="sm"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isGeneratingSummary ? "Generating..." : "AI Summary"}
+                  </Button>
+                  
+                  <Button
+                    onClick={exportTranscript}
+                    disabled={transcript.length === 0}
+                    className="w-full"
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setShowMeetingSummary(!showMeetingSummary)}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Meeting Summary
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </Card>
+
+            {/* AI Summary Display - Compact */}
+            {summary && (
+              <Card className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-600" />
+                    <h4 className="font-semibold text-sm text-amber-900">AI Summary</h4>
+                  </div>
+                  <p className="text-xs text-gray-800 leading-relaxed line-clamp-6">
+                    {summary}
+                  </p>
+                  <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
+                </div>
+              </Card>
+            )}
           </div>
 
-          {/* Catch Me Up Results - Full Width */}
-          {showCatchUpData && (
-            <div className="mb-8 animate-fade-in">
-              <Card className="border-l-4 border-l-blue-500 shadow-lg">
-                <div className="p-6 lg:p-8 bg-gradient-to-br from-blue-50/50 to-white">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <Zap className="h-6 w-6 text-blue-600" />
+          {/* Main Content Area - Transcript (Takes most space) */}
+          <div className="flex-1 flex flex-col">
+            {/* Catch Me Up Results Banner */}
+            {showCatchUpData && (
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-blue-200 p-4">
+                <div className="max-w-5xl mx-auto">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-bold text-lg text-blue-900">Summary</h3>
                       </div>
-                      <h3 className="text-2xl font-bold text-blue-900">Your Summary</h3>
+                      <div className="prose prose-sm max-w-none">
+                        <div className="text-sm space-y-2">
+                          {catchUpData.split('\n').map((line, index) => {
+                            if (line.startsWith('**') && line.endsWith('**')) {
+                              return (
+                                <h5 key={index} className="font-semibold text-blue-800 text-base mt-3 mb-1">
+                                  {line.replace(/\*\*/g, '')}
+                                </h5>
+                              );
+                            }
+                            if (line.startsWith('•')) {
+                              return (
+                                <div key={index} className="flex items-start gap-2 text-gray-700">
+                                  <span className="text-blue-600 font-bold">•</span>
+                                  <span className="flex-1">{line.substring(1).trim()}</span>
+                                </div>
+                              );
+                            }
+                            if (line.trim()) {
+                              return <p key={index} className="text-gray-700">{line}</p>;
+                            }
+                            return null;
+                          })}
+                        </div>
+                      </div>
                     </div>
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={() => setShowCatchUpData(false)}
-                      className="text-gray-500 hover:text-gray-700"
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-4 w-4" />
                     </Button>
-                  </div>
-                  
-                  <div className="prose prose-lg max-w-none">
-                    <div className="space-y-4 text-base lg:text-lg leading-relaxed">
-                      {catchUpData.split('\n').map((line, index) => {
-                        if (line.startsWith('**') && line.endsWith('**')) {
-                          return (
-                            <h4 key={index} className="text-xl font-bold text-blue-800 border-b-2 border-blue-200 pb-2 mt-6 mb-3">
-                              {line.replace(/\*\*/g, '')}
-                            </h4>
-                          );
-                        }
-                        if (line.startsWith('•')) {
-                          return (
-                            <div key={index} className="flex items-start gap-3 ml-4">
-                              <span className="text-blue-600 font-bold text-xl mt-1">•</span>
-                              <span className="flex-1 text-gray-800">{line.substring(1).trim()}</span>
-                            </div>
-                          );
-                        }
-                        if (line.trim() && !line.startsWith('**')) {
-                          return (
-                            <p key={index} className="text-gray-800 ml-4">
-                              {line}
-                            </p>
-                          );
-                        }
-                        return <div key={index} className="h-2"></div>;
-                      })}
-                    </div>
                   </div>
                 </div>
-              </Card>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Main 2-Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Column - Main Content (Transcript + Controls) */}
-            <div className="lg:col-span-8 space-y-6">
-              {/* Recording Controls */}
-              <Card className="p-6">
-                <Tabs defaultValue="record" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="record">Record</TabsTrigger>
-                    <TabsTrigger value="settings">Settings</TabsTrigger>
-                    <TabsTrigger value="actions">Actions</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="record" className="space-y-4">
-                    <RecordingControls
-                      isRecording={isRecording}
-                      isListening={isListening}
-                      onStartRecording={startRecording}
-                      onStopRecording={stopRecording}
-                      onClear={clearTranscript}
-                      transcriptLength={transcript.length}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="settings" className="space-y-4">
-                    <SpeakerSettings
-                      expectedSpeakers={expectedSpeakers}
-                      onSpeakerCountChange={handleSpeakerCountChange}
-                      onReset={handleResetSpeakers}
-                      detectedSpeakers={detectedSpeakers}
-                      onSpeakerNameChange={handleSpeakerNameChange}
-                      userName={userName}
-                      onUserNameChange={setUserName}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="actions" className="space-y-3">
-                    <Button
-                      onClick={() => {
-                        console.log('🔥 AI Summary button clicked!');
-                        console.log('📊 Transcript length:', transcript.length);
-                        console.log('📊 Transcript data:', transcript);
-                        generateSummary();
-                      }}
-                      disabled={transcript.length === 0 || isGeneratingSummary}
-                      className="w-full"
-                      size="lg"
-                    >
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      {isGeneratingSummary ? "Generating..." : "Generate AI Summary"}
-                    </Button>
-                    
-                    <Button
-                      onClick={exportTranscript}
-                      disabled={transcript.length === 0}
-                      className="w-full"
-                      variant="outline"
-                      size="lg"
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Export Transcript
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => setShowMeetingSummary(!showMeetingSummary)}
-                    >
-                      <FileText className="w-5 h-5 mr-2" />
-                      View Meeting Summary
-                    </Button>
-                  </TabsContent>
-                </Tabs>
-              </Card>
-
-              {/* Transcript Display */}
-              <TranscriptDisplay 
-                transcript={transcript} 
-                isRecording={isRecording}
-              />
-              
-              {/* Ask About Meeting Input */}
-              <Card className="p-6 bg-gradient-to-br from-purple-50/50 to-blue-50/50 border-purple-200">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
+            {/* Transcript Area */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-5xl mx-auto space-y-6">
+                <TranscriptDisplay 
+                  transcript={transcript} 
+                  isRecording={isRecording}
+                />
+                
+                {/* Ask About Meeting - Inline */}
+                <Card className="p-4 bg-gradient-to-br from-purple-50/50 to-blue-50/50 border-purple-200">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
                       <Brain className="h-5 w-5 text-purple-600" />
+                      <div>
+                        <h4 className="font-semibold text-sm">Ask About Meeting</h4>
+                        <p className="text-xs text-muted-foreground">Get answers without interrupting</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg text-foreground">Ask About Meeting</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Ask questions without interrupting the conversation
-                      </p>
-                    </div>
+                    <form onSubmit={handleQuerySubmit} className="flex gap-2">
+                      <Input
+                        value={assistantQuery}
+                        onChange={(e) => setAssistantQuery(e.target.value)}
+                        placeholder='Try: "Who mentioned the budget?" or "What did I miss?"'
+                        className="flex-1"
+                      />
+                      <Button type="submit" size="sm">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </form>
                   </div>
-                  <form onSubmit={handleQuerySubmit} className="flex gap-3">
-                    <Input
-                      value={assistantQuery}
-                      onChange={(e) => setAssistantQuery(e.target.value)}
-                      placeholder='Try: "Who mentioned the budget?" or "What did I miss?"'
-                      className="flex-1 h-12 text-base"
-                    />
-                    <Button type="submit" size="lg">
-                      <Send className="w-5 h-5" />
-                    </Button>
-                  </form>
-                </div>
-              </Card>
+                </Card>
 
-              {/* Chat Messages */}
-              {chatMessages.length > 0 && (
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
-                      <MessageCircle className="h-5 w-5 text-purple-600" />
-                      Conversation History
-                    </h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPersonalDashboard(true)}
-                    >
-                      View All ({chatMessages.length})
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
+                {/* Recent Chat Messages */}
+                {chatMessages.length > 0 && (
+                  <div className="space-y-3">
                     {chatMessages.slice(-3).map((message) => (
-                      <div
+                      <Card
                         key={message.id}
-                        className={`p-4 rounded-lg ${
+                        className={`p-4 ${
                           message.type === 'user' 
-                            ? 'bg-primary/10 border-l-4 border-primary' 
+                            ? 'bg-primary/5 border-l-4 border-primary' 
                             : 'bg-muted border-l-4 border-purple-500'
                         }`}
                       >
@@ -1794,60 +1768,49 @@ ${keyPoints}`;
                             {message.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
-                        <p className="text-foreground leading-relaxed text-base">{message.content}</p>
+                        <p className="text-sm text-foreground">{message.content}</p>
                         
                         {message.transcriptReferences && message.transcriptReferences.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground">Referenced from transcript:</p>
+                          <div className="mt-3 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">Referenced:</p>
                             {message.transcriptReferences.map((ref, index) => (
                               <button
                                 key={index}
                                 onClick={() => scrollToTranscriptEntry(ref.id)}
-                                className="block w-full text-left p-3 bg-background rounded border text-sm hover:bg-accent transition-colors"
+                                className="block w-full text-left p-2 bg-background rounded text-xs hover:bg-accent transition-colors"
                               >
                                 <span className="font-medium">{ref.speaker}:</span> {ref.text.substring(0, 80)}...
                               </button>
                             ))}
                           </div>
                         )}
-                      </div>
+                      </Card>
                     ))}
+                    {chatMessages.length > 3 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowPersonalDashboard(true)}
+                        className="w-full"
+                      >
+                        View All {chatMessages.length} Messages
+                      </Button>
+                    )}
                   </div>
-                </Card>
-              )}
+                )}
+              </div>
             </div>
+          </div>
 
-            {/* Right Column - Highlights & Summary */}
-            <div className="lg:col-span-4 space-y-6">
-              {/* AI Summary Display */}
-              {summary && (
-                <Card className="p-6 bg-gradient-to-br from-amber-50/50 to-orange-50/50 border-amber-200 shadow-lg">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-amber-100 rounded-lg">
-                        <Sparkles className="h-6 w-6 text-amber-600" />
-                      </div>
-                      <h3 className="text-xl font-bold text-amber-900">AI Summary</h3>
-                    </div>
-                    <div className="prose prose-sm max-w-none">
-                      <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-base">
-                        {summary}
-                      </p>
-                    </div>
-                    <EmailSummary summary={summary} isGenerating={isGeneratingSummary} />
-                  </div>
-                </Card>
-              )}
-              
-              {/* Highlights Sidebar */}
-              <HighlightsSidebar 
-                highlights={highlights}
-                actionItems={actionItems}
-                transcript={transcript}
-                currentUser={userName}
-                onHighlightClick={handleHighlightClick}
-              />
-            </div>
+          {/* Right Sidebar - Highlights */}
+          <div className="w-80 border-l bg-muted/20 overflow-y-auto">
+            <HighlightsSidebar 
+              highlights={highlights}
+              actionItems={actionItems}
+              transcript={transcript}
+              currentUser={userName}
+              onHighlightClick={handleHighlightClick}
+            />
           </div>
         </div>
 
