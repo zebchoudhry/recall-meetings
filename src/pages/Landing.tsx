@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import recallHeroLogo from "@/assets/recall-main-logo.png";
+import catchMeUpDemo from "@/assets/catch-me-up-demo.png";
 
 const Landing = () => {
   const scrollToFeatures = () => {
@@ -73,6 +74,33 @@ const Landing = () => {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Catch Me Up Demo Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-accent/5 via-background to-primary/5 border-b border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              Catch Me Up—Never Miss Key Moments Again
+            </h2>
+          </div>
+          
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30 p-4 sm:p-8">
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/50">
+              <img 
+                src={catchMeUpDemo}
+                alt="Catch Me Up feature demonstration - showing someone zoning out then instantly getting a recap summary"
+                className="w-full h-full object-cover animate-fade-in"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent"></div>
+            </div>
+          </div>
+          
+          <p className="text-center text-lg text-muted-foreground mt-8 max-w-2xl mx-auto">
+            See Recall in action. Instantly get caught up when you lose focus.
+          </p>
         </div>
       </section>
 
