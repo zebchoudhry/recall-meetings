@@ -1731,9 +1731,8 @@ ${keyPoints}`;
               </div>
             )}
 
-            {/* Transcript Area */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="max-w-5xl mx-auto space-y-6">
+              <div className="max-w-none mx-auto space-y-6">
                 <TranscriptDisplay 
                   transcript={transcript} 
                   isRecording={isRecording}
