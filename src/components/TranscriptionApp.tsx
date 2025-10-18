@@ -1557,7 +1557,7 @@ ${keyPoints}`;
           <AppHeader />
         </div>
         
-        <div className="flex-1 flex pt-16">
+        <div className="flex-1 flex pt-24">
           {/* Left Sidebar - Compact Controls */}
           <div className="w-80 border-r bg-muted/20 p-4 space-y-4 overflow-y-auto">
             {/* Catch Me Up - Compact Version */}
