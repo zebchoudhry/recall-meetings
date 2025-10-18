@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User, FileText, Brain, Zap, X } from "lucide-react";
+import { Mic, MicOff, Download, Sparkles, AlertCircle, Square, MessageCircle, Send, User, FileText, Brain, Zap, X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { MeetingSummary } from "./MeetingSummary";
 import { CheatSheet } from "./CheatSheet";
 import { AppHeader } from "./AppHeader";
 import { PrivacyBanner } from "./PrivacyBanner";
+import { PrivacyModeIndicator } from "./PrivacyModeIndicator";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
@@ -1553,14 +1554,13 @@ ${keyPoints}`;
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen bg-background flex flex-col">
-        {/* Combined Fixed Header Area */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-background">
-          <PrivacyBanner />
+        {/* Fixed Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
           <AppHeader />
         </div>
         
         {/* Main Content with proper top offset */}
-        <div className="flex-1 flex mt-32">
+        <div className="flex-1 flex mt-20">
           {/* Left Sidebar - Compact Controls */}
           <div className="w-80 border-r bg-muted/20 p-4 space-y-4 overflow-y-auto">
             {/* Catch Me Up - Compact Version */}
@@ -1580,6 +1580,20 @@ ${keyPoints}`;
                   <Zap className="h-4 w-4 mr-2" />
                   Catch Me Up Now
                 </Button>
+              </div>
+            </Card>
+
+            {/* Privacy Info Card */}
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+              <div className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-green-600" />
+                  <h4 className="font-semibold text-sm text-green-900">Privacy Protected</h4>
+                </div>
+                <p className="text-xs text-green-800 leading-relaxed">
+                  No data stored externally. Your conversations stay private on your device.
+                </p>
+                <PrivacyModeIndicator />
               </div>
             </Card>
 
