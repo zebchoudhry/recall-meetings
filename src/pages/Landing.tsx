@@ -104,6 +104,60 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Getting Started Steps */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-background border-b border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              3 Steps: Open Recall | Run Meeting | Receive Private Summary
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              No Fuss, No Setup.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            {/* Step 1 */}
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-2 border-primary/30">
+                1
+              </div>
+              <h3 className="text-2xl font-semibold text-foreground">
+                Open Recall
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Launch the app in your browser. That's it. No downloads, no account creation, no complicated setup.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-2 border-accent/30">
+                2
+              </div>
+              <h3 className="text-2xl font-semibold text-foreground">
+                Run Meeting
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Press record and focus on the conversation. Recall captures everything automatically.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto border-2 border-primary/30">
+                3
+              </div>
+              <h3 className="text-2xl font-semibold text-foreground">
+                Receive Private Summary
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Get instant summaries, action items, and searchable transcripts. All stored privately on your device.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Value Outcomes - What You Actually Get */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-muted/50 to-background border-b border-border">
