@@ -1,33 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { 
-  Mic, 
-  Clock, 
-  MessageCircle, 
-  Bell, 
-  Users, 
-  RotateCcw, 
-  Mail, 
-  LayoutDashboard,
-  Lock,
-  ArrowRight,
-  CheckCircle2,
-  Chrome,
-  AlertCircle,
-  Shield
-} from "lucide-react";
+import { Mic, Clock, MessageCircle, Bell, Users, RotateCcw, Mail, LayoutDashboard, Lock, ArrowRight, CheckCircle2, Chrome, AlertCircle, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import recallHeroLogo from "@/assets/recall-main-logo.png";
 import catchMeUpDemo from "@/assets/catch-me-up-demo.png";
-
 const Landing = () => {
   const scrollToFeatures = () => {
-    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("how-it-works")?.scrollIntoView({
+      behavior: "smooth"
+    });
   };
-
-  return (
-    <div className="min-h-screen">
+  return <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary py-20 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
@@ -40,11 +24,7 @@ const Landing = () => {
           </div>
           
           <div className="flex justify-center mb-6">
-            <img 
-              src={recallHeroLogo} 
-              alt="Recall Logo" 
-              className="h-48 sm:h-60 lg:h-72 w-auto object-contain drop-shadow-2xl"
-            />
+            <img src={recallHeroLogo} alt="Recall Logo" className="h-48 sm:h-60 lg:h-72 w-auto object-contain drop-shadow-2xl" />
           </div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 tracking-tight">
@@ -64,12 +44,7 @@ const Landing = () => {
               <Link to="/app">Try Recall Free</Link>
             </Button>
             
-            <Button 
-              onClick={scrollToFeatures}
-              variant="outline" 
-              size="lg" 
-              className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 px-8 py-6 text-lg backdrop-blur-sm"
-            >
+            <Button onClick={scrollToFeatures} variant="outline" size="lg" className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 px-8 py-6 text-lg backdrop-blur-sm">
               See How It Works
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -79,29 +54,7 @@ const Landing = () => {
 
       {/* Catch Me Up Demo Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-accent/5 via-background to-primary/5 border-b border-border">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Catch Me Up—Never Miss Key Moments Again
-            </h2>
-          </div>
-          
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30 p-4 sm:p-8">
-            <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/50">
-              <img 
-                src={catchMeUpDemo}
-                alt="Catch Me Up feature demonstration - showing someone zoning out then instantly getting a recap summary"
-                className="w-full h-full object-cover animate-fade-in"
-                loading="eager"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent"></div>
-            </div>
-          </div>
-          
-          <p className="text-center text-lg text-muted-foreground mt-8 max-w-2xl mx-auto">
-            See Recall in action. Instantly get caught up when you lose focus.
-          </p>
-        </div>
+        
       </section>
 
       {/* Getting Started Steps */}
@@ -449,17 +402,9 @@ const Landing = () => {
             <Card className="border-primary/20 hover:shadow-xl transition-all">
               <CardContent className="p-8">
                 <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className="w-5 h-5 fill-amber-400 text-amber-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
+                  {[1, 2, 3, 4, 5].map(star => <svg key={star} className="w-5 h-5 fill-amber-400 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
+                    </svg>)}
                 </div>
                 <p className="text-lg text-foreground mb-6 leading-relaxed">
                   "This has really helped me out with the endless meetings that I have to be in. I can track my tasks better and I know who will be doing which task and by which deadline. The catch me up button has saved me many times."
@@ -479,17 +424,9 @@ const Landing = () => {
             <Card className="border-success/20 hover:shadow-xl transition-all">
               <CardContent className="p-8">
                 <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className="w-5 h-5 fill-amber-400 text-amber-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
+                  {[1, 2, 3, 4, 5].map(star => <svg key={star} className="w-5 h-5 fill-amber-400 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
+                    </svg>)}
                 </div>
                 <p className="text-lg text-foreground mb-6 leading-relaxed">
                   "During a lecture I knew I was dozing off at the back. The transcript caught me up with all the key notes, deadlines and the really important data. I was lucky, the app recorded my name being mentioned and pointed out something that I missed during a previous lecture."
@@ -509,17 +446,9 @@ const Landing = () => {
             <Card className="border-accent/20 hover:shadow-xl transition-all">
               <CardContent className="p-8">
                 <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className="w-5 h-5 fill-amber-400 text-amber-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
+                  {[1, 2, 3, 4, 5].map(star => <svg key={star} className="w-5 h-5 fill-amber-400 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
+                    </svg>)}
                 </div>
                 <p className="text-lg text-foreground mb-6 leading-relaxed">
                   "The company I work for have told me not to use any AI that will hold or store data. This app has helped me and my boss many times and it has satisfied the leadership teams request for privacy. Nothing stored or recorded, no data leakage."
@@ -1015,8 +944,6 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
