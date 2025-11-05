@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PrivacySettings } from "@/components/PrivacySettings";
 import { PrivacyModeIndicator } from "@/components/PrivacyModeIndicator";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import recallLogo from "@/assets/recall-logo-new.svg";
 
 export const AppHeader = () => {
@@ -44,6 +45,8 @@ export const AppHeader = () => {
         {/* Privacy Settings */}
         <div className="flex items-center gap-3">
           <PrivacyModeIndicator />
+          
+          <FeedbackButton />
           
           <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
             <DialogTrigger asChild>
