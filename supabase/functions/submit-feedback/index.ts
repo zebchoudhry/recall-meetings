@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email notification to developer
     const emailResponse = await resend.emails.send({
       from: "RecallMeeting Feedback <onboarding@resend.dev>",
-      to: ["your-email@example.com"], // Replace with your actual email
+      to: ["lumbernumbers1@hotmail.co.uk"],
       subject: `RecallMeeting Feedback: ${typeLabel}`,
       html: emailHtml,
       replyTo: feedbackData.email || undefined,
