@@ -48,15 +48,15 @@ const Landing = () => {
           </div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 tracking-tight">
-            Stop Losing Important Details in <span className="text-accent">Every Meeting</span>
+            Full AI Automation. <span className="text-accent">Your Privacy Choice.</span>
           </h1>
           
           <p className="text-xl sm:text-2xl text-primary-foreground/90 mb-4 max-w-3xl mx-auto">
-            Missed something crucial? Zoned out for a minute? Forgot who said what?
+            Get everything Otter.ai and Fireflies offer—transcription, AI summaries, action items—but YOU control where your data lives.
           </p>
           
           <p className="text-2xl sm:text-3xl font-semibold text-accent mb-10 max-w-3xl mx-auto">
-            Recall captures everything—so you never have to.
+            AI-powered features. User-controlled privacy. No forced cloud uploads.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -109,10 +109,10 @@ const Landing = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              3 Steps: Open Recall | Run Meeting | Receive Private Summary
+              3 Steps: Open Recall | Choose Your Privacy Level | Get AI Insights
             </h2>
             <p className="text-xl text-muted-foreground">
-              No Fuss, No Setup.
+              Full AI automation. Your privacy choice. Zero setup required.
             </p>
           </div>
 
@@ -164,10 +164,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              What You Get With Recall
+              AI-Powered Features (With Privacy You Control)
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Turn every conversation into searchable insights, action items, and clarity
+              All the automation you need. None of the forced cloud storage you don't want.
             </p>
           </div>
           
@@ -176,22 +176,22 @@ const Landing = () => {
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-6">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-4">Perfect Transcripts</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-4">AI-Powered Transcription</h3>
               <p className="text-muted-foreground mb-4">
-                Real-time transcription with speaker identification. Search, review, and share every word that was said.
+                Real-time transcription with automatic speaker identification—just like Otter.ai, but stored locally.
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Automatic speaker detection</span>
+                  <span>Live speech-to-text transcription</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Searchable transcript history</span>
+                  <span>AI speaker identification & naming</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Export and share instantly</span>
+                  <span>Export & share (no cloud required)</span>
                 </li>
               </ul>
             </div>
@@ -200,22 +200,22 @@ const Landing = () => {
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success mb-6">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-4">Never Miss Context</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-4">AI Meeting Summaries</h3>
               <p className="text-muted-foreground mb-4">
-                Zoned out? Joined late? Get instant 10-minute recaps to catch up without awkward questions.
+                Instant AI-generated summaries and recaps—powered by Google Gemini, processed on your terms.
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>One-click "Catch Me Up" summaries</span>
+                  <span>One-click "Catch Me Up" AI summaries</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Replay any section instantly</span>
+                  <span>Email summaries to stakeholders</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Jump to key moments</span>
+                  <span>Replay & jump to key moments</span>
                 </li>
               </ul>
             </div>
@@ -224,24 +224,158 @@ const Landing = () => {
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent/10 text-accent mb-6">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-4">Actionable Insights</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-4">AI Action Item Extraction</h3>
               <p className="text-muted-foreground mb-4">
-                Automatically detect action items, questions, and mentions. Know exactly what needs doing and who said what.
+                Automatic AI detection of tasks, questions, and assignments—with smart notifications when you're mentioned.
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>AI-detected action items</span>
+                  <span>AI-powered action item detection</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Highlighted Q&A sections</span>
+                  <span>Auto-highlighted questions & answers</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                  <span>Personal task dashboard</span>
+                  <span>Personal task dashboard & alerts</span>
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Section - Recall vs Competitors */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-accent/10 via-primary/5 to-background border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Why Recall is Different
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              You shouldn't have to choose between AI automation and data privacy. With Recall, you get both.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {/* Competitors Approach */}
+            <Card className="border-destructive/30 bg-background">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-destructive/10 text-destructive">
+                    <AlertCircle className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">Otter.ai / Fireflies / Others</h3>
+                    <p className="text-sm text-muted-foreground">AI + Forced Cloud Storage</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">AI transcription & summaries</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Action item extraction</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Search & history</span>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-border">
+                  <p className="text-sm font-semibold text-destructive mb-3">But you must accept:</p>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-destructive font-bold">×</span>
+                      <span className="text-sm text-muted-foreground">All data uploaded to their cloud</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-destructive font-bold">×</span>
+                      <span className="text-sm text-muted-foreground">No option for zero-retention mode</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-destructive font-bold">×</span>
+                      <span className="text-sm text-muted-foreground">Can't use for NDAs or confidential meetings</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-destructive font-bold">×</span>
+                      <span className="text-sm text-muted-foreground">Your data trains their models</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recall Approach */}
+            <Card className="border-success/30 bg-gradient-to-br from-success/5 to-background relative overflow-hidden">
+              <div className="absolute top-4 right-4">
+                <div className="bg-success text-success-foreground px-3 py-1 rounded-full text-xs font-bold">
+                  BEST OF BOTH
+                </div>
+              </div>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success">
+                    <Shield className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">RecallMeeting</h3>
+                    <p className="text-sm text-muted-foreground">AI + Privacy Choice</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground font-semibold">AI transcription & summaries ✓</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground font-semibold">Action item extraction ✓</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground font-semibold">Search & history ✓</span>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-border">
+                  <p className="text-sm font-semibold text-success mb-3">Plus you get to choose:</p>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground"><strong>Privacy Mode:</strong> Zero data retention</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground"><strong>Enhanced Mode:</strong> Local storage only</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Switch modes per meeting</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Your data never trains AI models</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-success/10 border border-success/30 rounded-lg">
+              <Shield className="h-5 w-5 text-success" />
+              <p className="text-foreground font-semibold">
+                Same AI power. Your privacy rules. No compromises.
+              </p>
             </div>
           </div>
         </div>
@@ -414,11 +548,11 @@ const Landing = () => {
             </div>
             
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Your Data, Your Device, Your Choice
+              Full AI Automation. Two Privacy Modes.
             </h2>
             
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Unlike Otter.ai and other tools that require cloud storage, Recall gives you complete control over your privacy with our unique <strong>two-tier privacy system</strong>.
+              Recall offers the same AI features as Otter.ai—but with our unique <strong>two-tier privacy system</strong> that lets YOU decide: zero retention or local-only storage.
             </p>
           </div>
 
