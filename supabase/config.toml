@@ -43,10 +43,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-brainstorm]
 verify_jwt = false
 
 [functions.send-brainstorm-email]
-verify_jwt = false
+verify_jwt = true
