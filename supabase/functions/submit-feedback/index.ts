@@ -3,6 +3,18 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// HTML escape function to prevent XSS in emails
+function escapeHtml(text: string): string {
+  const htmlEntities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -44,23 +56,23 @@ const handler = async (req: Request): Promise<Response> => {
     };
     const typeLabel = typeLabels[feedbackData.type] || feedbackData.type;
 
-    // Build email content
+    // Build email content with escaped user input
     const emailHtml = `
-      <h1>${typeLabel}</h1>
-      <p><strong>Submitted:</strong> ${new Date(feedbackData.timestamp).toLocaleString()}</p>
+      <h1>${escapeHtml(typeLabel)}</h1>
+      <p><strong>Submitted:</strong> ${escapeHtml(new Date(feedbackData.timestamp).toLocaleString())}</p>
       
       <h2>Description</h2>
-      <p style="white-space: pre-wrap;">${feedbackData.description}</p>
+      <p style="white-space: pre-wrap;">${escapeHtml(feedbackData.description)}</p>
       
-      ${feedbackData.email ? `<p><strong>Contact Email:</strong> ${feedbackData.email}</p>` : '<p><em>Submitted anonymously</em></p>'}
+      ${feedbackData.email ? `<p><strong>Contact Email:</strong> ${escapeHtml(feedbackData.email)}</p>` : '<p><em>Submitted anonymously</em></p>'}
       
       <hr style="margin: 20px 0;" />
       
       <h3>Browser Information</h3>
       <ul>
-        <li><strong>User Agent:</strong> ${feedbackData.browserInfo.userAgent}</li>
-        <li><strong>Viewport:</strong> ${feedbackData.browserInfo.viewport}</li>
-        <li><strong>Language:</strong> ${feedbackData.browserInfo.language}</li>
+        <li><strong>User Agent:</strong> ${escapeHtml(feedbackData.browserInfo.userAgent)}</li>
+        <li><strong>Viewport:</strong> ${escapeHtml(feedbackData.browserInfo.viewport)}</li>
+        <li><strong>Language:</strong> ${escapeHtml(feedbackData.browserInfo.language)}</li>
       </ul>
     `;
 

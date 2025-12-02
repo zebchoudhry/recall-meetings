@@ -1,5 +1,19 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// HTML escape function to prevent XSS in emails
+function escapeHtml(text: string): string {
+  if (!text) return '';
+  const htmlEntities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +38,29 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY not configured");
@@ -42,19 +79,33 @@ serve(async (req) => {
       throw new Error("Valid email address is required");
     }
 
+    // Security: Only allow sending to the authenticated user's email
+    if (to_email.toLowerCase() !== user.email?.toLowerCase()) {
+      return new Response(
+        JSON.stringify({ error: 'You can only send emails to your own email address' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const durationMinutes = Math.floor(duration_seconds / 60);
     const durationDisplay = durationMinutes > 0 ? `${durationMinutes} min` : `${duration_seconds} sec`;
 
+    // Escape all user-provided content
+    const escapedFinalIdea = escapeHtml(final_idea);
+    const escapedSummary = escapeHtml(summary);
+    const escapedTranscript = escapeHtml(transcript);
+    const escapedSessionDate = escapeHtml(session_date);
+
     const keyIdeasHtml = key_ideas.length > 0 
-      ? key_ideas.map(idea => `<li style="margin-bottom: 8px;">${idea}</li>`).join("")
+      ? key_ideas.map(idea => `<li style="margin-bottom: 8px;">${escapeHtml(idea)}</li>`).join("")
       : "<li>No key ideas extracted</li>";
 
     const actionsHtml = actions.length > 0
-      ? actions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join("")
+      ? actions.map(action => `<li style="margin-bottom: 8px;">${escapeHtml(action)}</li>`).join("")
       : "<li>No action items identified</li>";
 
     const decisionsHtml = decisions.length > 0
-      ? decisions.map(decision => `<li style="margin-bottom: 8px;">${decision}</li>`).join("")
+      ? decisions.map(decision => `<li style="margin-bottom: 8px;">${escapeHtml(decision)}</li>`).join("")
       : "<li>No decisions recorded</li>";
 
     const emailHtml = `
@@ -68,7 +119,7 @@ serve(async (req) => {
   
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 24px;">🧠 Brainstorm Session Complete</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">${session_date} • ${durationDisplay}</p>
+    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">${escapedSessionDate} • ${durationDisplay}</p>
   </div>
 
   <div style="background: #f8f9fa; padding: 25px; border-radius: 0 0 12px 12px; border: 1px solid #e9ecef; border-top: none;">
@@ -76,13 +127,13 @@ serve(async (req) => {
     <!-- Final Best Idea -->
     <div style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
       <h2 style="color: #c44536; margin: 0 0 10px 0; font-size: 16px;">🎯 FINAL BEST IDEA</h2>
-      <p style="color: #333; margin: 0; font-size: 18px; font-weight: 600;">${final_idea || "No final idea extracted"}</p>
+      <p style="color: #333; margin: 0; font-size: 18px; font-weight: 600;">${escapedFinalIdea || "No final idea extracted"}</p>
     </div>
 
     <!-- Executive Summary -->
     <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef;">
       <h2 style="color: #495057; margin: 0 0 12px 0; font-size: 16px;">📋 Executive Summary</h2>
-      <p style="color: #666; margin: 0;">${summary || "No summary available"}</p>
+      <p style="color: #666; margin: 0;">${escapedSummary || "No summary available"}</p>
     </div>
 
     <!-- Key Ideas -->
@@ -113,7 +164,7 @@ serve(async (req) => {
     <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
       <h2 style="color: #495057; margin: 0 0 12px 0; font-size: 16px;">📝 Full Transcript</h2>
       <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; max-height: 300px; overflow-y: auto;">
-        <pre style="color: #666; margin: 0; white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 14px;">${transcript || "No transcript available"}</pre>
+        <pre style="color: #666; margin: 0; white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 14px;">${escapedTranscript || "No transcript available"}</pre>
       </div>
     </div>
 
@@ -132,7 +183,7 @@ serve(async (req) => {
     const emailResponse = await resend.emails.send({
       from: "RecallMeeting <onboarding@resend.dev>",
       to: [to_email],
-      subject: `🧠 Brainstorm Session: ${final_idea?.substring(0, 50) || "Your Ideas"}...`,
+      subject: `🧠 Brainstorm Session: ${escapedFinalIdea?.substring(0, 50) || "Your Ideas"}...`,
       html: emailHtml,
     });
 

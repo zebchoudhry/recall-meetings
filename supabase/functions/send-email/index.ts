@@ -1,4 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+// HTML escape function to prevent XSS in emails
+function escapeHtml(text: string): string {
+  const htmlEntities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +24,29 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { to_email, summary } = await req.json()
     
     // Input validation
@@ -18,6 +54,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Email address and summary are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Security: Only allow sending to the authenticated user's email
+    if (to_email.toLowerCase() !== user.email?.toLowerCase()) {
+      return new Response(
+        JSON.stringify({ error: 'You can only send emails to your own email address' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
     
@@ -38,23 +82,23 @@ serve(async (req) => {
       )
     }
 
-    // Using Resend API for email sending (you can also use SendGrid, etc.)
+    // Using Resend API for email sending
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     if (!resendApiKey) {
       throw new Error('Email service not configured')
     }
 
     const emailData = {
-      from: 'Meeting Transcriber <noreply@yourdomain.com>', // Replace with your domain
+      from: 'Meeting Transcriber <noreply@yourdomain.com>',
       to: [to_email],
       subject: `Meeting Summary - ${new Date().toLocaleDateString()}`,
       html: `
         <h2>Meeting Summary</h2>
         <p>Here's your AI-generated meeting summary:</p>
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          ${summary.replace(/\n/g, '<br>')}
+          ${escapeHtml(summary).replace(/\n/g, '<br>')}
         </div>
-        <p><small>Generated on ${new Date().toLocaleString()}</small></p>
+        <p><small>Generated on ${escapeHtml(new Date().toLocaleString())}</small></p>
       `
     }
 
