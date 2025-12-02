@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,16 +8,14 @@ import {
   Mic, 
   MicOff, 
   Loader2, 
-  Lightbulb, 
-  CheckCircle, 
-  Target,
-  Mail,
-  X
+  X,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 
-interface BrainstormTag {
-  type: "idea" | "decision" | "action" | "concept";
-  text: string;
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
   timestamp: Date;
 }
 
@@ -30,14 +27,15 @@ interface BrainstormSessionProps {
 export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSessionProps) => {
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [interimTranscript, setInterimTranscript] = useState("");
-  const [tags, setTags] = useState<BrainstormTag[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState("");
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
+  const [currentUserSpeech, setCurrentUserSpeech] = useState("");
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -47,6 +45,19 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
   const animationFrameRef = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const shouldRestartRef = useRef(false);
+  const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when conversation updates
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  }, [conversation, currentUserSpeech]);
 
   // Timer effect
   useEffect(() => {
@@ -73,32 +84,119 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
     }
   }, [isRecording]);
 
-  // Background tag detection
-  const detectTags = useCallback((text: string) => {
-    const lowerText = text.toLowerCase();
-    const newTags: BrainstormTag[] = [];
+  // Text-to-speech for AI responses
+  const speakText = useCallback((text: string) => {
+    if (isMuted || !text.trim()) return;
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    
+    // Try to get a good voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => 
+      v.name.includes('Google') || 
+      v.name.includes('Samantha') || 
+      v.name.includes('Alex') ||
+      v.lang.startsWith('en')
+    );
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = () => {
+      setIsAISpeaking(true);
+      // Pause recognition while AI speaks to avoid feedback
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.log("Recognition already stopped");
+        }
+      }
+    };
+    
+    utterance.onend = () => {
+      setIsAISpeaking(false);
+      // Resume recognition after AI finishes speaking
+      if (shouldRestartRef.current && recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+        } catch (e) {
+          console.log("Recognition restart failed:", e);
+        }
+      }
+    };
+    
+    utterance.onerror = () => {
+      setIsAISpeaking(false);
+    };
+    
+    speechSynthesisRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, [isMuted]);
 
-    // Detect ideas
-    if (lowerText.includes("idea") || lowerText.includes("what if") || lowerText.includes("how about") || lowerText.includes("we could")) {
-      newTags.push({ type: "idea", text: text.trim(), timestamp: new Date() });
-    }
-    // Detect decisions
-    if (lowerText.includes("let's do") || lowerText.includes("decided") || lowerText.includes("we will") || lowerText.includes("going with")) {
-      newTags.push({ type: "decision", text: text.trim(), timestamp: new Date() });
-    }
-    // Detect actions
-    if (lowerText.includes("action") || lowerText.includes("need to") || lowerText.includes("should") || lowerText.includes("will do")) {
-      newTags.push({ type: "action", text: text.trim(), timestamp: new Date() });
-    }
-    // Detect strong concepts
-    if (lowerText.includes("important") || lowerText.includes("key") || lowerText.includes("main") || lowerText.includes("critical")) {
-      newTags.push({ type: "concept", text: text.trim(), timestamp: new Date() });
-    }
+  // Get AI response
+  const getAIResponse = useCallback(async (userMessage: string) => {
+    try {
+      const systemPrompt = `You are a helpful brainstorming partner having a voice conversation. Keep your responses concise (2-4 sentences max) and conversational. Help the user explore and develop their ideas. Ask clarifying questions, offer suggestions, and help them think through problems. Be encouraging and collaborative. Do not use markdown formatting, bullet points, or numbered lists - speak naturally as if in a real conversation.`;
 
-    if (newTags.length > 0) {
-      setTags(prev => [...prev, ...newTags].slice(-20)); // Keep last 20 tags
+      const messages = [
+        { role: "system", content: systemPrompt },
+        ...conversation.map(m => ({ role: m.role, content: m.content })),
+        { role: "user", content: userMessage }
+      ];
+
+      const { data, error } = await supabase.functions.invoke("brainstorm-chat", {
+        body: { messages }
+      });
+
+      if (error) throw error;
+      
+      const aiResponse = data.response || "I'm sorry, I didn't catch that. Could you repeat?";
+      
+      // Add AI response to conversation
+      setConversation(prev => [...prev, {
+        role: "assistant",
+        content: aiResponse,
+        timestamp: new Date()
+      }]);
+      
+      // Speak the response
+      speakText(aiResponse);
+      
+    } catch (error) {
+      console.error("AI response error:", error);
+      const fallbackResponse = "I'm having trouble processing that. Could you try again?";
+      setConversation(prev => [...prev, {
+        role: "assistant",
+        content: fallbackResponse,
+        timestamp: new Date()
+      }]);
+      speakText(fallbackResponse);
     }
-  }, []);
+  }, [conversation, speakText]);
+
+  // Process user speech after silence
+  const processUserSpeech = useCallback((finalText: string) => {
+    if (!finalText.trim()) return;
+    
+    // Add user message to conversation
+    setConversation(prev => [...prev, {
+      role: "user",
+      content: finalText.trim(),
+      timestamp: new Date()
+    }]);
+    
+    setCurrentUserSpeech("");
+    
+    // Get AI response
+    getAIResponse(finalText.trim());
+  }, [getAIResponse]);
 
   const startRecording = async () => {
     try {
@@ -142,16 +240,36 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
           const result = event.results[i];
           if (result.isFinal) {
             final += result[0].transcript + " ";
-            detectTags(result[0].transcript);
           } else {
             interim += result[0].transcript;
           }
         }
 
         if (final) {
-          setTranscript(prev => prev + final);
+          setCurrentUserSpeech(prev => prev + final);
+          
+          // Reset silence timeout
+          if (silenceTimeoutRef.current) {
+            clearTimeout(silenceTimeoutRef.current);
+          }
+          
+          // Process after 1.5 seconds of silence
+          silenceTimeoutRef.current = setTimeout(() => {
+            setCurrentUserSpeech(current => {
+              if (current.trim()) {
+                processUserSpeech(current);
+              }
+              return "";
+            });
+          }, 1500);
         }
-        setInterimTranscript(interim);
+        
+        if (interim) {
+          // Reset silence timeout on interim results too
+          if (silenceTimeoutRef.current) {
+            clearTimeout(silenceTimeoutRef.current);
+          }
+        }
       };
 
       recognition.onerror = (event: any) => {
@@ -167,7 +285,7 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
       recognition.onend = () => {
         console.log("Speech recognition ended, shouldRestart:", shouldRestartRef.current);
-        if (shouldRestartRef.current) {
+        if (shouldRestartRef.current && !isAISpeaking) {
           try {
             recognition.start();
           } catch (e) {
@@ -184,9 +302,18 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
       setStartTime(new Date());
       updateAudioLevel();
 
+      // Initial AI greeting
+      const greeting = "Hello! I'm your brainstorming partner. What would you like to explore today? Just speak your ideas and I'll help you develop them.";
+      setConversation([{
+        role: "assistant",
+        content: greeting,
+        timestamp: new Date()
+      }]);
+      speakText(greeting);
+
       toast({
-        title: "Recording Started",
-        description: "Start brainstorming! Your ideas are being captured.",
+        title: "Session Started",
+        description: "Start brainstorming! Speak naturally and I'll respond.",
       });
 
     } catch (error) {
@@ -201,6 +328,9 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
   const stopRecording = async () => {
     shouldRestartRef.current = false;
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
     
     if (recognitionRef.current) {
       recognitionRef.current.abort();
@@ -225,16 +355,21 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
       clearInterval(timerRef.current);
     }
 
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+    }
+
     setIsRecording(false);
     setAudioLevel(0);
+    setIsAISpeaking(false);
 
-    // Process the brainstorm
-    if (transcript.trim().length > 10) {
+    // Process the brainstorm if we have conversation
+    if (conversation.length > 1) {
       await processBrainstorm();
     } else {
       toast({
         title: "Session Too Short",
-        description: "Please record more content before ending the session.",
+        description: "Please have a conversation before ending the session.",
         variant: "destructive",
       });
     }
@@ -245,6 +380,11 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
     setProcessingStep("Analyzing your brainstorm...");
 
     try {
+      // Build full transcript from conversation
+      const transcript = conversation.map(m => 
+        `${m.role === "user" ? "You" : "AI"}: ${m.content}`
+      ).join("\n\n");
+
       // Step 1: Process with AI
       const { data: aiData, error: aiError } = await supabase.functions.invoke("process-brainstorm", {
         body: { transcript }
@@ -274,7 +414,6 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
       if (dbError) {
         console.error("Database error:", dbError);
-        // Continue even if DB save fails
       }
 
       // Step 3: Send email
@@ -305,21 +444,17 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
         console.error("Email error:", emailError);
         toast({
           title: "Email Not Sent",
-          description: "Session saved but email delivery failed. Check your email settings.",
+          description: "Session saved but email delivery failed.",
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Brainstorm Complete! 🎉",
+          title: "Brainstorm Complete!",
           description: "Your session summary has been emailed to you.",
         });
       }
 
-      // Privacy: Clear local data (audio already not stored)
-      setTranscript("");
-      setInterimTranscript("");
-      setTags([]);
-      
+      setConversation([]);
       onSessionEnd();
 
     } catch (error) {
@@ -343,6 +478,7 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
   const cancelSession = () => {
     shouldRestartRef.current = false;
+    window.speechSynthesis.cancel();
     
     if (recognitionRef.current) {
       recognitionRef.current.abort();
@@ -359,12 +495,29 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+    }
 
     setIsRecording(false);
-    setTranscript("");
-    setInterimTranscript("");
-    setTags([]);
+    setConversation([]);
+    setCurrentUserSpeech("");
     onSessionEnd();
+  };
+
+  const toggleMute = () => {
+    if (!isMuted) {
+      window.speechSynthesis.cancel();
+    }
+    setIsMuted(!isMuted);
+  };
+
+  // Interrupt AI speech when user starts speaking
+  const interruptAI = () => {
+    if (isAISpeaking) {
+      window.speechSynthesis.cancel();
+      setIsAISpeaking(false);
+    }
   };
 
   if (isProcessing) {
@@ -400,7 +553,7 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
               <div className="w-3 h-3 rounded-full bg-muted" />
             )}
             <span className="font-medium">
-              {isRecording ? "Recording" : "Ready"}
+              {isAISpeaking ? "AI Speaking..." : isRecording ? "Listening" : "Ready"}
             </span>
           </div>
           <div className="text-2xl font-mono font-bold text-primary">
@@ -408,99 +561,92 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
           </div>
         </div>
         
-        <Button variant="ghost" size="icon" onClick={cancelSession}>
-          <X className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleMute}
+            title={isMuted ? "Unmute AI" : "Mute AI"}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={cancelSession}>
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Waveform Visualization */}
-      <div className="h-24 bg-muted/30 flex items-center justify-center relative overflow-hidden">
+      <div 
+        className="h-24 bg-muted/30 flex items-center justify-center relative overflow-hidden cursor-pointer"
+        onClick={interruptAI}
+      >
         <div className="flex items-center gap-1 h-full py-4">
           {Array.from({ length: 50 }).map((_, i) => (
             <div
               key={i}
-              className="w-1 bg-primary rounded-full transition-all duration-75"
+              className={`w-1 rounded-full transition-all duration-75 ${
+                isAISpeaking ? "bg-green-500" : "bg-primary"
+              }`}
               style={{
-                height: `${Math.max(8, audioLevel * 100 * Math.sin((i / 50) * Math.PI) * (0.5 + Math.random() * 0.5))}%`,
-                opacity: 0.3 + audioLevel * 0.7
+                height: `${Math.max(8, (isAISpeaking ? 0.5 : audioLevel) * 100 * Math.sin((i / 50) * Math.PI) * (0.5 + Math.random() * 0.5))}%`,
+                opacity: 0.3 + (isAISpeaking ? 0.5 : audioLevel) * 0.7
               }}
             />
           ))}
         </div>
         {!isRecording && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-            <p className="text-muted-foreground">Click "Start Recording" to begin</p>
+            <p className="text-muted-foreground">Click "Start Session" to begin</p>
+          </div>
+        )}
+        {isAISpeaking && (
+          <div className="absolute bottom-2 text-xs text-muted-foreground">
+            Click to interrupt
           </div>
         )}
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Transcript Area */}
-        <div className="flex-1 flex flex-col">
-          <div className="p-4 border-b">
-            <h3 className="font-semibold">Live Transcript</h3>
+      {/* Conversation Area */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+          <div className="space-y-4 max-w-3xl mx-auto">
+            {conversation.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] p-4 rounded-2xl ${
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-muted rounded-bl-md"
+                  }`}
+                >
+                  <p className="text-sm">{msg.content}</p>
+                  <p className="text-xs opacity-60 mt-1">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            ))}
+            
+            {/* Current user speech (interim) */}
+            {currentUserSpeech && (
+              <div className="flex justify-end">
+                <div className="max-w-[80%] p-4 rounded-2xl bg-primary/50 text-primary-foreground rounded-br-md">
+                  <p className="text-sm italic">{currentUserSpeech}</p>
+                </div>
+              </div>
+            )}
+            
+            {conversation.length === 0 && !isRecording && (
+              <div className="text-center text-muted-foreground py-12">
+                <p>Start a session to begin your voice brainstorm</p>
+              </div>
+            )}
           </div>
-          <ScrollArea className="flex-1 p-4">
-            <div className="prose prose-sm max-w-none">
-              {transcript ? (
-                <p className="whitespace-pre-wrap">
-                  {transcript}
-                  {interimTranscript && (
-                    <span className="text-muted-foreground italic">{interimTranscript}</span>
-                  )}
-                </p>
-              ) : (
-                <p className="text-muted-foreground italic">
-                  {isRecording 
-                    ? "Start speaking... your words will appear here."
-                    : "Press 'Start Recording' to begin your brainstorm session."}
-                </p>
-              )}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Tags Sidebar */}
-        <div className="w-72 border-l bg-muted/20 flex flex-col">
-          <div className="p-4 border-b">
-            <h3 className="font-semibold">Live Detection</h3>
-            <p className="text-xs text-muted-foreground">AI is tagging in real-time</p>
-          </div>
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-2">
-              {tags.length === 0 ? (
-                <p className="text-sm text-muted-foreground italic">
-                  Tags will appear as you brainstorm...
-                </p>
-              ) : (
-                tags.map((tag, i) => (
-                  <div
-                    key={i}
-                    className={`p-2 rounded-lg text-sm ${
-                      tag.type === "idea" 
-                        ? "bg-yellow-500/10 border border-yellow-500/30" 
-                        : tag.type === "decision"
-                        ? "bg-green-500/10 border border-green-500/30"
-                        : tag.type === "action"
-                        ? "bg-blue-500/10 border border-blue-500/30"
-                        : "bg-purple-500/10 border border-purple-500/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1 mb-1">
-                      {tag.type === "idea" && <Lightbulb className="w-3 h-3 text-yellow-500" />}
-                      {tag.type === "decision" && <CheckCircle className="w-3 h-3 text-green-500" />}
-                      {tag.type === "action" && <Target className="w-3 h-3 text-blue-500" />}
-                      {tag.type === "concept" && <Mail className="w-3 h-3 text-purple-500" />}
-                      <span className="text-xs font-medium capitalize">{tag.type}</span>
-                    </div>
-                    <p className="text-xs line-clamp-2">{tag.text}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </ScrollArea>
-        </div>
+        </ScrollArea>
       </div>
 
       {/* Controls */}
@@ -510,17 +656,17 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
             <Button
               size="lg"
               onClick={startRecording}
-              className="h-14 px-8 text-lg bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
+              className="h-14 px-8 text-lg"
             >
               <Mic className="w-6 h-6 mr-2" />
-              Start Recording
+              Start Session
             </Button>
           ) : (
             <Button
               size="lg"
               variant="destructive"
               onClick={stopRecording}
-              className="h-14 px-8 text-lg animate-pulse"
+              className="h-14 px-8 text-lg"
             >
               <MicOff className="w-6 h-6 mr-2" />
               End Session
@@ -529,8 +675,8 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
         </div>
         <p className="text-center text-sm text-muted-foreground mt-4">
           {isRecording 
-            ? "Speak freely. Press 'End Session' when done to get your AI-powered summary."
-            : "Your brainstorm will be transcribed, analyzed, and emailed to you automatically."}
+            ? "Speak naturally. The AI will respond by voice. Press 'End Session' when done."
+            : "Have a voice conversation with AI. Summary will be emailed automatically."}
         </p>
       </div>
     </div>
