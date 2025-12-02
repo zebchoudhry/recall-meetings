@@ -23,7 +23,7 @@ interface ActionItem {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -54,7 +54,7 @@ serve(async (req) => {
       }
     }
 
-    const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY')
+    const apiKey = Deno.env.get('LOVABLE_API_KEY')
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'AI service not configured', actionItems: [] }),
@@ -67,7 +67,9 @@ serve(async (req) => {
       .map((entry: TranscriptEntry, index: number) => `[${index}] ${entry.speaker}: ${entry.text}`)
       .join('\n')
 
-    const prompt = `Analyze this meeting transcript and extract all action items. Look for:
+    const systemPrompt = `You are an expert at extracting action items from meeting transcripts. Be precise and only include clear, actionable items. Ignore vague statements. Return only valid JSON array, no other text.`
+
+    const userPrompt = `Analyze this meeting transcript and extract all action items. Look for:
 - Tasks or commitments mentioned by speakers
 - Verbs indicating future actions (will, should, need to, must, going to, plan to)
 - Specific responsibilities assigned to people
@@ -79,40 +81,49 @@ For each action item found, return a JSON array with objects containing:
 - "transcriptIndex": The index number [0], [1], etc. where this was mentioned
 - "confidence": Confidence score 0-1 for how certain this is an action item
 
-Be precise and only include clear, actionable items. Ignore vague statements.
-
 Transcript:
 ${transcriptText}
 
 Return only valid JSON array, no other text:`
 
-    // Call Google Gemini API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    // Call Lovable AI Gateway
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 2000,
-        }
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 2000,
       })
     })
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.', actionItems: [] }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'AI usage limit reached. Please add credits.', actionItems: [] }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
       const errorData = await response.text()
-      console.error('Gemini API error:', errorData)
-      throw new Error(`Gemini API error: ${response.status}`)
+      console.error('Lovable AI Gateway error:', errorData)
+      throw new Error(`AI Gateway error: ${response.status}`)
     }
 
     const data = await response.json()
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'
+    const aiResponse = data.choices?.[0]?.message?.content || '[]'
     
     console.log('🤖 AI Response:', aiResponse);
 
@@ -125,7 +136,6 @@ Return only valid JSON array, no other text:`
       parsedActionItems = JSON.parse(jsonString);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
-      // Fallback: try to extract manually or return empty array
       parsedActionItems = [];
     }
 

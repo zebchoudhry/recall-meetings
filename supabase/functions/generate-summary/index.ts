@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +13,7 @@ interface TranscriptEntry {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -45,7 +44,7 @@ serve(async (req) => {
       }
     }
 
-    const apiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY')
+    const apiKey = Deno.env.get('LOVABLE_API_KEY')
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'AI service not configured' }),
@@ -58,7 +57,9 @@ serve(async (req) => {
       .map((entry: TranscriptEntry) => `${entry.speaker}: ${entry.text}`)
       .join('\n')
 
-    const prompt = `Please analyze this conversation transcript and provide a comprehensive summary. Include:
+    const systemPrompt = `You are an expert meeting analyst. Analyze conversation transcripts and provide comprehensive, well-structured summaries. Include key discussion points, decisions, action items, participant contributions, and overall context. Format your response with clear bullet points where appropriate.`
+
+    const userPrompt = `Please analyze this conversation transcript and provide a comprehensive summary. Include:
 
 1. Key discussion points and topics covered
 2. Important decisions or conclusions reached
@@ -71,33 +72,44 @@ ${transcriptText}
 
 Please format your response in a clear, structured way with bullet points where appropriate.`
 
-    // Call Google Gemini API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    // Call Lovable AI Gateway
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1000,
-        }
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000,
       })
     })
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'AI usage limit reached. Please add credits.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
       const errorData = await response.text()
-      console.error('Gemini API error:', errorData)
-      throw new Error(`Gemini API error: ${response.status}`)
+      console.error('Lovable AI Gateway error:', errorData)
+      throw new Error(`AI Gateway error: ${response.status}`)
     }
 
     const data = await response.json()
-    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to generate summary'
+    const summary = data.choices?.[0]?.message?.content || 'Unable to generate summary'
 
     return new Response(
       JSON.stringify({ summary }),
