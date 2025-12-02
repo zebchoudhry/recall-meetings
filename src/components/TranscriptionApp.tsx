@@ -17,6 +17,7 @@ import { CheatSheet } from "./CheatSheet";
 import { AppHeader } from "./AppHeader";
 import { PrivacyBanner } from "./PrivacyBanner";
 import { PrivacyModeIndicator } from "./PrivacyModeIndicator";
+import { BrainstormLauncher } from "./BrainstormLauncher";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
@@ -114,6 +115,7 @@ export const TranscriptionApp = () => {
   const [catchUpData, setCatchUpData] = useState<string>("");
   const [showCatchUpData, setShowCatchUpData] = useState(false);
   const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null);
+  const [showBrainstorm, setShowBrainstorm] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
@@ -1583,6 +1585,25 @@ ${keyPoints}`;
               </div>
             </Card>
 
+            {/* Brainstorm Session Button */}
+            <Card className="bg-gradient-to-br from-orange-500 to-pink-600 text-white border-0 shadow-lg">
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-5 w-5" />
+                  <h3 className="font-bold text-lg">Voice Brainstorm</h3>
+                </div>
+                <p className="text-sm text-orange-50">Capture ideas hands-free, get AI summary via email</p>
+                <Button
+                  size="sm"
+                  className="w-full bg-white text-orange-600 hover:bg-orange-50"
+                  onClick={() => setShowBrainstorm(true)}
+                >
+                  <Brain className="h-4 w-4 mr-2" />
+                  Start Brainstorm Session
+                </Button>
+              </div>
+            </Card>
+
             {/* Privacy Info Card */}
             <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
               <div className="p-4 space-y-2">
@@ -1898,6 +1919,11 @@ ${keyPoints}`;
               />
             </div>
           </div>
+        )}
+
+        {/* Brainstorm Launcher */}
+        {showBrainstorm && (
+          <BrainstormLauncher onClose={() => setShowBrainstorm(false)} />
         )}
       </div>
     </SidebarProvider>
