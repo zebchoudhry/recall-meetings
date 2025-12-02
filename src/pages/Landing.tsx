@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Mic, Clock, MessageCircle, Bell, Users, RotateCcw, Mail, LayoutDashboard, Lock, ArrowRight, CheckCircle2, Chrome, AlertCircle, Shield, Zap, Brain, Sparkles, FileText, ListChecks } from "lucide-react";
+import { Mic, Clock, MessageCircle, Bell, Users, RotateCcw, Mail, LayoutDashboard, Lock, ArrowRight, CheckCircle2, Chrome, AlertCircle, Shield, Zap, Brain, Sparkles, FileText, ListChecks, Lightbulb } from "lucide-react";
 import { Link } from "react-router-dom";
 import recallHeroLogo from "@/assets/recall-main-logo.png";
 import catchMeUpDemo from "@/assets/catch-me-up-demo.png";
@@ -226,6 +226,136 @@ const Landing = () => {
                 </div>
                 <h4 className="font-bold text-foreground mb-2">Enterprise Grade</h4>
                 <p className="text-sm text-muted-foreground">Built on Google's latest AI infrastructure</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Voice Brainstorm Feature Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-b border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Content */}
+            <div>
+              <div className="inline-flex items-center justify-center px-4 py-2 mb-6 rounded-full bg-primary/10 border border-primary/30">
+                <Brain className="h-4 w-4 text-primary mr-2" />
+                <span className="text-sm font-semibold text-primary">Voice Brainstorm Mode</span>
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+                Think Out Loud. <span className="text-primary">AI Listens.</span>
+              </h2>
+              
+              <p className="text-xl text-muted-foreground mb-8">
+                Have a real-time voice conversation with AI to explore ideas. Speak naturally, get instant feedback, and receive a polished summary emailed to you automatically.
+              </p>
+
+              {/* How It Works Steps */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">1</div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Enter Your Email & Start</h4>
+                    <p className="text-sm text-muted-foreground">Click "Brainstorm" in the app, enter your email, and hit start.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">2</div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Talk Through Your Ideas</h4>
+                    <p className="text-sm text-muted-foreground">Speak naturally. AI responds verbally, asks questions, and helps develop your thoughts.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">3</div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">End Session & Get Email</h4>
+                    <p className="text-sm text-muted-foreground">Stop when ready. Instantly receive summary, key ideas, actions & decisions via email.</p>
+                  </div>
+                </div>
+              </div>
+
+              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Link to="/app">
+                  <Brain className="w-5 h-5 mr-2" />
+                  Try Voice Brainstorm
+                </Link>
+              </Button>
+            </div>
+
+            {/* Right: Feature Cards & Demo */}
+            <div className="space-y-6">
+              {/* Feature Highlight Card */}
+              <Card className="border-2 border-primary/20 bg-gradient-to-br from-background to-primary/5 overflow-hidden">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    What You'll Receive
+                  </h3>
+                  
+                  {/* Email Preview */}
+                  <div className="bg-muted/50 rounded-lg border border-border p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium text-foreground">Your Brainstorm Summary</span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <FileText className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground"><strong>Full Transcript</strong> — Complete conversation history</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Brain className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground"><strong>Executive Summary</strong> — Key takeaways in 200 words</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground"><strong>Key Ideas</strong> — All ideas tagged during session</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <ListChecks className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground"><strong>Actions & Decisions</strong> — Next steps extracted</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Zap className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground"><strong>Final Best Idea</strong> — AI's top recommendation</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Privacy & Features Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-success/10 border border-success/20">
+                  <Shield className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Privacy First</p>
+                    <p className="text-xs text-muted-foreground">Audio permanently deleted after email sent</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-accent/10 border border-accent/20">
+                  <Clock className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">No Time Limit</p>
+                    <p className="text-xs text-muted-foreground">Brainstorm as long as you need</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <MessageCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Real Conversation</p>
+                    <p className="text-xs text-muted-foreground">AI speaks back & asks questions</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                  <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Live AI Tagging</p>
+                    <p className="text-xs text-muted-foreground">Ideas detected in real-time</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
