@@ -1,5 +1,8 @@
 project_id = "aosrkhgndowfmubdpfvd"
 
+[functions.brainstorm-chat]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
