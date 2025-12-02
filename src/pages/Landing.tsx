@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Mic, Clock, MessageCircle, Bell, Users, RotateCcw, Mail, LayoutDashboard, Lock, ArrowRight, CheckCircle2, Chrome, AlertCircle, Shield } from "lucide-react";
+import { Mic, Clock, MessageCircle, Bell, Users, RotateCcw, Mail, LayoutDashboard, Lock, ArrowRight, CheckCircle2, Chrome, AlertCircle, Shield, Zap, Brain, Sparkles, FileText, ListChecks } from "lucide-react";
 import { Link } from "react-router-dom";
 import recallHeroLogo from "@/assets/recall-main-logo.png";
 import catchMeUpDemo from "@/assets/catch-me-up-demo.png";
@@ -52,9 +52,184 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Catch Me Up Demo Section */}
+      {/* AI Technology Showcase Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-accent/5 via-background to-primary/5 border-b border-border">
-        
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center px-4 py-2 mb-6 rounded-full bg-accent/10 border border-accent/30">
+              <Sparkles className="h-4 w-4 text-accent mr-2" />
+              <span className="text-sm font-semibold text-accent">NEW: Powered by Google Gemini 2.5 Flash</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Lightning-Fast AI. <span className="text-accent">Smarter Results.</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Our AI engine just got a major upgrade. Experience faster summaries, more accurate action items, and intelligent insights powered by Google's latest Gemini 2.5 Flash model.
+            </p>
+          </div>
+
+          {/* Feature Showcase Grid */}
+          <div className="grid lg:grid-cols-2 gap-8 mb-16">
+            {/* AI Summary Feature */}
+            <Card className="border-2 border-accent/20 bg-gradient-to-br from-background to-accent/5 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent/10 text-accent">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">AI Meeting Summaries</h3>
+                      <p className="text-sm text-muted-foreground">Instant, structured recaps</p>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-6">
+                    Get comprehensive meeting summaries in seconds. Our AI analyzes your entire conversation and extracts key discussion points, decisions, and participant contributions.
+                  </p>
+                  
+                  {/* How to Use Steps */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                      <span className="text-sm text-foreground">Click <strong>"Catch Me Up"</strong> button during or after recording</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                      <span className="text-sm text-foreground">AI analyzes transcript using Gemini 2.5 Flash</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-accent/20 text-accent flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                      <span className="text-sm text-foreground">Receive structured summary with bullet points</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Screenshot/Demo Area */}
+                <div className="bg-muted/50 border-t border-border p-6">
+                  <div className="bg-background rounded-lg border border-border p-4 shadow-inner">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Brain className="h-5 w-5 text-accent" />
+                      <span className="font-semibold text-sm text-foreground">AI Summary Preview</span>
+                    </div>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                        <span><strong>Key Topics:</strong> Q4 budget review, product roadmap, team hiring</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                        <span><strong>Decisions:</strong> Approved $50K marketing budget increase</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                        <span><strong>Participants:</strong> Sarah (lead), Mike, Lisa contributed</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Items Feature */}
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-background to-primary/5 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary">
+                      <ListChecks className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">AI Action Item Detection</h3>
+                      <p className="text-sm text-muted-foreground">Never miss a task again</p>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-6">
+                    AI automatically identifies tasks, commitments, and follow-ups from your conversations. Each action item is linked to the speaker who mentioned it.
+                  </p>
+                  
+                  {/* How to Use Steps */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                      <span className="text-sm text-foreground">Record your meeting as normal</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                      <span className="text-sm text-foreground">Click <strong>"Detect Action Items"</strong> in the dashboard</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                      <span className="text-sm text-foreground">Get a list of tasks with assignees & confidence scores</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Screenshot/Demo Area */}
+                <div className="bg-muted/50 border-t border-border p-6">
+                  <div className="bg-background rounded-lg border border-border p-4 shadow-inner">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-sm text-foreground">Detected Action Items</span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-2 bg-primary/5 rounded-md">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Sarah: Send budget proposal by Friday</p>
+                          <p className="text-xs text-muted-foreground">Confidence: 95%</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-2 bg-primary/5 rounded-md">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Mike: Schedule follow-up with design team</p>
+                          <p className="text-xs text-muted-foreground">Confidence: 88%</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Why It's Great - Benefits */}
+          <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-success/10 rounded-2xl p-8 border border-border">
+            <h3 className="text-2xl font-bold text-foreground text-center mb-8">
+              Why Google Gemini 2.5 Flash?
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent/10 text-accent mb-4">
+                  <Zap className="h-7 w-7" />
+                </div>
+                <h4 className="font-bold text-foreground mb-2">3x Faster</h4>
+                <p className="text-sm text-muted-foreground">Summaries generated in seconds, not minutes</p>
+              </div>
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-4">
+                  <Brain className="h-7 w-7" />
+                </div>
+                <h4 className="font-bold text-foreground mb-2">Smarter Context</h4>
+                <p className="text-sm text-muted-foreground">Better understanding of meeting flow & nuances</p>
+              </div>
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success mb-4">
+                  <Shield className="h-7 w-7" />
+                </div>
+                <h4 className="font-bold text-foreground mb-2">Zero Setup</h4>
+                <p className="text-sm text-muted-foreground">No API keys needed—works instantly</p>
+              </div>
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent/10 text-accent mb-4">
+                  <Sparkles className="h-7 w-7" />
+                </div>
+                <h4 className="font-bold text-foreground mb-2">Enterprise Grade</h4>
+                <p className="text-sm text-muted-foreground">Built on Google's latest AI infrastructure</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Getting Started Steps */}
