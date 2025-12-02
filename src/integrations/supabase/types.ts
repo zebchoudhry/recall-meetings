@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      brainstorm_sessions: {
+        Row: {
+          actions: Json | null
+          created_at: string
+          decisions: Json | null
+          duration_seconds: number
+          final_idea: string | null
+          id: string
+          key_ideas: Json | null
+          summary: string | null
+          transcript: string
+          user_email: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          created_at?: string
+          decisions?: Json | null
+          duration_seconds?: number
+          final_idea?: string | null
+          id?: string
+          key_ideas?: Json | null
+          summary?: string | null
+          transcript: string
+          user_email?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          created_at?: string
+          decisions?: Json | null
+          duration_seconds?: number
+          final_idea?: string | null
+          id?: string
+          key_ideas?: Json | null
+          summary?: string | null
+          transcript?: string
+          user_email?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
