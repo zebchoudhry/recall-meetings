@@ -3,6 +3,27 @@ project_id = "aosrkhgndowfmubdpfvd"
 [functions.brainstorm-chat]
 verify_jwt = false
 
+[functions.generate-summary]
+verify_jwt = false
+
+[functions.detect-action-items]
+verify_jwt = false
+
+[functions.submit-feedback]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = true
+
+[functions.process-brainstorm]
+verify_jwt = false
+
+[functions.send-brainstorm-email]
+verify_jwt = true
+
+[functions.text-to-speech]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
@@ -32,21 +53,3 @@ enable_anonymous_sign_ins = false
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
-
-[functions.generate-summary]
-verify_jwt = false
-
-[functions.detect-action-items]
-verify_jwt = false
-
-[functions.submit-feedback]
-verify_jwt = false
-
-[functions.send-email]
-verify_jwt = true
-
-[functions.process-brainstorm]
-verify_jwt = false
-
-[functions.send-brainstorm-email]
-verify_jwt = true

@@ -13,6 +13,8 @@ import {
   VolumeX
 } from "lucide-react";
 
+const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`;
+
 interface ConversationMessage {
   role: "user" | "assistant";
   content: string;
@@ -48,6 +50,7 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   // Auto-scroll to bottom when conversation updates
   useEffect(() => {
@@ -84,11 +87,8 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
     }
   }, [isRecording]);
 
-  // Text-to-speech for AI responses
-  const speakText = useCallback((text: string) => {
-    if (isMuted || !text.trim()) return;
-    
-    // Cancel any ongoing speech
+  // Browser TTS fallback
+  const speakWithBrowserTTS = useCallback((text: string) => {
     window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
@@ -96,7 +96,6 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
     
-    // Try to get a good voice
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice = voices.find(v => 
       v.name.includes('Google') || 
@@ -104,41 +103,89 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
       v.name.includes('Alex') ||
       v.lang.startsWith('en')
     );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
+    if (preferredVoice) utterance.voice = preferredVoice;
     
     utterance.onstart = () => {
       setIsAISpeaking(true);
-      // Pause recognition while AI speaks to avoid feedback
       if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          console.log("Recognition already stopped");
-        }
+        try { recognitionRef.current.stop(); } catch (e) { console.log("Recognition already stopped"); }
       }
     };
     
     utterance.onend = () => {
       setIsAISpeaking(false);
-      // Resume recognition after AI finishes speaking
       if (shouldRestartRef.current && recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-        } catch (e) {
-          console.log("Recognition restart failed:", e);
-        }
+        try { recognitionRef.current.start(); } catch (e) { console.log("Recognition restart failed:", e); }
       }
     };
     
-    utterance.onerror = () => {
-      setIsAISpeaking(false);
-    };
+    utterance.onerror = () => setIsAISpeaking(false);
     
     speechSynthesisRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [isMuted]);
+  }, []);
+
+  // Google Cloud TTS with browser fallback
+  const speakText = useCallback(async (text: string) => {
+    if (isMuted || !text.trim()) return;
+    
+    // Stop any current playback
+    window.speechSynthesis.cancel();
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current = null;
+    }
+
+    // Pause recognition while AI speaks
+    setIsAISpeaking(true);
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (e) { console.log("Recognition already stopped"); }
+    }
+
+    try {
+      const response = await fetch(TTS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`TTS API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data.audioContent) {
+        throw new Error("No audio content in response");
+      }
+
+      const audio = new Audio(`data:audio/mpeg;base64,${data.audioContent}`);
+      audioElementRef.current = audio;
+
+      audio.onended = () => {
+        audioElementRef.current = null;
+        setIsAISpeaking(false);
+        if (shouldRestartRef.current && recognitionRef.current) {
+          try { recognitionRef.current.start(); } catch (e) { console.log("Recognition restart failed:", e); }
+        }
+      };
+
+      audio.onerror = () => {
+        console.error("Audio playback error, falling back to browser TTS");
+        audioElementRef.current = null;
+        setIsAISpeaking(false);
+        speakWithBrowserTTS(text);
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error("Cloud TTS failed, falling back to browser TTS:", error);
+      setIsAISpeaking(false);
+      speakWithBrowserTTS(text);
+    }
+  }, [isMuted, speakWithBrowserTTS]);
 
   // Get AI response
   const getAIResponse = useCallback(async (userMessage: string) => {
@@ -329,9 +376,12 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
   const stopRecording = async () => {
     shouldRestartRef.current = false;
     
-    // Cancel any ongoing speech
+    // Cancel any ongoing speech (both cloud TTS and browser TTS)
     window.speechSynthesis.cancel();
-    
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current = null;
+    }
     if (recognitionRef.current) {
       recognitionRef.current.abort();
       recognitionRef.current = null;
@@ -479,7 +529,10 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
   const cancelSession = () => {
     shouldRestartRef.current = false;
     window.speechSynthesis.cancel();
-    
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current = null;
+    }
     if (recognitionRef.current) {
       recognitionRef.current.abort();
     }
@@ -516,6 +569,10 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
   const interruptAI = () => {
     if (isAISpeaking) {
       window.speechSynthesis.cancel();
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current = null;
+      }
       setIsAISpeaking(false);
     }
   };
