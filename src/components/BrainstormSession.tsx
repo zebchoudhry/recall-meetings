@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getCachedTts, setCachedTts } from "@/lib/ttsCache";
 import { 
   Mic, 
   MicOff, 
@@ -51,6 +52,28 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
   const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  // Barge-in / VAD: when the user starts speaking while AI is talking, cut TTS off.
+  const isAISpeakingRef = useRef(false);
+  const bargeInFramesRef = useRef(0);
+  const restartAttemptRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep ref in sync so the rAF audio loop can read it without re-creating the callback.
+  useEffect(() => { isAISpeakingRef.current = isAISpeaking; }, [isAISpeaking]);
+
+  // Stop AI mid-sentence (barge-in) and immediately resume listening.
+  const interruptAISpeech = useCallback(() => {
+    if (!isAISpeakingRef.current) return;
+    window.speechSynthesis.cancel();
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current = null;
+    }
+    setIsAISpeaking(false);
+    isAISpeakingRef.current = false;
+    if (shouldRestartRef.current && recognitionRef.current) {
+      try { recognitionRef.current.start(); } catch { /* already running */ }
+    }
+  }, []);
 
   // Auto-scroll to bottom when conversation updates
   useEffect(() => {
@@ -80,12 +103,24 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
       const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
       analyserRef.current.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-      setAudioLevel(average / 255);
+      const level = average / 255;
+      setAudioLevel(level);
+
+      // Barge-in: ~9 consecutive frames (~150ms @ 60fps) above threshold while AI is speaking.
+      if (isAISpeakingRef.current && level > 0.18) {
+        bargeInFramesRef.current += 1;
+        if (bargeInFramesRef.current > 9) {
+          bargeInFramesRef.current = 0;
+          interruptAISpeech();
+        }
+      } else {
+        bargeInFramesRef.current = 0;
+      }
     }
     if (isRecording) {
       animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
     }
-  }, [isRecording]);
+  }, [isRecording, interruptAISpeech]);
 
   // Browser TTS fallback
   const speakWithBrowserTTS = useCallback((text: string) => {
@@ -144,7 +179,12 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
     try {
       const lang = (typeof window !== "undefined" && localStorage.getItem("recall.spokenLang")) || "en";
-      const response = await fetch(TTS_URL, {
+
+      // Try cache first — instant playback for repeated phrases.
+      let audioContent = await getCachedTts(text, lang);
+
+      if (!audioContent) {
+        const response = await fetch(TTS_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,17 +192,19 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
         },
         body: JSON.stringify({ text, lang }),
       });
-
-      if (!response.ok) {
-        throw new Error(`TTS API returned ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`TTS API returned ${response.status}`);
+        }
+        const data = await response.json();
+        if (!data.audioContent) {
+          throw new Error("No audio content in response");
+        }
+        audioContent = data.audioContent as string;
+        // Fire-and-forget cache write.
+        setCachedTts(text, lang, audioContent);
       }
 
-      const data = await response.json();
-      if (!data.audioContent) {
-        throw new Error("No audio content in response");
-      }
-
-      const audio = new Audio(`data:audio/mpeg;base64,${data.audioContent}`);
+      const audio = new Audio(`data:audio/mpeg;base64,${audioContent}`);
       audioElementRef.current = audio;
 
       audio.onended = () => {
@@ -322,13 +364,22 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
-        if (event.error !== "no-speech" && event.error !== "aborted") {
+        // Transient errors: silently retry instead of nagging the user.
+        const transient = ["no-speech", "aborted", "network", "audio-capture"];
+        if (transient.includes(event.error)) {
+          if (shouldRestartRef.current && !isAISpeakingRef.current) {
+            if (restartAttemptRef.current) clearTimeout(restartAttemptRef.current);
+            restartAttemptRef.current = setTimeout(() => {
+              try { recognitionRef.current?.start(); } catch { /* already running */ }
+            }, 300);
+          }
+          return;
+        }
           toast({
             title: "Recognition Error",
             description: `Error: ${event.error}. Try speaking again.`,
             variant: "destructive",
           });
-        }
       };
 
       recognition.onend = () => {
@@ -408,6 +459,11 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
 
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
+    }
+
+    if (restartAttemptRef.current) {
+      clearTimeout(restartAttemptRef.current);
+      restartAttemptRef.current = null;
     }
 
     setIsRecording(false);
