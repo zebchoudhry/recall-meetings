@@ -28,6 +28,7 @@ import { storageManager, MeetingData } from "@/utils/storageManager";
 import { LanguageSelector } from "./LanguageSelector";
 import { getBcp47 } from "@/lib/languages";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface TranscriptEntry {
   id: string;
@@ -95,6 +96,7 @@ interface VoiceProfile {
 }
 
 export const TranscriptionApp = () => {
+  const { t, setUiLang } = useI18n();
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [isListening, setIsListening] = useState(false);
@@ -143,6 +145,8 @@ export const TranscriptionApp = () => {
   useEffect(() => {
     spokenLangRef.current = spokenLang;
     localStorage.setItem("recall.spokenLang", spokenLang);
+    // Switch the UI language to match the speaker's language (Spanish/English supported in v1).
+    setUiLang(spokenLang === "es" ? "es" : "en");
     if (recognitionRef.current) {
       recognitionRef.current.lang = getBcp47(spokenLang);
       // Restart recognition if currently recording so the lang change takes effect
@@ -152,7 +156,7 @@ export const TranscriptionApp = () => {
         } catch {}
       }
     }
-  }, [spokenLang]);
+  }, [spokenLang, setUiLang]);
 
   useEffect(() => {
     displayLangRef.current = displayLang;
@@ -1657,9 +1661,9 @@ ${keyPoints}`;
               <div className="p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <Zap className="h-5 w-5" />
-                  <h3 className="font-bold text-lg">Catch Me Up</h3>
+                  <h3 className="font-bold text-lg">{t("catchup.title")}</h3>
                 </div>
-                <p className="text-sm text-blue-50">Get instant summary of what you missed</p>
+                <p className="text-sm text-blue-50">{t("catchup.subtitle")}</p>
                 <Button
                   size="sm"
                   className="w-full bg-white text-blue-600 hover:bg-blue-50"
@@ -1667,7 +1671,7 @@ ${keyPoints}`;
                   disabled={transcript.length === 0}
                 >
                   <Zap className="h-4 w-4 mr-2" />
-                  Catch Me Up Now
+                  {t("catchup.button")}
                 </Button>
               </div>
             </Card>
@@ -1677,16 +1681,16 @@ ${keyPoints}`;
               <div className="p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <Brain className="h-5 w-5" />
-                  <h3 className="font-bold text-lg">Voice Brainstorm</h3>
+                  <h3 className="font-bold text-lg">{t("brainstorm.title")}</h3>
                 </div>
-                <p className="text-sm text-orange-50">Capture ideas hands-free, get AI summary via email</p>
+                <p className="text-sm text-orange-50">{t("brainstorm.subtitle")}</p>
                 <Button
                   size="sm"
                   className="w-full bg-white text-orange-600 hover:bg-orange-50"
                   onClick={() => setShowBrainstorm(true)}
                 >
                   <Brain className="h-4 w-4 mr-2" />
-                  Start Brainstorm Session
+                  {t("brainstorm.button")}
                 </Button>
               </div>
             </Card>
@@ -1696,11 +1700,9 @@ ${keyPoints}`;
               <div className="p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-green-600" />
-                  <h4 className="font-semibold text-sm text-green-900">Privacy Protected</h4>
+                  <h4 className="font-semibold text-sm text-green-900">{t("privacy.cardTitle")}</h4>
                 </div>
-                <p className="text-xs text-green-800 leading-relaxed">
-                  No data stored externally. Your conversations stay private on your device.
-                </p>
+                <p className="text-xs text-green-800 leading-relaxed">{t("privacy.cardBody")}</p>
                 <PrivacyModeIndicator />
               </div>
             </Card>
@@ -1709,9 +1711,9 @@ ${keyPoints}`;
             <Card className="p-3">
               <Tabs defaultValue="record" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 h-8">
-                  <TabsTrigger value="record" className="text-xs">Record</TabsTrigger>
-                  <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
-                  <TabsTrigger value="actions" className="text-xs">Actions</TabsTrigger>
+                  <TabsTrigger value="record" className="text-xs">{t("tabs.record")}</TabsTrigger>
+                  <TabsTrigger value="settings" className="text-xs">{t("tabs.settings")}</TabsTrigger>
+                  <TabsTrigger value="actions" className="text-xs">{t("tabs.actions")}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="record" className="mt-3">
@@ -1745,7 +1747,7 @@ ${keyPoints}`;
                     size="sm"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {isGeneratingSummary ? "Generating..." : "AI Summary"}
+                    {isGeneratingSummary ? t("actions.generating") : t("actions.aiSummary")}
                   </Button>
                   
                   <Button
@@ -1756,7 +1758,7 @@ ${keyPoints}`;
                     size="sm"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Export transcript
+                    {t("actions.exportTranscript")}
                   </Button>
                   
                   <Button
@@ -1766,7 +1768,7 @@ ${keyPoints}`;
                     onClick={() => setShowMeetingSummary(!showMeetingSummary)}
                   >
                     <FileText className="w-4 h-4 mr-2" />
-                    Meeting Summary
+                    {t("actions.meetingSummary")}
                   </Button>
                 </TabsContent>
               </Tabs>
@@ -1778,7 +1780,7 @@ ${keyPoints}`;
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-amber-600" />
-                    <h4 className="font-semibold text-sm text-amber-900">AI Summary</h4>
+                    <h4 className="font-semibold text-sm text-amber-900">{t("actions.aiSummaryHeading")}</h4>
                   </div>
                   <p className="text-xs text-gray-800 leading-relaxed line-clamp-6">
                     {summary}
@@ -1862,15 +1864,15 @@ ${keyPoints}`;
                     <div className="flex items-center gap-2">
                       <Brain className="h-5 w-5 text-purple-600" />
                       <div>
-                        <h4 className="font-semibold text-sm">Ask About Meeting</h4>
-                        <p className="text-xs text-muted-foreground">Get answers without interrupting</p>
+                        <h4 className="font-semibold text-sm">{t("ask.title")}</h4>
+                        <p className="text-xs text-muted-foreground">{t("ask.subtitle")}</p>
                       </div>
                     </div>
                     <form onSubmit={handleQuerySubmit} className="flex gap-2">
                       <Input
                         value={assistantQuery}
                         onChange={(e) => setAssistantQuery(e.target.value)}
-                        placeholder='Try: "Who mentioned the budget?" or "What did I miss?"'
+                        placeholder={t("ask.placeholder")}
                         className="flex-1"
                       />
                       <Button type="submit" size="sm">
