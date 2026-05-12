@@ -9,6 +9,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { SUPPORTED_LANGUAGES } from "@/lib/languages";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface LanguageSelectorProps {
   spokenLang: string;
@@ -27,16 +28,17 @@ export const LanguageSelector = ({
   onDisplayLangChange,
   onShowOriginalChange,
 }: LanguageSelectorProps) => {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/40 border rounded-lg">
       <div className="flex items-center gap-2 text-sm font-medium">
         <Languages className="w-4 h-4 text-primary" />
-        <span>Languages</span>
+        <span>{t("lang.label")}</span>
       </div>
 
       <div className="flex items-center gap-2">
         <Label htmlFor="spoken-lang" className="text-xs text-muted-foreground">
-          I speak
+          {t("lang.iSpeak")}
         </Label>
         <Select value={spokenLang} onValueChange={onSpokenLangChange}>
           <SelectTrigger id="spoken-lang" className="h-9 w-[160px]">
@@ -55,7 +57,7 @@ export const LanguageSelector = ({
 
       <div className="flex items-center gap-2">
         <Label htmlFor="display-lang" className="text-xs text-muted-foreground">
-          Show in
+          {t("lang.showIn")}
         </Label>
         <Select value={displayLang} onValueChange={onDisplayLangChange}>
           <SelectTrigger id="display-lang" className="h-9 w-[160px]">
@@ -79,7 +81,7 @@ export const LanguageSelector = ({
           onCheckedChange={onShowOriginalChange}
         />
         <Label htmlFor="show-original" className="text-xs text-muted-foreground cursor-pointer">
-          Show original
+          {t("lang.showOriginal")}
         </Label>
       </div>
     </div>
