@@ -143,13 +143,14 @@ export const BrainstormSession = ({ onSessionEnd, userEmail }: BrainstormSession
     }
 
     try {
+      const lang = (typeof window !== "undefined" && localStorage.getItem("recall.spokenLang")) || "en";
       const response = await fetch(TTS_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, lang }),
       });
 
       if (!response.ok) {
