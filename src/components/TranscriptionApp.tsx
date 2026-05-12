@@ -236,7 +236,7 @@ export const TranscriptionApp = () => {
     
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = getBcp47(spokenLangRef.current);
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -292,16 +292,27 @@ export const TranscriptionApp = () => {
         
         // Create entry immediately with placeholder speaker
         const entryId = Date.now().toString();
+        const currentSourceLang = spokenLangRef.current;
+        const currentDisplayLang = displayLangRef.current;
+        const trimmedText = finalTranscript.trim();
         const newEntry: TranscriptEntry = {
           id: entryId,
           speaker: "Analyzing...",
-          text: finalTranscript.trim(),
+          text: trimmedText,
           timestamp: new Date(),
           confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
+          sourceLang: currentSourceLang,
+          translations: { [currentSourceLang]: trimmedText },
+          translating: currentSourceLang !== currentDisplayLang,
         };
 
         console.log('📝 Adding transcript entry immediately:', newEntry);
         setTranscript(prev => [...prev, newEntry]);
+
+        // Fire translation in background if needed
+        if (currentSourceLang !== currentDisplayLang) {
+          translateEntry(entryId, trimmedText, currentSourceLang, currentDisplayLang);
+        }
         
         // Auto-detect highlights for this entry
         const detectedHighlights = detectHighlights(newEntry);
