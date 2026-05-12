@@ -1,66 +1,82 @@
+## Multi-Language Transcription & Live Translation
 
+### Goal
+Let participants pick their own spoken language and their preferred display language. As each person talks, everyone else sees the transcript translated into their chosen language in real time. Example: speaker talks English → Spanish viewer sees Spanish; speaker talks Spanish → English viewer sees English.
 
-## Add Google Cloud Text-to-Speech for Natural Voice
+### Languages (initial set)
+English, Spanish, French, German, Portuguese, Italian, Mandarin Chinese, Japanese, Hindi, Arabic. Easy to extend later.
 
-### Overview
+### UX
 
-Replace the robotic Browser TTS with Google Cloud's Neural2 voices for natural-sounding AI responses during brainstorm sessions.
+**Language selector bar** above the transcript (and inside `RecordingControls`):
+- "I speak" dropdown → sets the speech-recognition language (`recognition.lang`).
+- "Show transcript in" dropdown → sets the viewer's display language.
+- Quick-select chips (EN / ES / FR …) for one-tap switching.
+- Stored in `localStorage` so it persists between sessions.
 
-### Step-by-Step
+**Transcript display**:
+- Each entry shows the translated text in the viewer's chosen language as the primary line.
+- A small muted "original" line below shows the source text + source language badge (e.g. `EN`).
+- A toggle in the header: "Show original" on/off.
+- If source language == display language, no translation call is made and no "original" line is shown.
 
-**Step 1: Store API Key Securely**
-- Request your Google Cloud API key using the secure secret storage
-- It will be stored as `GOOGLE_CLOUD_TTS_API_KEY` and accessible only by backend functions
-
-**Step 2: Create New Backend Function (`text-to-speech`)**
-- New file: `supabase/functions/text-to-speech/index.ts`
-- Receives text from the frontend
-- Calls Google Cloud TTS API with `en-US-Neural2-J` voice (natural-sounding male voice)
-- Returns base64-encoded MP3 audio
-- Includes CORS headers and error handling with logging
-
-**Step 3: Update Brainstorm Session Voice Output**
-- File: `src/components/BrainstormSession.tsx`
-- Replace the `speakText` function: instead of Browser TTS (`SpeechSynthesisUtterance`), call the new `text-to-speech` backend function
-- Play returned audio using the Web Audio API (`AudioContext` + `AudioBufferSourceNode`)
-- Keep all existing behavior intact:
-  - Pause speech recognition while AI speaks
-  - Resume recognition after playback ends
-  - Support mute toggle
-  - Support click-to-interrupt (stops audio playback immediately)
-- Add graceful fallback: if the cloud TTS fails (network issue, quota exceeded), automatically fall back to Browser TTS so the session never breaks
-
-**Step 4: Register the Function**
-- Update `supabase/config.toml` to include the new `text-to-speech` function with `verify_jwt = false`
-
-### How the Flow Changes
+### How it works
 
 ```text
-Current:
-AI text response --> Browser TTS (robotic voice) --> Speaker
-
-New:
-AI text response --> Backend Function --> Google Cloud TTS API --> MP3 audio --> Web Audio API --> Speaker
-                                                                     |
-                                                          (on failure: fallback to Browser TTS)
+Mic → SpeechRecognition (lang = "I speak")
+        → final transcript chunk (sourceLang, text)
+        → if sourceLang !== displayLang:
+              call translate edge function
+              → store { text, sourceLang, translations: { es: "...", en: "..." } }
+        → render translation for current displayLang
 ```
 
-### Technical Details
+Translations are cached per entry per target language so switching the display language is instant for already-translated lines and only triggers new API calls for untranslated targets.
 
-**Edge function (`supabase/functions/text-to-speech/index.ts`):**
-- Reads `GOOGLE_CLOUD_TTS_API_KEY` from environment
-- POST to `https://texttospeech.googleapis.com/v1/text:synthesize`
-- Voice: `en-US-Neural2-J`, speaking rate `0.95`, pitch `-1.0` for a natural male voice
-- Returns JSON with `{ audioContent: "<base64 MP3>" }`
+### Step-by-step
 
-**Frontend audio playback in `BrainstormSession.tsx`:**
-- Convert base64 to data URI (`data:audio/mpeg;base64,...`)
-- Play with `new Audio(dataUri)` for simplicity
-- Track `onended` to resume speech recognition and reset `isAISpeaking`
-- Interruption: call `audio.pause()` to halt playback immediately
-- New `audioElementRef` to track currently playing audio
+1. **New edge function `translate`** (`supabase/functions/translate/index.ts`)
+   - Input: `{ text, sourceLang, targetLang }`
+   - Uses Lovable AI Gateway (`google/gemini-2.5-flash`) with a strict system prompt: "Translate the user message from {sourceLang} to {targetLang}. Output only the translation, no quotes, no commentary."
+   - Returns `{ translation }`. CORS + 429/402 handling like existing functions.
+   - Register in `supabase/config.toml` with `verify_jwt = false`.
 
-**Fallback strategy:**
-- If the edge function returns an error, automatically fall back to Browser TTS
-- Log the error for debugging but don't break the session
+2. **Language config module** `src/lib/languages.ts`
+   - Exports `SUPPORTED_LANGUAGES` array: `{ code: "en", bcp47: "en-US", label: "English", flag: "🇺🇸" }` etc.
+   - Helpers `getLanguageByCode`, `getBcp47`.
 
+3. **Language selector UI** `src/components/LanguageSelector.tsx`
+   - Two `Select` dropdowns ("I speak" / "Show in") with flags and labels.
+   - Compact variant for the recording bar.
+
+4. **Update `TranscriptEntry` type** (in `TranscriptionApp.tsx` and `TranscriptDisplay.tsx`)
+   - Add `sourceLang: string` and `translations: Record<string, string>` (target lang code → translated text).
+
+5. **Wire into `TranscriptionApp.tsx`**
+   - New state: `spokenLang`, `displayLang`, `showOriginal` (persisted in localStorage).
+   - When `spokenLang` changes mid-session: stop & restart `recognition` with the new `recognition.lang`.
+   - On every final transcript chunk:
+     - Save entry with `sourceLang = spokenLang`, `translations = { [spokenLang]: text }`.
+     - If `displayLang !== spokenLang`, call `supabase.functions.invoke("translate", …)` and merge the result into `translations`.
+   - When the user changes `displayLang`, walk existing entries and translate any that don't yet have that target cached (batched, lightweight).
+
+6. **Update `TranscriptDisplay.tsx`**
+   - Render `entry.translations[displayLang] ?? entry.text` as the main text.
+   - Show small `sourceLang` badge + original text underneath when `showOriginal` and `sourceLang !== displayLang`.
+   - Add a "Translating…" shimmer state while a translation is pending.
+
+7. **BrainstormSession (optional, scoped follow-up)**
+   - Out of scope for this change unless you also want the AI brainstorm flow translated. Flag for a future step.
+
+### Technical details
+
+- **Source language for recognition**: Web Speech API only listens in one language at a time, so we use the speaker's "I speak" setting as `recognition.lang`. If multiple people speaking different languages share one mic, accuracy will drop — this is a Web Speech limitation, not our app. The doc on the language selector will note: "Each device should set its own spoken language for best accuracy."
+- **Translation provider**: Lovable AI Gateway via existing `LOVABLE_API_KEY` (no new secret, no cost surprises beyond gateway usage).
+- **Caching**: in-memory per entry; nothing persisted server-side. Saved meetings keep `translations` in their stored JSON so re-opens are instant.
+- **Performance**: translations fire per final chunk, not per interim word. Pending translations don't block transcript rendering.
+- **Fallback**: if the translate function errors, we render the original text and log the error — session never breaks.
+
+### Out of scope (can do next)
+- Translating the AI Brainstorm responses + TTS in another language.
+- Per-entry "translate to a different language" one-off action.
+- Persisting translations into the meeting summary / email export.
