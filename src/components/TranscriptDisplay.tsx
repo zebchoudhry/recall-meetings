@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mic } from "lucide-react";
+import { Mic, Loader2 } from "lucide-react";
+import { getLanguageByCode } from "@/lib/languages";
 
 interface TranscriptEntry {
   id: string;
@@ -8,11 +9,16 @@ interface TranscriptEntry {
   text: string;
   timestamp: Date;
   confidence: number;
+  sourceLang?: string;
+  translations?: Record<string, string>;
+  translating?: boolean;
 }
 
 interface TranscriptDisplayProps {
   transcript: TranscriptEntry[];
   isRecording: boolean;
+  displayLang?: string;
+  showOriginal?: boolean;
 }
 
 const getSpeakerColor = (speaker: string): string => {
@@ -33,7 +39,12 @@ const getSpeakerBadgeColor = (speaker: string): string => {
   return colors[speaker as keyof typeof colors] || "bg-speaker-unknown/10 border-speaker-unknown/20";
 };
 
-export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplayProps) => {
+export const TranscriptDisplay = ({
+  transcript,
+  isRecording,
+  displayLang = "en",
+  showOriginal = true,
+}: TranscriptDisplayProps) => {
   return (
     <Card className="h-[600px] flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
@@ -61,7 +72,15 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
           </div>
         ) : (
           <div className="space-y-4 content-spacing-sm">
-            {transcript.map((entry) => (
+            {transcript.map((entry) => {
+              const sourceLang = entry.sourceLang ?? "en";
+              const translated = entry.translations?.[displayLang];
+              const isSameLang = sourceLang === displayLang;
+              const primaryText = isSameLang ? entry.text : (translated ?? entry.text);
+              const sourceLangInfo = getLanguageByCode(sourceLang);
+              const showOriginalLine =
+                showOriginal && !isSameLang && translated !== undefined;
+              return (
               <div 
                 key={entry.id}
                 id={`transcript-entry-${entry.id}`}
@@ -74,9 +93,27 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="transcript-text text-foreground">
-                      {entry.text}
-                    </p>
+                    <div className="flex items-start gap-2">
+                      {sourceLangInfo && (
+                        <span
+                          className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5"
+                          title={sourceLangInfo.label}
+                        >
+                          {sourceLang.toUpperCase()}
+                        </span>
+                      )}
+                      <p className="transcript-text text-foreground flex-1">
+                        {primaryText}
+                        {entry.translating && !isSameLang && !translated && (
+                          <Loader2 className="inline-block w-3 h-3 ml-2 animate-spin text-muted-foreground" />
+                        )}
+                      </p>
+                    </div>
+                    {showOriginalLine && (
+                      <p className="text-xs text-muted-foreground italic mt-1 pl-8">
+                        {entry.text}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-caption">
                         {entry.timestamp.toLocaleTimeString()}
@@ -88,7 +125,8 @@ export const TranscriptDisplay = ({ transcript, isRecording }: TranscriptDisplay
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </ScrollArea>
