@@ -1,51 +1,85 @@
-## Localize app UI: English ↔ Spanish (v1)
+## Goal
 
-### Goal
-When a user picks **Español** in the "I speak" dropdown, the entire app interface (buttons, labels, status text, toasts) switches to Spanish. Picking **English** switches back. Other languages stay English for now.
+Apply the highest-impact audio quality wins that don't require new paid services or breaking changes. Two areas:
 
-### Approach
-Lightweight in-house i18n — no library, no runtime translation calls. Two static string maps (`en`, `es`) and a tiny `t()` helper via React context.
+1. **Cleaner microphone capture** for the main meeting recorder.
+2. **Language-aware, higher-quality TTS** so the voice matches what the user speaks.
 
-### Steps
+A bigger upgrade (replacing the browser's Web Speech API with a server-side ASR like Deepgram/Whisper) is intentionally **out of scope** here — it's a bigger lift, costs money per minute, and needs a separate decision.
 
-1. **Create `src/lib/i18n/strings.ts`**
-   - Define a `Translations` type listing every UI key (e.g. `record.start`, `record.stop`, `record.status.listening`, `record.status.idle`, `record.entries`, `record.clear`, `lang.iSpeak`, `lang.showIn`, `lang.showOriginal`, `transcript.empty`, `transcript.translating`, `summary.generate`, `feedback.button`, `privacy.banner.title`, etc.).
-   - Export `en` (source of truth) and `es` (Spanish copy authored inline).
+---
 
-2. **Create `src/lib/i18n/I18nProvider.tsx`**
-   - Context exposes `{ uiLang, setUiLang, t(key, vars?) }`.
-   - Persists `uiLang` in `localStorage` (`recall.uiLang`).
-   - Falls back to `en` when a key is missing.
-   - Sets `document.documentElement.lang`.
+## Changes
 
-3. **Wrap app** in `src/App.tsx` with `<I18nProvider>`.
+### 1. Main recorder — better mic constraints
 
-4. **Bind to "I speak"**
-   - In `TranscriptionApp.tsx`, when `spokenLang` changes, call `setUiLang(spokenLang === "es" ? "es" : "en")`. Any non-Spanish selection keeps the UI in English.
+In `src/components/TranscriptionApp.tsx` (line 437) replace:
 
-5. **Replace hard-coded strings with `t(...)`** across the user-facing surface:
-   - `RecordingControls` — Start/Stop Transcription, Status, Listening, Idle, Entries, Clear Transcript, heading.
-   - `LanguageSelector` — Languages, I speak, Show in, Show original.
-   - `TranscriptDisplay` — empty state, "Translating…".
-   - `AppHeader` — nav + tagline.
-   - `BrainstormLauncher` / `BrainstormSession` — visible buttons and prompts.
-   - `EmailSummary`, `MeetingSummary`, `HighlightsSidebar`, `PersonalDashboard` — headings + buttons.
-   - `FeedbackButton` / `FeedbackModal` — labels.
-   - `PrivacyBanner`, `PrivacySettings`, `PrivacyModeIndicator` — text.
-   - `CheatSheet` — headings.
-   - Toast messages raised from these screens.
+```ts
+getUserMedia({ audio: true })
+```
 
-### Out of scope (v1)
-- Other languages in the dropdown stay English in the UI (transcript translation still works for them as today).
-- Landing page marketing copy and `public/user-guide.html`.
-- Email templates.
-- AI-generated content (transcripts, summaries) — already handled by the existing per-entry translation flow.
+with the same constraints the Brainstorm flow already uses, plus mono + 16 kHz which is ideal for speech recognition:
 
-### Technical details
-- `t(key, vars?)` with simple `{name}` interpolation.
-- Type-safe: `Translations` is a flat keyed type so missing strings surface as TS errors.
-- No network calls, no new secrets, switch is instant.
+```ts
+getUserMedia({
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+    channelCount: 1,
+    sampleRate: 16000,
+  },
+})
+```
 
-### File changes
-- add: `src/lib/i18n/strings.ts`, `src/lib/i18n/I18nProvider.tsx`
-- edit: `src/App.tsx`, `src/components/TranscriptionApp.tsx`, `src/components/RecordingControls.tsx`, `src/components/LanguageSelector.tsx`, `src/components/TranscriptDisplay.tsx`, `src/components/AppHeader.tsx`, plus the brainstorm / summary / privacy / feedback components listed above.
+Effect: less echo, less background hiss, more consistent levels, smaller bandwidth — which all help Web Speech recognition accuracy.
+
+### 2. TTS edge function — language-aware + best voices
+
+`supabase/functions/text-to-speech/index.ts` is hard-coded to `en-US-Neural2-J`. Two improvements:
+
+- Accept a `lang` parameter (ISO code: `en`, `es`, `fr`, …).
+- Map each supported language to Google's best available voice tier in this order: **Chirp 3 HD → Studio → Neural2 → WaveNet → Standard**. For our 10 languages that resolves to (current best, all available without extra setup):
+
+  | lang | voice |
+  |---|---|
+  | en | `en-US-Studio-O` (female) / `en-US-Studio-Q` (male) |
+  | es | `es-ES-Neural2-F` |
+  | fr | `fr-FR-Neural2-D` |
+  | de | `de-DE-Neural2-F` |
+  | pt | `pt-BR-Neural2-C` |
+  | it | `it-IT-Neural2-A` |
+  | zh | `cmn-CN-Wavenet-A` |
+  | ja | `ja-JP-Neural2-B` |
+  | hi | `hi-IN-Neural2-A` |
+  | ar | `ar-XA-Wavenet-A` |
+
+- Default `lang` to `en` if missing, so existing callers keep working.
+
+### 3. Pass language from the client
+
+`src/components/BrainstormSession.tsx` is the only TTS caller. Update its fetch body to include `lang: spokenLang` (it already has access to it). Also pass it through the prop chain if needed.
+
+### 4. (Tiny) MediaRecorder hint
+
+In `src/components/VoiceEnrollment.tsx` request `{ mimeType: "audio/webm;codecs=opus" }` when supported, with a graceful fallback. Stops Chrome from silently choosing a worse container while still letting Safari fall back.
+
+---
+
+## Out of scope (mention in chat after, don't build now)
+
+- Replacing Web Speech API with server-side ASR (Deepgram / AssemblyAI / Whisper) for cross-browser support, punctuation, and diarization.
+- Replacing the homegrown pitch-based speaker ID with a real voice-embedding model.
+- Adding ElevenLabs as an alternate TTS provider.
+
+These are real upgrades but each adds a paid dependency, so I'll flag them as next steps and let you choose.
+
+---
+
+## Files touched
+
+- `src/components/TranscriptionApp.tsx` — mic constraints
+- `supabase/functions/text-to-speech/index.ts` — language-aware voice selection
+- `src/components/BrainstormSession.tsx` — pass `lang` to TTS
+- `src/components/VoiceEnrollment.tsx` — explicit MediaRecorder mimeType

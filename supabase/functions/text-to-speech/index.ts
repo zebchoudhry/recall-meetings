@@ -6,13 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Best Google TTS voice per supported language.
+// Tier preference: Studio > Neural2 > Wavenet > Standard.
+const VOICE_MAP: Record<string, { languageCode: string; name: string; ssmlGender: "MALE" | "FEMALE" }> = {
+  en: { languageCode: "en-US", name: "en-US-Studio-O", ssmlGender: "FEMALE" },
+  es: { languageCode: "es-ES", name: "es-ES-Neural2-F", ssmlGender: "FEMALE" },
+  fr: { languageCode: "fr-FR", name: "fr-FR-Neural2-D", ssmlGender: "MALE" },
+  de: { languageCode: "de-DE", name: "de-DE-Neural2-F", ssmlGender: "FEMALE" },
+  pt: { languageCode: "pt-BR", name: "pt-BR-Neural2-C", ssmlGender: "FEMALE" },
+  it: { languageCode: "it-IT", name: "it-IT-Neural2-A", ssmlGender: "FEMALE" },
+  zh: { languageCode: "cmn-CN", name: "cmn-CN-Wavenet-A", ssmlGender: "FEMALE" },
+  ja: { languageCode: "ja-JP", name: "ja-JP-Neural2-B", ssmlGender: "FEMALE" },
+  hi: { languageCode: "hi-IN", name: "hi-IN-Neural2-A", ssmlGender: "FEMALE" },
+  ar: { languageCode: "ar-XA", name: "ar-XA-Wavenet-A", ssmlGender: "FEMALE" },
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { text } = await req.json();
+    const { text, lang } = await req.json();
 
     if (!text || typeof text !== "string" || text.trim().length === 0) {
       console.error("Missing or empty text parameter");
@@ -31,7 +46,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Synthesizing speech for text (${text.length} chars)`);
+    const langKey = typeof lang === "string" && VOICE_MAP[lang] ? lang : "en";
+    const voice = VOICE_MAP[langKey];
+    console.log(`Synthesizing speech (${text.length} chars) lang=${langKey} voice=${voice.name}`);
 
     const ttsResponse = await fetch(
       `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
@@ -40,15 +57,11 @@ serve(async (req) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           input: { text: text.trim() },
-          voice: {
-            languageCode: "en-US",
-            name: "en-US-Neural2-J",
-            ssmlGender: "MALE",
-          },
+          voice,
           audioConfig: {
             audioEncoding: "MP3",
             speakingRate: 0.95,
-            pitch: -1.0,
+            pitch: 0.0,
             volumeGainDb: 0.0,
           },
         }),
