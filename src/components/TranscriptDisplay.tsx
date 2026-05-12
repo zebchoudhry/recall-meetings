@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Mic, Loader2 } from "lucide-react";
 import { getLanguageByCode } from "@/lib/languages";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface TranscriptEntry {
   id: string;
@@ -45,14 +46,15 @@ export const TranscriptDisplay = ({
   displayLang = "en",
   showOriginal = true,
 }: TranscriptDisplayProps) => {
+  const { t } = useI18n();
   return (
     <Card className="h-[600px] flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-section-title text-foreground">Live Transcript</h2>
+        <h2 className="text-section-title text-foreground">{t("transcript.title")}</h2>
         {isRecording && (
           <div className="flex items-center space-x-2 text-recording-pulse">
             <Mic className="w-4 h-4 animate-recording-pulse" />
-            <span className="text-caption font-medium">Recording</span>
+            <span className="text-caption font-medium">{t("transcript.recording")}</span>
           </div>
         )}
       </div>
@@ -64,8 +66,8 @@ export const TranscriptDisplay = ({
               <Mic className="w-12 h-12 mx-auto text-muted-foreground" />
               <p className="text-body text-muted-foreground">
                 {isRecording 
-                  ? "Listening for speech..." 
-                  : "Click the record button to start transcribing"
+                  ? t("transcript.listeningHint")
+                  : t("transcript.startHint")
                 }
               </p>
             </div>
@@ -119,7 +121,7 @@ export const TranscriptDisplay = ({
                         {entry.timestamp.toLocaleTimeString()}
                       </span>
                       <span className="text-caption">
-                        {Math.round(entry.confidence * 100)}% confidence
+                        {t("transcript.confidence", { n: Math.round(entry.confidence * 100) })}
                       </span>
                     </div>
                   </div>
