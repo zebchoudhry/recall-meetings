@@ -141,10 +141,21 @@ export const VoiceEnrollment = ({ onProfilesUpdate, enrolledProfiles }: VoiceEnr
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+      });
       audioContextRef.current = new AudioContext();
-      
-      const mediaRecorder = new MediaRecorder(stream);
+
+      const preferredMime = "audio/webm;codecs=opus";
+      const mediaRecorder =
+        typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(preferredMime)
+          ? new MediaRecorder(stream, { mimeType: preferredMime })
+          : new MediaRecorder(stream);
       const chunks: Blob[] = [];
       
       mediaRecorder.ondataavailable = (event) => {
