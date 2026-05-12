@@ -1841,9 +1841,19 @@ ${keyPoints}`;
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-none mx-auto space-y-6">
+                <LanguageSelector
+                  spokenLang={spokenLang}
+                  displayLang={displayLang}
+                  showOriginal={showOriginal}
+                  onSpokenLangChange={setSpokenLang}
+                  onDisplayLangChange={setDisplayLang}
+                  onShowOriginalChange={setShowOriginal}
+                />
                 <TranscriptDisplay 
                   transcript={transcript} 
                   isRecording={isRecording}
+                  displayLang={displayLang}
+                  showOriginal={showOriginal}
                 />
                 
                 {/* Ask About Meeting - Inline */}
