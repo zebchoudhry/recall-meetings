@@ -25,6 +25,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 import { storageManager, MeetingData } from "@/utils/storageManager";
+import { LanguageSelector } from "./LanguageSelector";
+import { getBcp47 } from "@/lib/languages";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TranscriptEntry {
   id: string;
@@ -32,6 +35,9 @@ interface TranscriptEntry {
   text: string;
   timestamp: Date;
   confidence: number;
+  sourceLang?: string;
+  translations?: Record<string, string>;
+  translating?: boolean;
 }
 
 interface ChatMessage {
@@ -116,12 +122,82 @@ export const TranscriptionApp = () => {
   const [showCatchUpData, setShowCatchUpData] = useState(false);
   const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null);
   const [showBrainstorm, setShowBrainstorm] = useState(false);
+  const [spokenLang, setSpokenLang] = useState<string>(() => {
+    return localStorage.getItem("recall.spokenLang") || "en";
+  });
+  const [displayLang, setDisplayLang] = useState<string>(() => {
+    return localStorage.getItem("recall.displayLang") || "en";
+  });
+  const [showOriginal, setShowOriginal] = useState<boolean>(() => {
+    return localStorage.getItem("recall.showOriginal") !== "false";
+  });
   const { toast } = useToast();
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const voiceClusteringRef = useRef<VoiceClustering>(new VoiceClustering());
   const audioStreamRef = useRef<MediaStream | null>(null);
   const shouldKeepRecordingRef = useRef<boolean>(false); // More explicit name
   const stopRequestedRef = useRef<boolean>(false); // Track if stop was explicitly requested
+  const spokenLangRef = useRef<string>(spokenLang);
+  const displayLangRef = useRef<string>(displayLang);
+
+  useEffect(() => {
+    spokenLangRef.current = spokenLang;
+    localStorage.setItem("recall.spokenLang", spokenLang);
+    if (recognitionRef.current) {
+      recognitionRef.current.lang = getBcp47(spokenLang);
+      // Restart recognition if currently recording so the lang change takes effect
+      if (shouldKeepRecordingRef.current) {
+        try {
+          (recognitionRef.current as any).abort();
+        } catch {}
+      }
+    }
+  }, [spokenLang]);
+
+  useEffect(() => {
+    displayLangRef.current = displayLang;
+    localStorage.setItem("recall.displayLang", displayLang);
+  }, [displayLang]);
+
+  useEffect(() => {
+    localStorage.setItem("recall.showOriginal", String(showOriginal));
+  }, [showOriginal]);
+
+  // Translate a single transcript entry to the target language and cache the result.
+  const translateEntry = async (entryId: string, text: string, sourceLang: string, targetLang: string) => {
+    if (sourceLang === targetLang) return;
+    try {
+      setTranscript(prev => prev.map(e => e.id === entryId ? { ...e, translating: true } : e));
+      const { data, error } = await supabase.functions.invoke("translate", {
+        body: { text, sourceLang, targetLang },
+      });
+      if (error) throw error;
+      const translation = (data as any)?.translation;
+      if (!translation) throw new Error("No translation returned");
+      setTranscript(prev => prev.map(e => {
+        if (e.id !== entryId) return e;
+        return {
+          ...e,
+          translating: false,
+          translations: { ...(e.translations || {}), [targetLang]: translation },
+        };
+      }));
+    } catch (err) {
+      console.error("Translation failed:", err);
+      setTranscript(prev => prev.map(e => e.id === entryId ? { ...e, translating: false } : e));
+    }
+  };
+
+  // When display language changes, translate any existing entries that don't yet have it cached.
+  useEffect(() => {
+    transcript.forEach(entry => {
+      const src = entry.sourceLang ?? "en";
+      if (src === displayLang) return;
+      if (entry.translations?.[displayLang]) return;
+      translateEntry(entry.id, entry.text, src, displayLang);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayLang]);
 
   // Initialize storage manager
   useEffect(() => {
@@ -160,7 +236,7 @@ export const TranscriptionApp = () => {
     
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = getBcp47(spokenLangRef.current);
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -216,16 +292,27 @@ export const TranscriptionApp = () => {
         
         // Create entry immediately with placeholder speaker
         const entryId = Date.now().toString();
+        const currentSourceLang = spokenLangRef.current;
+        const currentDisplayLang = displayLangRef.current;
+        const trimmedText = finalTranscript.trim();
         const newEntry: TranscriptEntry = {
           id: entryId,
           speaker: "Analyzing...",
-          text: finalTranscript.trim(),
+          text: trimmedText,
           timestamp: new Date(),
           confidence: event.results[event.results.length - 1]?.[0]?.confidence || 0.9,
+          sourceLang: currentSourceLang,
+          translations: { [currentSourceLang]: trimmedText },
+          translating: currentSourceLang !== currentDisplayLang,
         };
 
         console.log('📝 Adding transcript entry immediately:', newEntry);
         setTranscript(prev => [...prev, newEntry]);
+
+        // Fire translation in background if needed
+        if (currentSourceLang !== currentDisplayLang) {
+          translateEntry(entryId, trimmedText, currentSourceLang, currentDisplayLang);
+        }
         
         // Auto-detect highlights for this entry
         const detectedHighlights = detectHighlights(newEntry);
@@ -1754,9 +1841,19 @@ ${keyPoints}`;
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="max-w-none mx-auto space-y-6">
+                <LanguageSelector
+                  spokenLang={spokenLang}
+                  displayLang={displayLang}
+                  showOriginal={showOriginal}
+                  onSpokenLangChange={setSpokenLang}
+                  onDisplayLangChange={setDisplayLang}
+                  onShowOriginalChange={setShowOriginal}
+                />
                 <TranscriptDisplay 
                   transcript={transcript} 
                   isRecording={isRecording}
+                  displayLang={displayLang}
+                  showOriginal={showOriginal}
                 />
                 
                 {/* Ask About Meeting - Inline */}
