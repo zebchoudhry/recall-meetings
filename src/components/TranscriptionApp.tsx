@@ -25,6 +25,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceClustering } from "@/utils/voiceClustering";
 import { VoiceIdentifier } from "@/utils/voiceIdentifier";
 import { storageManager, MeetingData } from "@/utils/storageManager";
+import { LanguageSelector } from "./LanguageSelector";
+import { getBcp47 } from "@/lib/languages";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TranscriptEntry {
   id: string;
@@ -32,6 +35,9 @@ interface TranscriptEntry {
   text: string;
   timestamp: Date;
   confidence: number;
+  sourceLang?: string;
+  translations?: Record<string, string>;
+  translating?: boolean;
 }
 
 interface ChatMessage {
