@@ -46,8 +46,17 @@ api_url = "http://127.0.0.1"
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+site_url = "https://recallmeetings.com"
+additional_redirect_urls = [
+  "https://recallmeetings.com",
+  "https://recallmeetings.com/app",
+  "https://recall-meetings.lovable.app",
+  "https://recall-meetings.lovable.app/app",
+  "https://id-preview--4dff3774-cd4f-404e-943e-1a7b4abd275c.lovable.app",
+  "https://id-preview--4dff3774-cd4f-404e-943e-1a7b4abd275c.lovable.app/app",
+  "http://localhost:8080",
+  "http://localhost:8080/app"
+]
 jwt_expiry = 3600
 enable_signup = true
 enable_anonymous_sign_ins = false
