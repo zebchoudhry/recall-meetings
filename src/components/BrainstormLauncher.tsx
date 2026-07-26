@@ -1,36 +1,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { BrainstormSession } from "./BrainstormSession";
 import { BrainstormArchive } from "./BrainstormArchive";
 import { Brain, Lightbulb, Mail, Shield, Clock, Archive } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 interface BrainstormLauncherProps {
   onClose: () => void;
 }
 
 export const BrainstormLauncher = ({ onClose }: BrainstormLauncherProps) => {
-  const { toast } = useToast();
-  const [email, setEmail] = useState("");
+  const { email } = useAuth();
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
 
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
   const startSession = () => {
-    if (!validateEmail(email)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address to receive your summary.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!email) return;
     setIsSessionActive(true);
   };
 
@@ -38,11 +24,11 @@ export const BrainstormLauncher = ({ onClose }: BrainstormLauncherProps) => {
     setIsSessionActive(false);
   };
 
-  if (isSessionActive) {
+  if (isSessionActive && email) {
     return <BrainstormSession onSessionEnd={handleSessionEnd} userEmail={email} />;
   }
 
-  if (showArchive) {
+  if (showArchive && email) {
     return <BrainstormArchive userEmail={email} onBack={() => setShowArchive(false)} />;
   }
 
@@ -92,19 +78,12 @@ export const BrainstormLauncher = ({ onClose }: BrainstormLauncherProps) => {
           </div>
         </div>
 
-        {/* Email Input */}
-        <div className="space-y-2">
-          <Label htmlFor="email">Your Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-12"
-          />
+        {/* Signed-in identity */}
+        <div className="space-y-1 text-center">
+          <p className="text-xs text-muted-foreground">Signed in as</p>
+          <p className="text-sm font-medium">{email ?? "—"}</p>
           <p className="text-xs text-muted-foreground">
-            Your brainstorm summary will be sent here automatically.
+            Your brainstorm summary will be sent to this address.
           </p>
         </div>
 
@@ -113,6 +92,7 @@ export const BrainstormLauncher = ({ onClose }: BrainstormLauncherProps) => {
           <Button
             onClick={startSession}
             size="lg"
+            disabled={!email}
             className="w-full h-14 text-lg bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90"
           >
             <Brain className="w-6 h-6 mr-2" />
@@ -120,7 +100,7 @@ export const BrainstormLauncher = ({ onClose }: BrainstormLauncherProps) => {
           </Button>
 
           <div className="flex gap-2">
-            {email && validateEmail(email) && (
+            {email && (
               <Button
                 variant="outline"
                 onClick={() => setShowArchive(true)}
@@ -133,7 +113,7 @@ export const BrainstormLauncher = ({ onClose }: BrainstormLauncherProps) => {
             <Button
               variant="ghost"
               onClick={onClose}
-              className={email && validateEmail(email) ? "flex-1" : "w-full"}
+              className={email ? "flex-1" : "w-full"}
             >
               Cancel
             </Button>

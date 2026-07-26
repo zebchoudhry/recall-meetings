@@ -13,11 +13,20 @@ export const defaultVerifyToken: VerifyToken = async (token) => {
     );
     const { data, error } = await supabase.auth.getClaims(token);
     if (error || !data?.claims?.sub) return null;
-    return { sub: String(data.claims.sub) };
+    return {
+      sub: String(data.claims.sub),
+      email: data.claims.email ? String(data.claims.email) : null,
+    };
   } catch {
     return null;
   }
 };
+
+export type VerifiedIdentity = { sub: string; email: string | null };
+
+function normaliseEmail(email: string | null | undefined): string {
+  return (email ?? "").trim().toLowerCase();
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,8 +95,16 @@ export async function handleRequest(
   const endpoint = Deno.env.get("KINDRED_RECALL_ENDPOINT");
   const workspaceKey = Deno.env.get("KINDRED_RECALL_WORKSPACE_KEY");
   const apiCredential = Deno.env.get("KINDRED_RECALL_API_CREDENTIAL");
-  if (!endpoint || !workspaceKey || !apiCredential) {
+  const allowedEmail = Deno.env.get("KINDRED_RECALL_ALLOWED_EMAIL");
+  if (!endpoint || !workspaceKey || !apiCredential || !allowedEmail) {
     return json({ ok: false, error: "Service not configured" }, 500);
+  }
+
+  // --- Pilot allowlist: only one authenticated identity may forward. ---
+  const callerEmail = normaliseEmail((verified as VerifiedIdentity).email);
+  const allowed = normaliseEmail(allowedEmail);
+  if (!callerEmail || !allowed || callerEmail !== allowed) {
+    return json({ ok: false, error: "Forbidden" }, 403);
   }
 
   // --- Input ---

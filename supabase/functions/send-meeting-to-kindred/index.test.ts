@@ -7,11 +7,13 @@ import {
 import { handleRequest, type VerifyToken } from "./index.ts";
 
 const ENDPOINT = "https://kindred.example.com/recall";
+const ALLOWED_EMAIL = "allowed@example.com";
 
 function setSecrets(opts: {
   endpoint?: string | null;
   workspaceKey?: string | null;
   apiCredential?: string | null;
+  allowedEmail?: string | null;
 } = {}) {
   const set = (k: string, v: string | null | undefined) => {
     if (v === null) Deno.env.delete(k);
@@ -20,10 +22,14 @@ function setSecrets(opts: {
   set("KINDRED_RECALL_ENDPOINT", opts.endpoint === undefined ? ENDPOINT : opts.endpoint);
   set("KINDRED_RECALL_WORKSPACE_KEY", opts.workspaceKey === undefined ? "ws-key" : opts.workspaceKey);
   set("KINDRED_RECALL_API_CREDENTIAL", opts.apiCredential === undefined ? "api-cred" : opts.apiCredential);
+  set(
+    "KINDRED_RECALL_ALLOWED_EMAIL",
+    opts.allowedEmail === undefined ? ALLOWED_EMAIL : opts.allowedEmail,
+  );
 }
 
-function makeVerify(sub: string): VerifyToken {
-  return async () => ({ sub });
+function makeVerify(sub: string, email: string | null = ALLOWED_EMAIL): VerifyToken {
+  return async () => ({ sub, email } as any);
 }
 
 function validBody(overrides: Record<string, unknown> = {}) {
@@ -202,16 +208,69 @@ Deno.test("outbound recall_meeting_id never contains raw sub", async () => {
 });
 
 Deno.test("missing secret returns generic 500 without naming the secret", async () => {
-  for (const missing of ["endpoint", "workspaceKey", "apiCredential"] as const) {
+  for (const missing of ["endpoint", "workspaceKey", "apiCredential", "allowedEmail"] as const) {
     setSecrets({ [missing]: null } as any);
     const res = await handleRequest(makeRequest(validBody()), makeVerify("u1"));
     assertEquals(res.status, 500);
     const body = await res.json();
     assertEquals(body, { ok: false, error: "Service not configured" });
     const s = JSON.stringify(body).toLowerCase();
-    for (const word of ["endpoint", "workspace", "credential", "kindred", "api_credential"]) {
+    for (const word of ["endpoint", "workspace", "credential", "kindred", "api_credential", "allowed", "email"]) {
       assert(!s.includes(word), `response must not mention "${word}"`);
     }
     setSecrets();
   }
+});
+
+Deno.test("pilot allowlist: allowed user succeeds", async () => {
+  setSecrets();
+  const { captured, restore } = installFetchMock(new Response(null, { status: 202 }));
+  try {
+    const res = await handleRequest(
+      makeRequest(validBody()),
+      makeVerify("user-allowed", "  Allowed@Example.COM  "),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(await res.json(), { ok: true, status: "accepted" });
+    assertEquals(captured.length, 1);
+  } finally { restore(); }
+});
+
+Deno.test("pilot allowlist: other authenticated user is 403 and no upstream call is made", async () => {
+  setSecrets();
+  const { captured, restore } = installFetchMock(new Response(null, { status: 202 }));
+  const originalError = console.error;
+  const logs: string[] = [];
+  console.error = (...args: unknown[]) => { logs.push(args.map(String).join(" ")); };
+  try {
+    const otherEmail = "someone.else@example.com";
+    const res = await handleRequest(
+      makeRequest(validBody()),
+      makeVerify("user-other", otherEmail),
+    );
+    assertEquals(res.status, 403);
+    const body = await res.json();
+    assertEquals(body, { ok: false, error: "Forbidden" });
+    assertEquals(captured.length, 0, "must not call upstream when rejected");
+    // Emails must never appear in logs or the response body.
+    const combined = (logs.join("\n") + JSON.stringify(body)).toLowerCase();
+    assert(!combined.includes(otherEmail));
+    assert(!combined.includes(ALLOWED_EMAIL));
+  } finally {
+    console.error = originalError;
+    restore();
+  }
+});
+
+Deno.test("pilot allowlist: verified identity with no email is 403", async () => {
+  setSecrets();
+  const { captured, restore } = installFetchMock(new Response(null, { status: 202 }));
+  try {
+    const res = await handleRequest(
+      makeRequest(validBody()),
+      makeVerify("user-x", null),
+    );
+    assertEquals(res.status, 403);
+    assertEquals(captured.length, 0);
+  } finally { restore(); }
 });
