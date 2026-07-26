@@ -2,6 +2,23 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
 
+export type VerifyToken = (token: string) => Promise<{ sub: string } | null>;
+
+export const defaultVerifyToken: VerifyToken = async (token) => {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: `Bearer ${token}` } } },
+    );
+    const { data, error } = await supabase.auth.getClaims(token);
+    if (error || !data?.claims?.sub) return null;
+    return { sub: String(data.claims.sub) };
+  } catch {
+    return null;
+  }
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -38,7 +55,10 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
-export async function handleRequest(req: Request): Promise<Response> {
+export async function handleRequest(
+  req: Request,
+  verifyToken: VerifyToken = defaultVerifyToken,
+): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -56,21 +76,11 @@ export async function handleRequest(req: Request): Promise<Response> {
     return json({ ok: false, error: "Unauthorized" }, 401);
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-  let sub: string;
-  try {
-    const supabase = createClient(supabaseUrl, supabaseAnon, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    });
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims?.sub) {
-      return json({ ok: false, error: "Unauthorized" }, 401);
-    }
-    sub = String(data.claims.sub);
-  } catch {
+  const verified = await verifyToken(token);
+  if (!verified) {
     return json({ ok: false, error: "Unauthorized" }, 401);
   }
+  const sub = verified.sub;
 
   // --- Secrets ---
   const endpoint = Deno.env.get("KINDRED_RECALL_ENDPOINT");
