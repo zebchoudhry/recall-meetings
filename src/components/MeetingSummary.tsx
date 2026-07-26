@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Download, Mail, Users, CheckCircle, HelpCircle, Clock, AlertTriangle } from "lucide-react";
+import { FileText, Download, Mail, Send, Users, CheckCircle, HelpCircle, Clock, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { Highlight } from "./HighlightsSidebar";
 import { ActionItem } from "./HighlightsSidebar";
 import { PersonalActionItem } from "./PersonalDashboard";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TranscriptEntry {
   id: string;
@@ -40,6 +42,8 @@ export function MeetingSummary({
   onEmail
 }: MeetingSummaryProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [isSendingToKindred, setIsSendingToKindred] = useState(false);
+  const { toast } = useToast();
 
   if (!isVisible) return null;
 
@@ -163,6 +167,60 @@ export function MeetingSummary({
     setIsExporting(false);
   };
 
+  const handleSendToKindred = async () => {
+    setIsSendingToKindred(true);
+    try {
+      const startedAt = meetingStart ?? new Date();
+      const endedAt = meetingEnd ?? null;
+      const summaryText = generateSummaryText().slice(0, 6000);
+      const participants = speakers
+        .filter((s) => typeof s === "string" && s.trim().length > 0)
+        .slice(0, 50)
+        .map((name) => ({ name: String(name).slice(0, 100) }));
+
+      const payload = {
+        recall_meeting_id: `recall-${startedAt.getTime()}-${Math.random().toString(36).slice(2, 10)}`,
+        title: `Meeting on ${startedAt.toLocaleDateString()}`.slice(0, 240),
+        started_at: startedAt.toISOString(),
+        ended_at: endedAt ? endedAt.toISOString() : null,
+        duration_minutes: Math.max(0, Math.min(1440, Math.round(meetingDuration))),
+        participants,
+        summary: summaryText,
+      };
+
+      const { data, error } = await supabase.functions.invoke(
+        "send-meeting-to-kindred",
+        { body: payload },
+      );
+
+      if (error) {
+        toast({
+          title: "Send failed",
+          description: "Could not send summary to Kindred.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const status = (data as { status?: string } | null)?.status;
+      toast({
+        title: status === "duplicate" ? "Already sent" : "Sent to Kindred",
+        description:
+          status === "duplicate"
+            ? "Kindred already has this meeting."
+            : "Kindred accepted the summary for review.",
+      });
+    } catch {
+      toast({
+        title: "Send failed",
+        description: "Unexpected error sending to Kindred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingToKindred(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
@@ -185,6 +243,14 @@ export function MeetingSummary({
             <Button onClick={handleEmail} disabled={isExporting} variant="outline">
               <Mail className="h-4 w-4 mr-2" />
               Email Summary
+            </Button>
+            <Button
+              onClick={handleSendToKindred}
+              disabled={isSendingToKindred}
+              variant="outline"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {isSendingToKindred ? "Sending…" : "Send to Kindred"}
             </Button>
             <Button onClick={onClose} variant="ghost">Close</Button>
           </div>
