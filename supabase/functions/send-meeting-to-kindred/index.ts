@@ -187,4 +187,4 @@ export async function handleRequest(
   );
 }
 
-serve(handleRequest);
+serve((req) => handleRequest(req));
