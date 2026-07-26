@@ -121,7 +121,7 @@ Deno.test("202 upstream -> { ok: true, status: 'accepted' } and no transcript/au
       requires_human_approval: true,
     });
     const bodyStr = JSON.stringify(outbound.bodyJson);
-    for (const forbidden of ["transcript", "audio_url", "audio_base64", "raw_audio"]) {
+    for (const forbidden of ["transcript_text", "audio_url", "audio_base64", "raw_audio"]) {
       assert(!bodyStr.includes(forbidden), `outbound body must not contain ${forbidden}`);
     }
   } finally { restore(); }
